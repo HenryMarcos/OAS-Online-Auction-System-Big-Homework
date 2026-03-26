@@ -1,0 +1,3 @@
+mvn javafx:jlink
+jpackage --type app-image --name OAS-App --runtime-image target/image --module com.groupproject/com.groupproject.App --win-console
+jpackage --type app-image --name OAS-App --runtime-image target/image --module com.groupproject/com.groupproject.App --icon logo.ico

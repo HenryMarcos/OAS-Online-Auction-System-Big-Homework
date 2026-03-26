@@ -42,6 +42,8 @@
                         <id>default-cli</id>
                         <configuration>
                             <mainClass>com.groupproject.App</mainClass>
+                            <jlinkExecutableDir>${project.build.directory}/image</jlinkExecutableDir>
+                            <launcher>oas-app</launcher>
                         </configuration>
                     </execution>
                 </executions>
