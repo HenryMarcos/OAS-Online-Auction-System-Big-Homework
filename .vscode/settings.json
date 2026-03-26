@@ -1,0 +1,4 @@
+{
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "maven.executable.path": "C:\\Program Files\\apache-maven-3.9.14\bin\\mvn"
+}
