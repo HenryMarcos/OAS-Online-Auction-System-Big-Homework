@@ -1,0 +1,15 @@
+com\groupproject\base\user\User.class
+com\groupproject\SecondaryController.class
+com\groupproject\base\item\Vehicle.class
+com\groupproject\base\user\Bidder.class
+com\groupproject\base\item\Electronics.class
+com\groupproject\base\user\Seller.class
+com\groupproject\App.class
+com\groupproject\base\BidTransaction.class
+com\groupproject\base\item\Item.class
+com\groupproject\PrimaryController.class
+module-info.class
+com\groupproject\base\item\Art.class
+com\groupproject\base\user\Admin.class
+com\groupproject\base\Entity.class
+com\groupproject\base\Auction.class
