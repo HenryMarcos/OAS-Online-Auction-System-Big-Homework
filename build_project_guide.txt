@@ -1,3 +1,24 @@
 mvn javafx:jlink
-jpackage --type app-image --name OAS-App --runtime-image target/image --module com.groupproject/com.groupproject.App --win-console
-jpackage --type app-image --name OAS-App --runtime-image target/image --module com.groupproject/com.groupproject.App --icon logo.ico
+jpackage --type app-image --name OAS-App --runtime-image target/image --module com.groupproject.client/com.groupproject.client.App --win-console
+jpackage --type app-image --name OAS-App --runtime-image target/image --module com.groupproject.client/com.groupproject.jpackage --type app-image --name OAS-App --runtime-image target/image --module com.groupproject/com.groupproject.client.App --icon logo.ico
+ --icon logo.ico
+
+
+
+For multi-module (Cái hiện tại đang dùng):
+
+mvn clean install (mỗi lần thay đổi code trong shared đều phải chạy lại lệnh này)
+(Phải đang ở folder OAS-System)
+
+cd client
+
+mvn javafx:jlink
+
+Để tạo file exe chạy luôn:
+jpackage --type app-image --name OAS-App --runtime-image target/image --module com.groupproject.client/com.groupproject.client.App --icon logo.ico
+
+Để tạo installer exe:
+jpackage --type exe --name OAS-App-Installer --runtime-image target/image --module com.groupproject.client/com.groupproject.client.App --icon logo.ico --win-shortcut --win-menu --win-dir-chooser
+
+-Nếu có thỏa thuận người dùng(eula.rtf):
+jpackage --type exe --name OAS-App-Installer --runtime-image target/image --module com.groupproject.client/com.groupproject.client.App --icon logo.ico --win-shortcut --win-menu --win-dir-chooser --license-file eula.rtf

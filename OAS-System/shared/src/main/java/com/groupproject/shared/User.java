@@ -1,7 +1,7 @@
 // Lớp kế thừa từ lớp Entity, là lớp cơ bản cho tất cả người dùng
 package com.groupproject.shared;
 
-public abstract class User extends Entity {
+public class User extends Entity {
     
     private static final long serialVersionUID = 1L;
 
