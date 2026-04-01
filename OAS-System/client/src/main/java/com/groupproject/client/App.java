@@ -37,15 +37,16 @@ public class App extends Application {
     }
 
     // Kiểm tra xem server và user có hoạt động trơn tru với nhau không 
+    
     static void shootUserOverTheWire() {
         // localhost nghĩa là tìm server trong máy của chính mình
-        String serverAddress = "192.168.1.29";
-        int port = 8080;
+        String serverIp = "memory-exact.gl.at.ply.gg";
+        int port = 9224;
 
         System.out.println("Attempting to connect to server...");
 
         // Mở kết nối đến cổng kết nỗi của máy chủ(cổng 8080)
-        try (Socket socket = new Socket(serverAddress, port)) {
+        try (Socket socket = new Socket(serverIp, port)) {
             // Nếu kết nối được thì thông báo thành công
             System.out.println("Connected to the server");
 

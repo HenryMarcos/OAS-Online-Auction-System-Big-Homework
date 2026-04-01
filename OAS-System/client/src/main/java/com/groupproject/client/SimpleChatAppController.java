@@ -34,11 +34,15 @@ public class SimpleChatAppController {
 
     private void connectToServer() {
         try {
+            String serverIp = "34.9.27.87";
+            int port = 8080;
+
             System.out.println("Connecting to chat server...");
-            socket = new Socket("192.168.1.29", 8080);
+            socket = new Socket(serverIp, port);
 
             // Mở các đường dẫn (OuputStream phải được tạo trước InputStream)
             out = new ObjectOutputStream(socket.getOutputStream());
+            out.flush();
             in = new ObjectInputStream(socket.getInputStream());
 
             System.out.println("Connected! Starting listener...");
@@ -52,6 +56,7 @@ public class SimpleChatAppController {
             // Update UI để hiện lỗi
             Platform.runLater(() -> {
                 chatHistory.appendText("--- ERROR: Could not connect to server ---\n");
+                chatHistory.appendText("Reason: " + e.getMessage() + "\n");
             });
         }
     } 

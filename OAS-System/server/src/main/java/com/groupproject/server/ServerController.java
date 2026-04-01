@@ -13,7 +13,6 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
 
-import com.groupproject.shared.User;
 
 public class ServerController {
     @FXML
@@ -65,9 +64,10 @@ public class ServerController {
 
     // --- HÀM BÁO TIN/THÔNG BÁO ---
     // Gửi 1 tin nhắn cho mỗi client trong danh sách
-    private void boardcast(String message) {
+    private void broadcast(String message, ObjectOutputStream senderOut) {
         synchronized (clientWriters) {
             for (ObjectOutputStream writer : clientWriters) {
+                if (writer != senderOut);
                 try {
                     writer.writeObject(message);
                     writer.flush();
@@ -108,10 +108,10 @@ public class ServerController {
 
                     if (recievedData instanceof String) {
                         String message = (String) recievedData;
-                        log("Boardcast Request: " + message);
+                        log("Broadcast Request: " + message);
 
                         // Gửi thông báo cho tất cả mọi người
-                        boardcast(message);
+                        broadcast(message, out);
                     }
                 }
 
