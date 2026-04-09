@@ -1,5 +1,10 @@
 module com.groupproject.shared {
-    // Thông báo cho Java rằng: 
-    // Bất kỳ ai cần mô-đun này đều được phép sử dụng các lớp bên trong gói này.
-    exports com.groupproject.shared;
+    // 1. Export các nhóm Entity
+    exports com.groupproject.shared.model.base;
+    exports com.groupproject.shared.model.user;
+    exports com.groupproject.shared.model.item;
+    exports com.groupproject.shared.model.transaction;
+
+    // 2. Export các nhóm Factory
+    exports com.groupproject.shared.factory;
 }
