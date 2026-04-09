@@ -1,6 +1,6 @@
 package com.groupproject.client;
-
 import java.io.IOException;
+
 import javafx.fxml.FXML;
 
 public class PrimaryController {
@@ -18,5 +18,9 @@ public class PrimaryController {
     @FXML
     private void switchToSimpleChatApp() throws IOException {
         App.setRoot("simpleChatApp");
+    }
+    @FXML
+    private void LogIn() throws IOException {
+        App.setRoot("Log in");
     }
 }
