@@ -1,0 +1,127 @@
+.root {
+    -fx-font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+.login-pane {
+    -fx-background-color: white;
+}
+
+/* --- Chữ và Nút phụ --- */
+.plain-text {
+    -fx-font-size: 12px;
+    -fx-text-fill: #555;
+}
+
+.signup-button {
+    -fx-background-color: white;
+    -fx-border-color: #ccc;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-text-fill: black;
+    -fx-padding: 5 15;
+    -fx-cursor: hand;
+}
+.signup-button:hover {
+    -fx-background-color: #f0f0f0;
+}
+
+/* --- Tiêu đề Login --- */
+.login-title {
+    -fx-font-size: 50px;
+    -fx-font-weight: bold;
+    -fx-text-fill: black;
+}
+
+/* --- Form nhập liệu --- */
+.field-label {
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-text-fill: black;
+}
+
+.input-field, .password-wrapper {
+    -fx-background-color: white;
+    -fx-border-color: #ccc;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 8;
+    -fx-font-size: 14px;
+}
+
+.input-field:focused, .password-wrapper:focused-within {
+    -fx-border-color: black;
+}
+
+/* --- Xử lý riêng cho khung Password --- */
+.password-wrapper {
+    -fx-padding: 2 5 2 2; /* Viền ngoài của khung chứa cả text và nút mắt */
+}
+
+.inner-password-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 8;
+    -fx-font-size: 14px;
+}
+.inner-password-field:focused {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+/* --- Nút Mắt (Eye Button) nhúng SVG Base64 --- */
+/* --- Nút Mắt (Sử dụng vector shape thay vì ảnh) --- */
+.eye-button {
+    /* Vẽ hình con mắt bằng tọa độ vector (SVG Path) */
+    -fx-shape: "M11.99 2C6.47 2 2 8 2 8s4.47 6 9.99 6C17.52 14 22 8 22 8s-4.47-6-10.01-6zM12 12c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z";
+
+    /* Màu của con mắt (thay đổi ở đây nếu muốn) */
+    -fx-background-color: #555555;
+
+    /* Kích thước của icon */
+    -fx-min-width: 22px;
+    -fx-min-height: 14px;
+    -fx-max-width: 22px;
+    -fx-max-height: 14px;
+
+    -fx-cursor: hand;
+    -fx-padding: 0;
+    -fx-translate-x: -5px; /* Đẩy nhẹ con mắt sang trái một chút để không dính sát lề */
+}
+
+/* Khi bấm mở mắt */
+.eye-button:selected {
+    /* Đổi màu con mắt sang đen đậm (hoặc màu xanh/đỏ tùy ý) để báo hiệu đang bật */
+    -fx-background-color: black;
+}
+
+/* Hiệu ứng khi di chuột qua */
+.eye-button:hover {
+    -fx-background-color: #888888;
+}
+
+/* --- Footer --- */
+.forgot-password-link {
+    -fx-text-fill: black;
+    -fx-underline: false;
+    -fx-font-size: 12px;
+    -fx-padding: 0;
+    -fx-border-color: transparent;
+}
+.forgot-password-link:visited {
+    -fx-text-fill: black;
+}
+.forgot-password-link:hover {
+    -fx-underline: true;
+}
+
+.login-button {
+    -fx-background-color: black;
+    -fx-text-fill: white;
+    -fx-background-radius: 5px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 30;
+    -fx-cursor: hand;
+}
+.login-button:hover {
+    -fx-background-color: #333;
+}
