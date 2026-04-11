@@ -24,7 +24,10 @@
 .signup-button:hover {
     -fx-background-color: #f0f0f0;
 }
-
+.signup-button:focused {
+    -fx-background-color: transparent;
+    -fx-border-color: #cccccc;
+}
 /* --- Tiêu đề Login --- */
 .login-title {
     -fx-font-size: 50px;
@@ -68,7 +71,7 @@
     -fx-border-color: transparent;
 }
 
-/* --- Nút Mắt (Eye Button) nhúng SVG Base64 --- */
+
 /* --- Nút Mắt (Sử dụng vector shape thay vì ảnh) --- */
 .eye-button {
     /* Vẽ hình con mắt bằng tọa độ vector (SVG Path) */

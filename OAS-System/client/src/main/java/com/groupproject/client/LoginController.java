@@ -1,10 +1,16 @@
 package com.groupproject.client;
-
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import java.io.IOException;
+
 
 public class LoginController {
     @FXML
@@ -36,5 +42,19 @@ public class LoginController {
         passwordTextField.setManaged(isVisible);
         passwordTextField.setVisible(isVisible);
         
+    }
+    @FXML 
+    private void  switchtohome(ActionEvent event) throws IOException {
+        Parent root = FXMLLoader.load(getClass().getResource("/com/groupproject/client/FXML/home.fxml"));
+    
+        // Bước 2: Tạo một Scene (Cảnh diễn) mới từ giao diện vừa tải
+        Scene newScene = new Scene(root);
+        
+        // Bước 3: Lấy lại Sân khấu (Stage) hiện tại từ nút bấm mà người dùng vừa click
+        Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        currentStage.setTitle("Home | Auction System");
+        // Bước 4: Kéo rèm! Gắn Cảnh mới lên Sân khấu và hiển thị
+        currentStage.setScene(newScene);
+        currentStage.show();
     }
 }

@@ -1,0 +1,4 @@
+--patch-module
+com.groupproject.client=_
+--add-reads
+com.groupproject.client=ALL-UNNAMED
