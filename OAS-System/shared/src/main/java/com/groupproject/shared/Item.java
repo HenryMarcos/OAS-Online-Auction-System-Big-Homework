@@ -1,33 +1,41 @@
-// Lớp cơ bản kế thừa từ lớp Entity, đại diện cho tất cả vật phẩm được mang đi đấu giá
-
 package com.groupproject.shared;
 
-public abstract class Item {
+public class Item extends Entity {
     
-    private static final long serialVersionUID = 1L;
+    private float startingPrice; 
+    private String itemName;     
+    private String description;  
 
-    private String name; // Tên sản phẩm
-    private double basePrice; // Giá ban đầu khi được mang đi đấu giá
-
-    public Item(String name, double basePrice) {
-        super(); // Gọi constructor của lớp cha Entity, tạo 1 id ngẫu nhiên mới
-        this.name = name;
-        this.basePrice = basePrice;
+    // Constructor khởi tạo
+    public Item(float startingPrice, String itemName, String description) {
+        super(); // Gọi lên Entity để tự động sinh ra một mã ID duy nhất
+        this.startingPrice = startingPrice;
+        this.itemName = itemName;
+        this.description = description;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    // 3. Getters & Setters
+    public float getStartingPrice() {
+        return startingPrice;
     }
 
-    public String getName() {
-        return name;
+    public void setStartingPrice(float startingPrice) {
+        this.startingPrice = startingPrice;
     }
 
-    public void setBasePrice(double basePrice) {
-        this.basePrice = basePrice;
+    public String getItemName() {
+        return itemName;
     }
 
-    public double getBasePrice() {
-        return basePrice;
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
