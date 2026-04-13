@@ -7,11 +7,13 @@ public class User extends Entity {
 
     private String username;
     private String email;
+    private String password;
 
-    public User(String username, String email) {
+    public User(String username, String email, String password) {
         super(); // Gọi constructor từ lớp cha Entity để tạo id ngẫu nhiên mới
         this.username = username;
         this.email = email;
+        this.password = password;
     }
 
     public void setUsername(String username) {

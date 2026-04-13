@@ -11,6 +11,7 @@
       <Button fx:id="primaryButton" text="Switch to Secondary View" onAction="#switchToSecondary"/>
       <Button fx:id="shootButton" text="Shoot user over the wire" onAction="#shootUserOverTheWire"/>
       <Button fx:id="openChatApp" text="Open Simple chat app" onAction="#switchToSimpleChatApp"/>
+      <Button fx:id="openLogin" text="Login" onAction="#switchToLogin"/>
 
    </children>
    <padding>

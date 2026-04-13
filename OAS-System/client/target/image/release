@@ -1,2 +1,0 @@
-JAVA_VERSION="25.0.2"
-MODULES="java.base com.groupproject.shared java.datatransfer java.xml java.prefs java.desktop javafx.base jdk.unsupported javafx.graphics javafx.controls java.scripting javafx.fxml com.groupproject.client"

@@ -17,11 +17,7 @@ public abstract class Entity implements Serializable {
         this.id = UUID.randomUUID().toString();
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    public void setId(String id) {this.id = id; }
 
-    public String getId() {
-        return id;
-    }
+    public String getId() {return id; }
 }

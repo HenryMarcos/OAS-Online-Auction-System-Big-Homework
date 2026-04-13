@@ -19,4 +19,9 @@ public class PrimaryController {
     private void switchToSimpleChatApp() throws IOException {
         App.setRoot("simpleChatApp");
     }
+
+    @FXML
+    private void switchToLogin() throws IOException {
+        App.setRoot("login");
+    }
 }

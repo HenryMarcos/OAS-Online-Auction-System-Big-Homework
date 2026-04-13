@@ -1,4 +1,5 @@
 com\groupproject\shared\Item.class
+com\groupproject\shared\Bidder.class
 com\groupproject\shared\Entity.class
 module-info.class
 com\groupproject\shared\User.class

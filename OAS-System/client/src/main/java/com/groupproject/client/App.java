@@ -51,7 +51,7 @@ public class App extends Application {
             System.out.println("Connected to the server");
 
             // Tạo 1 User để kiểm tra
-            User myUser = new User("Henry", "e@gmail.com");
+            User myUser = new User("Henry", "e@gmail.com", "Ninooo");
 
             // Mở đường dẫn xử lý để gửi các đối tượng Java qua mạng
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
