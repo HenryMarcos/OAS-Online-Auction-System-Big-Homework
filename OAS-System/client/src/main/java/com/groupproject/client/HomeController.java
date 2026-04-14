@@ -1,24 +1,21 @@
 package com.groupproject.client;
 // giao dien, logic cua trang chu 
-import javafx.fxml.FXML;
+import java.io.IOException;
+
 import javafx.event.ActionEvent;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
-import java.io.IOException;
-import java.util.Stack;
 
 
 public class HomeController {
+   // Khi nhan vao nut Log out o mep ben phai cua man hinh 
    @FXML
    private void switchtologin(ActionEvent event) throws IOException {
         HBox root = new HBox();
@@ -39,6 +36,20 @@ public class HomeController {
         // Bước 4: Kéo rèm! Gắn Cảnh mới lên Sân khấu và hiển thị
         currentStage.setScene(scene);
         currentStage.show();
-
    }
+   // Khi nhan vao nut Home o man hinh chinh 
+   @FXML
+   private void switchtoHome(ActionEvent event) throws IOException {
+      Parent root = FXMLLoader.load(getClass().getResource("/com/groupproject/client/FXML/home.fxml"));
+    
+        // Bước 2: Tạo một Scene (Cảnh diễn) mới từ giao diện vừa tải
+        Scene newScene = new Scene(root,1000,700);
+        newScene.getStylesheets().add(getClass().getResource("CSS/home.css").toExternalForm());
+        // Bước 3: Lấy lại Sân khấu (Stage) hiện tại từ nút bấm mà người dùng vừa click
+        Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        currentStage.setTitle("Home | Auction System");
+        // Bước 4: Kéo rèm! Gắn Cảnh mới lên Sân khấu và hiển thị
+        currentStage.setScene(newScene);
+        currentStage.show();
+   } 
 }

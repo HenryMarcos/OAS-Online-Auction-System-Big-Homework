@@ -40,7 +40,7 @@
         
         <VBox prefWidth="220.0"  spacing="10.0" alignment="CENTER" styleClass="left_borderpane" >
             <children>
-                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="45.0" prefWidth="190.0" styleClass="button-left" text="HOME" />
+                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="45.0" prefWidth="190.0" styleClass="button-left" text="HOME" onAction="#switchtoHome"/>
                 <Region prefHeight="5.0" />
                 
                 <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Null"/>
