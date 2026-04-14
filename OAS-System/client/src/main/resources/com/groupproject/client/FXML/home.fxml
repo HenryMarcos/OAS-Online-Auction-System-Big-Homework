@@ -6,7 +6,9 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.text.Font?>
-
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
 <BorderPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.HomeController">
     <top>
         <AnchorPane prefHeight="86.0" BorderPane.alignment="CENTER">
@@ -35,9 +37,58 @@
         </AnchorPane>
     </top>
     <left>
-        <AnchorPane prefWidth="122.0" BorderPane.alignment="CENTER" />
+        
+        <VBox prefWidth="220.0"  spacing="10.0" alignment="CENTER" styleClass="left_borderpane" >
+            <children>
+                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="45.0" prefWidth="190.0" styleClass="button-left" text="HOME" />
+                <Region prefHeight="5.0" />
+                
+                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Null"/>
+                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Null1"/>
+                <Region prefHeight="1.0" prefWidth="190.0" styleClass="region"/>
+
+                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Null2"/>
+                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Null3"/>
+                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Null4"/>
+
+                <Region prefHeight="1.0" prefWidth="190.0" styleClass="region" />
+                <Region VBox.vgrow="ALWAYS" />
+                <HBox alignment="CENTER" >
+                    <children>
+                        <Button mnemonicParsing="false" prefHeight="45.0" prefWidth="140.0" styleClass="sell-button" text="Sell" alignment="CENTER" />
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
     </left>
     <center>
-        <AnchorPane BorderPane.alignment="CENTER" />
+        <AnchorPane BorderPane.alignment="CENTER" style="-fx-background-color: #ffffff;">
+            <children>
+                
+                <AnchorPane layoutY="10.0" prefHeight="50.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="10.0">
+                    <children>
+                        <HBox alignment="CENTER_LEFT" spacing="15.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+                            <children>
+                                <Button text="All" styleClass="category-btn" />
+                                <Button text="Art" styleClass="category-btn" />
+                                <Button text="Clothes" styleClass="category-btn" />
+                                <Button text="Electronics" styleClass="category-btn" />
+                                <Button text="Jewelry" styleClass="category-btn" />
+                                <Button text="Vehicle" styleClass="category-btn" />
+                                <Button text="Others" styleClass="category-btn" />
+                            </children>
+                        </HBox>
+
+                        <Button text="Sort By" styleClass="sort-btn" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                    </children>
+                </AnchorPane>
+
+                <ScrollPane fitToWidth="true" styleClass="content-scroll" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="70.0">
+                    <content>
+                        <AnchorPane minHeight="600.0" style="-fx-background-color: #e5e5e5; -fx-background-radius: 15px;" />
+                    </content>
+                </ScrollPane>
+            </children>
+        </AnchorPane>
     </center>
 </BorderPane>

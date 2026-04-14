@@ -50,6 +50,7 @@ public class LoginController {
     
         // Bước 2: Tạo một Scene (Cảnh diễn) mới từ giao diện vừa tải
         Scene newScene = new Scene(root,1000,700);
+        newScene.getStylesheets().add(getClass().getResource("CSS/home.css").toExternalForm());
         // Bước 3: Lấy lại Sân khấu (Stage) hiện tại từ nút bấm mà người dùng vừa click
         Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         currentStage.setTitle("Home | Auction System");
