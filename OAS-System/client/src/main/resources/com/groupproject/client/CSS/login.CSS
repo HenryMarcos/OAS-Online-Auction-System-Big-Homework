@@ -22,11 +22,11 @@
     -fx-cursor: hand;
 }
 .signup-button:hover {
-    -fx-background-color: #f0f0f0;
+    fx-background-color:#000000;
 }
 .signup-button:focused {
     -fx-background-color: transparent;
-    -fx-border-color: #cccccc;
+    -fx-border-color: black;
 }
 /* --- Tiêu đề Login --- */
 .login-title {

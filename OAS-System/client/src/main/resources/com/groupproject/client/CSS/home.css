@@ -1,7 +1,7 @@
 .logout-button {
-    -fx-background-color: #ecc667;
+    -fx-background-color: #ff0000;
     -fx-background-radius: 10;
-    -fx-text-fill: black;
+    -fx-text-fill: white;
     -fx-font-size: 15;
     -fx-font-weight: bold;
     -fx-padding: 10;

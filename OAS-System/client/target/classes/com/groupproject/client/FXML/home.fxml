@@ -55,7 +55,7 @@
                 <Region VBox.vgrow="ALWAYS" />
                 <HBox alignment="CENTER" >
                     <children>
-                        <Button mnemonicParsing="false" prefHeight="45.0" prefWidth="140.0" styleClass="sell-button" text="Sell" alignment="CENTER" />
+                        <Button mnemonicParsing="false" prefHeight="45.0" prefWidth="140.0" styleClass="sell-button" text="Sell" alignment="CENTER" onAction="#switchtoAddItem" />
                     </children>
                 </HBox>
             </children>
