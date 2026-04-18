@@ -57,7 +57,8 @@ public class HomeController {
       Parent root = FXMLLoader.load(getClass().getResource("/com/groupproject/client/FXML/additem.fxml"));
       Scene scene = new Scene(root,1000,700);
       scene.getStylesheets().add(getClass().getResource("CSS/additem.css").toExternalForm());
-      Stage currentStage = new Stage();
+      scene.getStylesheets().add(getClass().getResource("CSS/home.css").toExternalForm());
+      Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
       currentStage.setTitle("Add Item Screen | Auction System");
       currentStage.setScene(scene);
       currentStage.show();

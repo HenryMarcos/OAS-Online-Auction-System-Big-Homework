@@ -6,118 +6,139 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
-
+<?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.TextField?>
-<StackPane fx:id="rootPane" prefHeight="700.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.AddListController" >
-    <children>
-      <VBox alignment="TOP_CENTER" maxWidth="500.0" spacing="30.0" StackPane.alignment="CENTER">
-         <children>
-            <Label alignment="CENTER" maxWidth="Infinity" text="Add Item" textAlignment="CENTER">
-               <font>
-                  <Font name="Berlin Sans FB" size="31.0" />
-               </font>
-               <VBox.margin>
-                  <Insets bottom="20.0" top="20.0" />
-               </VBox.margin>
-            </Label>
-            <StackPane alignment="CENTER_LEFT" maxWidth="Infinity" >
-               <children>
-                    <TextField fx:id="name" maxWidth="Infinity" prefHeight="30.0" styleClass="fields" />
-                    <Label fx:id="namelabel" mouseTransparent="true" text="Name" textFill="#999999"  >
-                        <StackPane.margin>
-                            <Insets left="10.0" />
-                        </StackPane.margin>
-                        <font>
-                            <Font size="16.0"/>
-                        </font>
-                  </Label>
-               </children>
-            </StackPane>
-            <StackPane alignment="CENTER_LEFT" maxWidth="Infinity">
-                <children>
-                    <ComboBox fx:id="category"  maxWidth="Infinity" prefHeight="30.0" styleClass="fields"  />
-                    <Label fx:id="categorylabel" mouseTransparent="true" text="Category" textFill="#999999">
-                        <StackPane.margin>
-                            <Insets left="10.0" />
-                        </StackPane.margin>
-                        <font>
-                            <Font size="16.0" />
-                        </font>
-                    </Label>
-                </children>
-            </StackPane>
+<?import javafx.scene.layout.Region?>
 
-            <StackPane alignment="CENTER_LEFT" maxWidth="Infinity">
-                <children>
-                    <TextField fx:id="price" maxWidth="Infinity" prefHeight="30.0" styleClass="fields" />
-                    <Label fx:id="pricelabel" mouseTransparent="true" text="Starting Price" textFill="#999999">
-                        <StackPane.margin>
-                            <Insets left="10.0" />
-                        </StackPane.margin>
-                        <font>
-                            <Font size="16.0" />
-                        </font>
-                    </Label>
-                </children>
-            </StackPane>
-
-            <StackPane alignment="CENTER_LEFT" maxWidth="Infinity">
-                <children>
-                    <DatePicker fx:id="date"  maxWidth="Infinity" prefHeight="30.0" styleClass="fields" />
-                    <Label fx:id="datelabel" mouseTransparent="true" text="End Date" textFill="#999999">
-                        <StackPane.margin>
-                            <Insets left="10.0" />
-                        </StackPane.margin>
-                        <font>
-                            <Font size="16.0" />
-                        </font>
-                    </Label>
-                </children>
-            </StackPane>
-
-            <StackPane alignment="CENTER_LEFT" maxWidth="Infinity">
-                <children>
-                    <TextField fx:id="description" alignment="TOP_LEFT"  maxWidth="Infinity" prefHeight="60.0" styleClass="fields" />
-                    <Label fx:id="descriptionlabel" mouseTransparent="true" text="Description" textFill="#999999">
-                        <StackPane.margin>
-                            <Insets left="10.0" />
-                        </StackPane.margin>
-                        <font>
-                            <Font size="16.0" />
-                        </font>
-                    </Label>
-                </children>
-            </StackPane>
+<SplitPane dividerPositions="0.25" prefHeight="700.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.AddItemController" >
+    <VBox maxWidth="250.0" minWidth="220.0"  spacing="10.0" alignment="CENTER" styleClass="left_borderpane" >
+        <children>
+            <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="45.0" prefWidth="190.0" styleClass="button-left" text="HOME" onAction="#switchtoHome" />
+            <Region prefHeight="5.0" />
             
-            <HBox alignment="CENTER_LEFT" spacing="10.0">
-               <children>
-                  <Button fx:id="chooseImageButton" prefHeight="35.0" prefWidth="120.0" styleClass="myButtons" text="Choose Image" />
-                  <Label fx:id="imageLabel" text="No file selected" textFill="#6b6b6b" />
-               </children>
-            </HBox>
+            <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Null"/>
+            <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Null1"/>
+            <Region prefHeight="1.0" prefWidth="190.0" styleClass="region"/>
 
-            <Label fx:id="validationLabel" maxWidth="Infinity" text="This is a validation label" textFill="RED" visible="false" />
-            <Button fx:id="addButton" maxWidth="Infinity" prefHeight="45.0" styleClass="myButtons" text="Add Item">
-               <VBox.margin>
-                  <Insets top="10.0" />
-               </VBox.margin>
-            </Button>
-         </children>
-         <padding>
-            <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
-         </padding>
-      </VBox>
+            <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Null2"/>
+            <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Null3"/>
+            <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Null4"/>
 
-      <ImageView fx:id="closeButton" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" StackPane.alignment="TOP_RIGHT">
-         <image>
+            <Region prefHeight="1.0" prefWidth="190.0" styleClass="region" />
+            <Region VBox.vgrow="ALWAYS" />
+        </children>
+    </VBox>
+    <StackPane fx:id="rootPane" prefHeight="700.0" prefWidth="800.0" >
+        <children>
+            <VBox alignment="TOP_CENTER" maxWidth="500.0" spacing="30.0" StackPane.alignment="CENTER">
+                <children>
+                    <Label alignment="CENTER" maxWidth="Infinity" text="Add Item" textAlignment="CENTER">
+                    <font>
+                        <Font name="Berlin Sans FB" size="31.0" />
+                    </font>
+                    <VBox.margin>
+                        <Insets bottom="20.0" top="20.0" />
+                    </VBox.margin>
+                    </Label>
+                    <StackPane alignment="CENTER_LEFT" maxWidth="Infinity" >
+                    <children>
+                            <TextField fx:id="name" maxWidth="Infinity" prefHeight="30.0" styleClass="fields" />
+                            <Label fx:id="namelabel" mouseTransparent="true" text="Name" textFill="#999999"  >
+                                <StackPane.margin>
+                                    <Insets left="10.0" />
+                                </StackPane.margin>
+                                <font>
+                                    <Font size="16.0"/>
+                                </font>
+                        </Label>
+                    </children>
+                    </StackPane>
+                    <StackPane alignment="CENTER_LEFT" maxWidth="Infinity">
+                        <children>
+                            <ComboBox fx:id="category"  maxWidth="Infinity" prefHeight="30.0" styleClass="fields"  />
+                            <Label fx:id="categorylabel" mouseTransparent="true" text="Category" textFill="#999999">
+                                <StackPane.margin>
+                                    <Insets left="10.0" />
+                                </StackPane.margin>
+                                <font>
+                                    <Font size="16.0" />
+                                </font>
+                            </Label>
+                        </children>
+                    </StackPane>
 
-         </image>
-         <StackPane.margin>
-            <Insets right="15.0" top="15.0" />
-         </StackPane.margin>
-      </ImageView>
-   </children>
-</StackPane>
+                    <StackPane alignment="CENTER_LEFT" maxWidth="Infinity">
+                        <children>
+                            <TextField fx:id="price" maxWidth="Infinity" prefHeight="30.0" styleClass="fields" />
+                            <Label fx:id="pricelabel" mouseTransparent="true" text="Starting Price" textFill="#999999">
+                                <StackPane.margin>
+                                    <Insets left="10.0" />
+                                </StackPane.margin>
+                                <font>
+                                    <Font size="16.0" />
+                                </font>
+                            </Label>
+                        </children>
+                    </StackPane>
+
+                    <StackPane alignment="CENTER_LEFT" maxWidth="Infinity">
+                        <children>
+                            <DatePicker fx:id="date"  maxWidth="Infinity" prefHeight="30.0" styleClass="fields" />
+                            <Label fx:id="datelabel" mouseTransparent="true" text="End Date" textFill="#999999">
+                                <StackPane.margin>
+                                    <Insets left="10.0" />
+                                </StackPane.margin>
+                                <font>
+                                    <Font size="16.0" />
+                                </font>
+                            </Label>
+                        </children>
+                    </StackPane>
+
+                    <StackPane alignment="CENTER_LEFT" maxWidth="Infinity">
+                        <children>
+                            <TextField fx:id="description" alignment="TOP_LEFT"  maxWidth="Infinity" prefHeight="60.0" styleClass="fields" />
+                            <Label fx:id="descriptionlabel" mouseTransparent="true" text="Description" textFill="#999999">
+                                <StackPane.margin>
+                                    <Insets left="10.0" />
+                                </StackPane.margin>
+                                <font>
+                                    <Font size="16.0" />
+                                </font>
+                            </Label>
+                        </children>
+                    </StackPane>
+                    
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <children>
+                        <Button fx:id="chooseImageButton" prefHeight="35.0" prefWidth="120.0" styleClass="myButtons" text="Choose Image" />
+                        <Label fx:id="imageLabel" text="No file selected" textFill="#6b6b6b" />
+                    </children>
+                    </HBox>
+
+                    <Label fx:id="validationLabel" maxWidth="Infinity" text="This is a validation label" textFill="RED" visible="false" />
+                    <Button fx:id="addButton" maxWidth="Infinity" prefHeight="45.0" styleClass="myButtons" text="Add Item">
+                    <VBox.margin>
+                        <Insets top="10.0" />
+                    </VBox.margin>
+                    </Button>
+                </children>
+                <padding>
+                    <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+                </padding>
+            </VBox>
+
+            <ImageView fx:id="closeButton" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" StackPane.alignment="TOP_RIGHT">
+                <image>
+
+                </image>
+                <StackPane.margin>
+                    <Insets right="15.0" top="15.0" />
+                </StackPane.margin>
+            </ImageView>
+        </children>
+    </StackPane>
+</SplitPane>
