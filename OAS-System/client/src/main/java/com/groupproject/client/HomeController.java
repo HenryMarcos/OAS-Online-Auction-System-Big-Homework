@@ -16,7 +16,7 @@ import javafx.stage.Stage;
 
 public class HomeController {
    // Khi nhan vao nut Log out o mep ben phai cua man hinh 
-   @FXML
+   @FXML 
    private void switchtologin(ActionEvent event) throws IOException {
         HBox root = new HBox();
         VBox loginPane = FXMLLoader.load(getClass().getResource("FXML/login.fxml"));
