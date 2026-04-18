@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
@@ -19,15 +20,36 @@ public class App extends Application {
 
     private static Scene scene;
 
+    // Các biến tĩnh để dùng chung cho toàn bộ app
+    public static Socket socket;
+    public static ObjectInputStream in;
+    public static ObjectOutputStream out;
+
     @Override
     public void start(Stage stage) throws IOException {
-        scene = new Scene(loadFXML("primary"), 640, 480);
+        // Kết nối với server 1 lần duy nhất khi bắt đầu
+        new Thread(() -> connectToServer()).start();
+
+        // Vào màn hình login
+        scene = new Scene(loadFXML("login"), 640, 480);
         stage.setScene(scene);
         stage.show();
     }
 
     static void setRoot(String fxml) throws IOException {
         scene.setRoot(loadFXML(fxml));
+    }
+
+    public static void connectToServer() {
+        try {
+            // Use your Google Cloud IP
+            socket = new Socket("34.9.27.87", 8080); 
+            out = new ObjectOutputStream(socket.getOutputStream());
+            out.flush();
+            in = new ObjectInputStream(socket.getInputStream());
+        } catch (Exception e) {
+            System.out.println("Could not connect to server for login.");
+        }
     }
 
     // Load file fxml

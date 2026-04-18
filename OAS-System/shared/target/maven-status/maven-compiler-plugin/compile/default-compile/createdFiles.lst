@@ -1,4 +1,5 @@
 com\groupproject\shared\Item.class
+com\groupproject\shared\AuthRequest.class
 com\groupproject\shared\Bidder.class
 com\groupproject\shared\Entity.class
 module-info.class

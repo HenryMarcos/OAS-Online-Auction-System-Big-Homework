@@ -4,9 +4,13 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+
+import com.groupproject.shared.AuthRequest;
 
 public class LoginController {
     @FXML private TextField usernameField;
@@ -15,36 +19,9 @@ public class LoginController {
     
     // NOTE: You must pass your connected Socket/Streams to this controller 
     // before making these calls, just like your Chat controller!
-    private ObjectOutputStream out;
-    private ObjectInputStream in;
 
     @FXML
     private void handleLogin() {
-        sendAuthRequest("LOGIN");
-    }
-
-    @FXML
-    private void handleSignUp() {
-        sendAuthRequest("SIGNUP");
-    }
-
-    public void initialize() {
-        new Thread(() -> connectToServer()).start();
-    }
-
-    private void connectToServer() {
-        try {
-            // Use your Google Cloud IP
-            Socket socket = new Socket("34.9.27.87", 8080); 
-            out = new ObjectOutputStream(socket.getOutputStream());
-            out.flush();
-            in = new ObjectInputStream(socket.getInputStream());
-        } catch (Exception e) {
-            System.out.println("Could not connect to server for login.");
-        }
-    }
-
-    private void sendAuthRequest(String action) {
         String username = usernameField.getText();
         String password = passwordField.getText();
         
@@ -54,12 +31,13 @@ public class LoginController {
         }
 
         try {
-            // Send the formatted string
-            out.writeObject("AUTH:" + action + ":" + username + ":" + password);
-            out.flush();
+            // Tạo và gửi yêu cầu đăng nhập cho server
+            AuthRequest request = new AuthRequest("LOGIN", username, password);
+            App.out.writeObject(request);
+            App.out.flush();
 
             // Wait for the server's response
-            String response = (String) in.readObject();
+            String response = (String) App.in.readObject();
             
             if (response.equals("SERVER:AUTH_SUCCESS")) {
                 statusLabel.setTextFill(javafx.scene.paint.Color.GREEN);
@@ -74,5 +52,14 @@ public class LoginController {
         } catch (Exception e) {
             statusLabel.setText("Connection error.");
         }
+    }
+
+    @FXML
+    private void switchToSignup() throws IOException {
+        App.setRoot("signup");
+    }
+
+    public void initialize() {
+    
     }
 }

@@ -1,5 +1,10 @@
-com\groupproject\server\ServerController$ClientHandler.class
-com\groupproject\server\ServerApp$ClientHandler.class
-com\groupproject\server\ServerController.class
+com\groupproject\server\Authentication\LoginHandler.class
+com\groupproject\server\Authentication\DatabaseHelper.class
 module-info.class
 com\groupproject\server\ServerApp.class
+com\groupproject\server\ServerController$ClientHandler.class
+com\groupproject\server\Authentication\AuthHandler.class
+com\groupproject\server\ServerController.class
+com\groupproject\server\Authentication\SignupHandler.class
+com\groupproject\server\ClientHandler.class
+com\groupproject\server\Authentication\AuthHandlerFactory.class
