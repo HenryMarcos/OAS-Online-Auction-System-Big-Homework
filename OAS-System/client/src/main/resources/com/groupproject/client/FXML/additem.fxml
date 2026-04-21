@@ -13,7 +13,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.Region?>
 
-<SplitPane dividerPositions="0.25" prefHeight="700.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.AddItemController" >
+<SplitPane dividerPositions="0.25" prefHeight="700.0" prefWidth="800.0" fx:controller="com.groupproject.client.AddItemController"xmlns="http://javafx.com/javafx/8.0.171"xmlns:fx="http://javafx.com/fxml/1"styleClass="main-container"> >
     <VBox maxWidth="250.0" minWidth="220.0"  spacing="10.0" alignment="CENTER" styleClass="left_borderpane" >
         <children>
             <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="45.0" prefWidth="190.0" styleClass="button-left" text="HOME" onAction="#switchtoHome" />

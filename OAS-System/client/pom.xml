@@ -52,7 +52,7 @@
                         <!-- Usage: mvn clean javafx:run -->
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>com.groupproject.client/com.groupproject.client.Login</mainClass>
+                            <mainClass>com.groupproject.client/com.groupproject.client.AuctionScreen</mainClass>
                             <jlinkExecutableDir>${project.build.directory}/image</jlinkExecutableDir>
                             <launcher>oas-app</launcher>
                         </configuration>
