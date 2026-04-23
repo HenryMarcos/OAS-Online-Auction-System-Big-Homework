@@ -12,11 +12,13 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.layout.HBox?>
 
-<SplitPane dividerPositions="0.25" prefHeight="700.0" prefWidth="800.0" fx:controller="com.groupproject.client.AddItemController"xmlns="http://javafx.com/javafx/8.0.171"xmlns:fx="http://javafx.com/fxml/1"styleClass="main-container"> >
+<SplitPane dividerPositions="0.25" prefHeight="700.0" prefWidth="800.0" fx:controller="com.groupproject.client.AddItemController" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" >
     <VBox maxWidth="250.0" minWidth="220.0"  spacing="10.0" alignment="CENTER" styleClass="left_borderpane" >
         <children>
-            <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="45.0" prefWidth="190.0" styleClass="button-left" text="HOME" onAction="#switchtoHome" />
+            <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="HOME" onAction="#switchtoHome" />
             <Region prefHeight="5.0" />
             
             <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Null"/>
@@ -33,7 +35,7 @@
     </VBox>
     <StackPane fx:id="rootPane" prefHeight="700.0" prefWidth="800.0" >
         <children>
-            <VBox alignment="TOP_CENTER" maxWidth="500.0" spacing="30.0" StackPane.alignment="CENTER">
+            <VBox alignment="TOP_CENTER" maxWidth="500.0" spacing="38.0" StackPane.alignment="CENTER">
                 <children>
                     <Label alignment="CENTER" maxWidth="Infinity" text="Add Item" textAlignment="CENTER">
                     <font>
@@ -72,7 +74,7 @@
 
                     <StackPane alignment="CENTER_LEFT" maxWidth="Infinity">
                         <children>
-                            <TextField fx:id="price" maxWidth="Infinity" prefHeight="30.0" styleClass="fields" />
+                            <TextField fx:id="startprice" maxWidth="Infinity" prefHeight="30.0" styleClass="fields" />
                             <Label fx:id="pricelabel" mouseTransparent="true" text="Starting Price" textFill="#999999">
                                 <StackPane.margin>
                                     <Insets left="10.0" />
@@ -86,7 +88,15 @@
 
                     <StackPane alignment="CENTER_LEFT" maxWidth="Infinity">
                         <children>
-                            <DatePicker fx:id="date"  maxWidth="Infinity" prefHeight="30.0" styleClass="fields" />
+                            <HBox spacing="5.0" alignment="CENTER_LEFT" maxWidth="Infinity" >
+                                <DatePicker fx:id="enddate"  maxWidth="Infinity" prefHeight="30.0" styleClass="fields" />
+                                <Spinner fx:id="endhour" editable="true" prefHeight="30.0" prefWidth="100.0" styleClass="fields"  />
+
+                                <Label text=":" textFill="#999999" style="-fx-font-size:16px" />
+                                <Spinner fx:id="endminute" editable="true" prefHeight="30.0" prefWidth="100.0" styleClass="fields" />
+                                <Label text=":" textFill="#999999" style="-fx-font-size:16px" />
+                                 <Spinner fx:id="endsecond" editable="true" prefHeight="30.0" prefWidth="100.0" styleClass="fields" />
+                            </HBox>
                             <Label fx:id="datelabel" mouseTransparent="true" text="End Date" textFill="#999999">
                                 <StackPane.margin>
                                     <Insets left="10.0" />
@@ -100,7 +110,7 @@
 
                     <StackPane alignment="CENTER_LEFT" maxWidth="Infinity">
                         <children>
-                            <TextField fx:id="description" alignment="TOP_LEFT"  maxWidth="Infinity" prefHeight="60.0" styleClass="fields" />
+                            <TextField fx:id="description" alignment="TOP_LEFT"  maxWidth="Infinity" prefHeight="50.0" styleClass="fields" />
                             <Label fx:id="descriptionlabel" mouseTransparent="true" text="Description" textFill="#999999">
                                 <StackPane.margin>
                                     <Insets left="10.0" />
@@ -113,24 +123,22 @@
                     </StackPane>
                     
                     <HBox alignment="CENTER_LEFT" spacing="10.0">
-                    <children>
-                        <Button fx:id="chooseImageButton" prefHeight="35.0" prefWidth="120.0" styleClass="myButtons" text="Choose Image" />
-                        <Label fx:id="imageLabel" text="No file selected" textFill="#6b6b6b" />
-                    </children>
+                        <children>
+                            <Button fx:id="chooseImageButton" prefHeight="35.0" prefWidth="120.0" styleClass="myButtons" text="Choose Image" />
+                            <Label fx:id="imageLabel" text="No file selected" textFill="#6b6b6b" />
+                        </children>
                     </HBox>
-
                     <Label fx:id="validationLabel" maxWidth="Infinity" text="This is a validation label" textFill="RED" visible="false" />
                     <Button fx:id="addButton" maxWidth="Infinity" prefHeight="45.0" styleClass="myButtons" text="Add Item">
-                    <VBox.margin>
-                        <Insets top="10.0" />
-                    </VBox.margin>
+                        <VBox.margin>
+                            <Insets top="10.0" />
+                        </VBox.margin>
                     </Button>
                 </children>
                 <padding>
                     <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
                 </padding>
             </VBox>
-
             <ImageView fx:id="closeButton" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" StackPane.alignment="TOP_RIGHT">
                 <image>
 

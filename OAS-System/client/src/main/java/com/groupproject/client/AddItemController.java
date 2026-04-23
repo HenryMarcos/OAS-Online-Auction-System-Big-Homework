@@ -1,24 +1,40 @@
 package com.groupproject.client;
 import java.io.IOException;
 import java.net.URL;
+import java.io.File;
+import java.nio.file.Files;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ResourceBundle;
-
-import javafx.scene.*;
+import java.time.LocalTime;
+import javafx.stage.FileChooser;
+import javafx.scene.control.Button;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.scene.control.DatePicker;
-
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
 public class AddItemController implements Initializable {
+    @FXML 
+    private Spinner<Integer> endhour;
+    @FXML 
+    private Spinner<Integer> endminute;
+    @FXML 
+    private Spinner<Integer> endsecond;
+    @FXML 
+    private Label validationLabel;
     @FXML
     private TextField description;
     @FXML
@@ -26,9 +42,9 @@ public class AddItemController implements Initializable {
     @FXML
     private TextField name ;
     @FXML
-    private DatePicker date;
+    private DatePicker enddate;
     @FXML
-    private TextField price;
+    private TextField startprice;
     @FXML
     private Label namelabel;
     @FXML
@@ -39,14 +55,49 @@ public class AddItemController implements Initializable {
     private Label pricelabel;
     @FXML
     private Label descriptionlabel;
+    @FXML
+    private Button chooseImageButton;
+    @FXML
+    private Label imageLabel;
+    @FXML
+    private File imagefile;
+    @FXML 
+    private Button addButton;
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        // them cac category , set hieu ung khi ma mot truong duoc dien 
         category.getItems().addAll("Art","Clothes","Electronics","Jewelry","Vehicle","Others");
         setupTextFieldAnimation(name,namelabel);
-        setupTextFieldAnimation(price,pricelabel);
+        setupTextFieldAnimation(startprice,pricelabel);
         setupTextFieldAnimation(description,descriptionlabel);
         setupComboBoxAnimation(category, categorylabel);
-        setupDatePickerAnimation(date,datelabel);
+        setupDatePickerAnimation(enddate,datelabel);
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select Image of Product");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.gif"));
+        chooseImageButton.setOnAction(event -> {
+            imagefile = fileChooser.showOpenDialog(null);
+            if (imagefile != null) {
+                imageLabel.setText(imagefile.getName());
+            }
+        });
+        // kiem tra xem cac truong co duoc dien day du khong 
+        addButton.setOnMouseClicked( mouseEvent -> {
+            if (name.getText().isEmpty() || description.getText().isEmpty() || startprice.getText().isEmpty() || category.getValue()== null || LocalDateTime.now().isAfter(enddate.getValue().atTime(LocalTime.MAX)) ) {
+                validationLabel.setVisible(true);
+                validationLabel.setText("Please fill all fields correctly");
+                return;
+            }
+                
+        });
+        // lay ra gio / phut / giay 
+        endhour.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0,23,0));
+        endminute.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0,59,0));
+        endsecond.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0,59,0));
+
+        enddate.valueProperty().addListener((obs,oldval,newval) -> {
+            datelabel.setVisible(newval==null);
+        });
 
     }   
     private void setupTextFieldAnimation(TextField field, Label label) {
@@ -61,16 +112,16 @@ public class AddItemController implements Initializable {
                 animateLabel(categorylabel,shouldmoveup);
             });
     }
-    private void setupDatePickerAnimation(DatePicker date, Label datelabel) {
-            date.focusedProperty().addListener((obs,oldval,newval) -> {
-                boolean shouldmoveup = ( newval || date.getValue() != null) ;
+    private void setupDatePickerAnimation(DatePicker enddate, Label datelabel) {
+            enddate.focusedProperty().addListener((obs,oldval,newval) -> {
+                boolean shouldmoveup = ( newval || enddate.getValue() != null) ;
                 animateLabel(datelabel,shouldmoveup);
             });
     }
 
     private void animateLabel (Label label,boolean shouldmoveup) {
         if (shouldmoveup) {
-            label.setTranslateY(-35); // Bay lên 35px
+            label.setTranslateY(-40); // Bay lên 40px
             label.setScaleX(0.85);    // Thu nhỏ lại 85%
             label.setScaleY(0.85);
             label.setTextFill(Color.web("#000000"));

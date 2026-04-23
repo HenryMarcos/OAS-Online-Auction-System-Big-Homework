@@ -1,15 +1,15 @@
 .main-container {
-    -fx-background-color: #0f172a; /* Màu nền tối */
+    -fx-background-color: white; 
 }
 
 .header-title {
-    -fx-text-fill: white;
+    -fx-text-fill: black;
     -fx-font-size: 20px;
     -fx-font-weight: bold;
 }
 
 .section-pane {
-    -fx-background-color: #1e293b;
+    -fx-background-color: white;
     -fx-padding: 15;
     -fx-background-radius: 10;
 }
@@ -31,4 +31,14 @@
     -fx-text-fill: white;
     -fx-font-weight: bold;
     -fx-padding: 10;
+    -fx-cursor:hand;
+}
+.exit-button {
+    -fx-background-color: #ff0000;
+    -fx-background-radius: 10;
+    -fx-text-fill: white;
+    -fx-font-size: 15;
+    -fx-font-weight: bold;
+    -fx-padding: 10;
+    -fx-cursor: hand;
 }
