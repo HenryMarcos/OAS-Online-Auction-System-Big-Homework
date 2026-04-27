@@ -7,7 +7,6 @@ com\groupproject\client\LoginController.class
 com\groupproject\client\AddItemController.class
 com\groupproject\client\SimpleChatAppController.class
 com\groupproject\client\SecondaryController.class
-com\groupproject\client\AccountController.class
 com\groupproject\client\AuctionController.class
 com\groupproject\client\AuctionScreen.class
 com\groupproject\client\Login.class

@@ -1,15 +1,11 @@
 package com.groupproject.client;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.io.File;
-import java.nio.file.Files;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ResourceBundle;
-import java.time.LocalTime;
-import javafx.stage.FileChooser;
-import javafx.scene.control.Button;
+import javafx.fxml.Initializable;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -17,15 +13,17 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.scene.control.Spinner;
-import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.layout.FlowPane;
 public class AddItemController implements Initializable {
     @FXML 
     private Spinner<Integer> endhour;
@@ -82,11 +80,15 @@ public class AddItemController implements Initializable {
             }
         });
         // kiem tra xem cac truong co duoc dien day du khong 
+        
         addButton.setOnMouseClicked( mouseEvent -> {
             if (name.getText().isEmpty() || description.getText().isEmpty() || startprice.getText().isEmpty() || category.getValue()== null || LocalDateTime.now().isAfter(enddate.getValue().atTime(LocalTime.MAX)) ) {
                 validationLabel.setVisible(true);
                 validationLabel.setText("Please fill all fields correctly");
                 return;
+            }
+            else {
+
             }
                 
         });

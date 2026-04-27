@@ -1,31 +1,33 @@
 package com.groupproject.client;
 // giao dien, logic cua trang chu 
 import java.io.IOException;
-
+import java.util.ResourceBundle;
+import java.net.URL;
+import javafx.fxml.Initializable;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import java.util.ResourceBundle;
 
-
-public class HomeController {
+public class HomeController implements Initializable {
+   @FXML
+   private FlowPane productgrid;
    // Khi nhan vao nut Log out o mep ben phai cua man hinh 
    @FXML 
    private void switchtologin(ActionEvent event) throws IOException {
-        HBox root = new HBox();
-        VBox loginPane = FXMLLoader.load(getClass().getResource("FXML/login.fxml"));
-        StackPane leftPane= new StackPane();
-        leftPane.setStyle("-fx-background-color: black;");
-        leftPane.prefWidthProperty().bind(root.widthProperty().divide(2));
-        loginPane.prefWidthProperty().bind(root.widthProperty().divide(2));
+        
+         Parent root = FXMLLoader.load(getClass().getResource("FXML/login.fxml"));
+        //StackPane leftPane= new StackPane();
+        //leftPane.setStyle("-fx-background-color: black;");
+        //leftPane.prefWidthProperty().bind(root.widthProperty().divide(2));
+        //loginPane.prefWidthProperty().bind(root.widthProperty().divide(2));
         // Thêm 2 vùng vào HBox
-        root.getChildren().addAll(leftPane, loginPane);
         // --- 3. Thiết lập Scene ---
         Scene scene = new Scene(root, 1000, 700);
 
@@ -63,4 +65,13 @@ public class HomeController {
       currentStage.setScene(scene);
       currentStage.show();
    }
+   @Override
+   public void initialize(URL location, ResourceBundle resources) {
+         loadProducts();
+   }
+   private void loadProducts() {
+      // viet tiep ham trong nay
+   }
+   // tao grid san pham dua vao cho gridproducts(flowpane)
+   
 }

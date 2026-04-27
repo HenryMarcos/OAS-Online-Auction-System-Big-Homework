@@ -14,48 +14,53 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.stage.Stage?>
-<VBox alignment="CENTER" spacing="20.0" styleClass="login-pane" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.LoginController">
-    <padding>
-        <Insets bottom="50.0" left="80.0" right="80.0" top="50.0"/>
-    </padding>
-    <Label styleClass="login-title" text="Login">
-        <VBox.margin>
-            <Insets top="80.0" bottom="40.0"/>
-        </VBox.margin>
-    </Label>
-    <VBox  maxWidth="400.0" spacing="5.0">
-        <children>
-            <Label styleClass="field-label" text="Username"/>
-            <TextField  fx:id="usernameField" styleClass="input-field" />
-        </children>
-    </VBox>
-    <VBox maxWidth="400.0" spacing = "5.0" >
-        <children>
-            <Label styleClass="field-label" text="Password" />
-            <HBox styleClass="password-wrapper" alignment="CENTER_LEFT" >
-                <PasswordField fx:id="passwordField" styleClass="inner-password-field" HBox.hgrow="ALWAYS"/>
-                <TextField fx:id= "passwordTextField" styleClass="inner-password-field" managed="false" visible="false" HBox.hgrow="ALWAYS" />
-                <ToggleButton fx:id="eyeButton" styleClass="eye-button" onAction="#togglePasswordVisibility" />
+
+<HBox  xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.LoginController">
+    <children>
+        <VBox prefWidth="0" alignment="CENTER" spacing="20.0" styleClass="login-pane" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+            <padding>
+                <Insets bottom="50.0" left="80.0" right="80.0" top="50.0"/>
+            </padding>
+            <Label styleClass="login-title" text="Login">
+                <VBox.margin>
+                    <Insets top="80.0" bottom="40.0"/>
+                </VBox.margin>
+            </Label>
+            <VBox  maxWidth="400.0" spacing="5.0">
+                <children>
+                    <Label styleClass="field-label" text="Username"/>
+                    <TextField  fx:id="usernameField" styleClass="input-field" />
+                </children>
+            </VBox>
+            <VBox spacing = "5.0" maxWidth="400.0" >
+                <children>
+                    <Label styleClass="field-label" text="Password" />
+                    <HBox styleClass="password-wrapper" alignment="CENTER_LEFT" >
+                        <PasswordField fx:id="passwordField" styleClass="inner-password-field" HBox.hgrow="ALWAYS"/>
+                        <TextField fx:id= "passwordTextField" styleClass="inner-password-field" managed="false" visible="false" HBox.hgrow="ALWAYS" />
+                        <ToggleButton fx:id="eyeButton" styleClass="eye-button" onAction="#togglePasswordVisibility" />
+                    </HBox>
+                </children>
+            </VBox>
+            <HBox alignment="CENTER" spacing="0.0" maxWidth="400.0" >
+                <VBox.margin>
+                    <Insets top="20.0"/>
+                </VBox.margin>
+                <children>
+                    <Hyperlink styleClass="forgot-password-link" text="Forgot Password ? "/>
+                    <HBox HBox.hgrow="ALWAYS"/>
+                    <Button styleClass="login-button" minWidth="120.0" text="Login"  onAction="#switchtohome"/>
+                </children>
             </HBox>
-        </children>
-    </VBox>
-    <HBox alignment="CENTER" spacing="0.0" maxWidth="400.0">
-        <VBox.margin>
-            <Insets top="20.0"/>
-        </VBox.margin>
-        <children>
-            <Hyperlink styleClass="forgot-password-link" text="Forgot Password ? "/>
-            <HBox HBox.hgrow="ALWAYS"/>
-            <Button styleClass="login-button" minWidth="120.0" text="Login"  onAction="#switchtohome"/>
-        </children>
-    </HBox>
-    <HBox alignment="CENTER" prefHeight="6.0" prefWidth="230.0" spacing="10.0">
-      <children>
-            <Label styleClass="plain-text" text="Didn't have an account ?"/>
-            <Button styleClass="signup-button" text="Sign up" onAction="#switchtoSignup" />
-      </children>
-      <padding>
-         <Insets top="20.0" />
-      </padding>
-    </HBox>
-</VBox>
+            <HBox alignment="CENTER" prefHeight="6.0" prefWidth="230.0" spacing="10.0">
+            <children>
+                    <Label styleClass="plain-text" text="Didn't have an account ?"/>
+                    <Button styleClass="signup-button" text="Sign up" onAction="#switchtoSignup" />
+            </children>
+            <padding>
+                <Insets top="20.0" />
+            </padding>
+            </HBox>
+        </VBox>
+    </children>
+</HBox>

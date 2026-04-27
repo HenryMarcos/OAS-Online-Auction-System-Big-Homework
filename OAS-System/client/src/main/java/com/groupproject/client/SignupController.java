@@ -24,17 +24,8 @@ public class SignupController {
     
     @FXML
     private void switchtologin(ActionEvent event) throws IOException {
-        HBox root = new HBox();
-        VBox loginPane = FXMLLoader.load(getClass().getResource("FXML/login.fxml"));
-        StackPane leftPane= new StackPane();
-        leftPane.setStyle("-fx-background-color: black;");
-        leftPane.prefWidthProperty().bind(root.widthProperty().divide(2));
-        loginPane.prefWidthProperty().bind(root.widthProperty().divide(2));
-        // Thêm 2 vùng vào HBox
-        root.getChildren().addAll(leftPane, loginPane);
-        // --- 3. Thiết lập Scene ---
-        Scene scene = new Scene(root, 1000, 700);
-
+        Parent root = FXMLLoader.load(getClass().getResource("FXML/login.fxml"));
+        Scene scene = new Scene(root,1000,700);
         scene.getStylesheets().add(getClass().getResource("CSS/login.css").toExternalForm());
         Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         currentStage.setTitle("Login | Auction System");

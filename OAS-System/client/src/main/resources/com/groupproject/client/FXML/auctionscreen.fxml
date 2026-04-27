@@ -61,8 +61,8 @@
                 <Label  fx:id="currentprice" styleClass="current-price" text="Current price: " />
                 <Label fx:id="timeleft" styleClass="time-left" text="Time left : " />
                 <Label text="Enter your price" />
-                <TextField fx:id="enterprice" />
-                <Button fx:id="placebid" text="Place bid" maxWidth="Infinity" styleClass="bid-button" onAction="#" /> 
+                <TextField fx:id="enterprice"  />
+                <Button fx:id="placebid" text="Place bid" maxWidth="Infinity" styleClass="bid-button" /> 
             </children>
         </VBox>
     </right>
