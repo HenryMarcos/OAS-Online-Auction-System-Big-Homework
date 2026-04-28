@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<?import javafx.scene.image.*?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -9,9 +9,30 @@
 
 <VBox spacing="10.0"  prefHeight="220.0" prefWidth="330.0" styleClass="product-card" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.CardController">
     <children>
-        <Region prefHeight="100.0" style="-fx-background-color: #f0f0f0; -fx-background-radius:8px;"/>
-        <Label text="Name : " style="-fx-font-size:20px;-fx-font-weight:bold;"/>
-        <Label text="Currentprice : " style="-fx-font-weight:bold; -fx-text-fill: #333333"/>
-        <Label fx:id="timeleft" style="-fx-text-fill:#555555; -fx-font-size:12px;" />
+        <AnchorPane prefHeight="266.0" prefWidth="514.0" styleClass="cardPane">
+            <children>
+                <ImageView fx:id="image" fitHeight="260.0" fitWidth="249.0" layoutX="-36.0" layoutY="3.0" pickOnBounds="true" styleClass="image">
+                    <image>
+                        <Image url="@../Image/sample.png" />
+                    </image>
+                </ImageView>
+                <Label fx:id="productname" alignment="TOP_LEFT" layoutX="266.0" layoutY="35.0" prefHeight="68.0" prefWidth="206.0" styleClass="titleCard" text="Name : " wrapText="true">
+                    <font>
+                        <Font name="Berlin Sans FB" size="21.0" />
+                    </font>
+                </Label>
+                <Label fx:id="currentprice" layoutX="262.0" layoutY="93.0" prefHeight="40.0" prefWidth="146.0" styleClass="labels" text="Current price: ">
+                    <font>
+                        <Font name="System Bold" size="15.0" />
+                    </font>
+                </Label>
+                <Label fx:id="timeleft" layoutX="262.0" layoutY="154.0" prefHeight="30.0" prefWidth="213.0" styleClass="labels" text="Time Left : ">
+                    <font>
+                        <Font name="System Bold" size="15.0" />
+                    </font>
+                </Label>
+                <Button layoutX="317.0" layoutY="205.0" onAction="#handleBid" prefHeight="26.0" prefWidth="82.0" text="Bid Now" styleClass="bidbutton" />
+            </children>
+        </AnchorPane>
     </children>
 </VBox>
