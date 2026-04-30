@@ -50,7 +50,7 @@
     </VBox>
     <VBox maxWidth="400.0" spacing="5.0">
         <children>
-            <Label styleClass="signup-label" text="Type password again" />
+            <Label styleClass="signup-label" text="Confirm password" />
             <HBox alignment="CENTER_LEFT" styleClass="password-wrapper">
                 <PasswordField fx:id="password2" styleClass="inner-password-field" HBox.hgrow="ALWAYS" />
             </HBox>

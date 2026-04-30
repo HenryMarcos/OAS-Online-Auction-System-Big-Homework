@@ -11,6 +11,10 @@ import javafx.stage.Stage;
 public class AuctionController {
     @FXML
     private Label currentprice;
+    @FXML
+    private Label participant;
+    @FXML
+    private Label productname;
     @FXML 
     private void switchtoHome(ActionEvent event) throws IOException {
         Parent root = FXMLLoader.load(getClass().getResource("/com/groupproject/client/FXML/home.fxml"));
