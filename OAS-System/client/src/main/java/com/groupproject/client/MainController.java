@@ -81,5 +81,9 @@ public class MainController  implements Initializable {
             e.printStackTrace();
         }
     }
+    @FXML
+    private void switchtoNotification() {
+        loadView("notification.fxml");
+    }
 
 }

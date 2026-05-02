@@ -54,6 +54,7 @@
                         <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Personal Info" />
                         <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Your Listings"/>
                         <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Your Products"/>
+                        <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Notification" onAction="#switchtoNotification" />
                     </VBox>
                 </VBox>
                 <Region prefHeight="1.0" prefWidth="190.0" styleClass="region" />
