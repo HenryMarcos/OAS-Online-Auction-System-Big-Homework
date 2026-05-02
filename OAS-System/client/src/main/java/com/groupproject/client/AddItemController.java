@@ -137,7 +137,7 @@ public class AddItemController implements Initializable {
     }
     @FXML
     private void switchtoHome(ActionEvent event) throws IOException {
-      Parent root = FXMLLoader.load(getClass().getResource("/com/groupproject/client/FXML/home.fxml"));
+      Parent root = FXMLLoader.load(getClass().getResource("/com/groupproject/client/FXML/mainscreen.fxml"));
     
         // Bước 2: Tạo một Scene (Cảnh diễn) mới từ giao diện vừa tải
         Scene newScene = new Scene(root,1000,700);
@@ -148,7 +148,19 @@ public class AddItemController implements Initializable {
         // Bước 4: Kéo rèm! Gắn Cảnh mới lên Sân khấu và hiển thị
         currentStage.setScene(newScene);
         currentStage.show();
-   } 
+    } 
+    @FXML
+    private void switchtologin(ActionEvent event) throws IOException {
+        Parent root= FXMLLoader.load(getClass().getResource("/com/groupproject/client/FXML/login.fxml"));
+        Scene newScene = new Scene(root,1000,700);
+        newScene.getStylesheets().add(getClass().getResource("CSS/login.CSS").toExternalForm());
+        Stage currentStage =  (Stage) ((Node) event.getSource()).getScene().getWindow();
+        currentStage.setTitle("Login | Auction System");
+        currentStage.setScene(newScene);
+        currentStage.show();
+
+    }
+
     
 }
 

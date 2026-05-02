@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.geometry.Insets?>
-<BorderPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.HomeController">
+<BorderPane fx:id="mainBorderPane" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.MainController">
     <top>
         <AnchorPane prefHeight="86.0" BorderPane.alignment="CENTER">
             <children>
@@ -38,7 +38,6 @@
         </AnchorPane>
     </top>
     <left>
-        
         <VBox prefWidth="220.0"  spacing="10.0" alignment="CENTER" styleClass="left_borderpane" >
             <children>
                 <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="45.0" prefWidth="190.0" styleClass="button-left" text="HOME" onAction="#switchtoHome"/>
@@ -46,11 +45,17 @@
                 
                 <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Active Listings"/>
                 <Region prefHeight="1.0" prefWidth="190.0" styleClass="region"/>
-
-                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Your Listings"/>
-                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Watchlists"/>
-                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Profile"/>
-
+                <VBox spacing="0" >
+                    <Button fx:id="profilebtn" alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Profile ▼ " onAction="#toggleProfilemenu"/>
+                    <VBox fx:id="profilesubmenu" visible="true" managed="true" spacing="0.0" >
+                        <padding >
+                            <Insets left="20.0"/>
+                        </padding>
+                        <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Personal Info" />
+                        <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Your Listings"/>
+                        <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Your Products"/>
+                    </VBox>
+                </VBox>
                 <Region prefHeight="1.0" prefWidth="190.0" styleClass="region" />
                 <Region VBox.vgrow="ALWAYS" />
                 <HBox alignment="CENTER" >
@@ -61,38 +66,4 @@
             </children>
         </VBox>
     </left>
-    <center>
-        <AnchorPane BorderPane.alignment="CENTER" style="-fx-background-color: #ffffff;">
-            <children>
-                
-                <AnchorPane layoutY="10.0" prefHeight="50.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="10.0">
-                    <children>
-                        <HBox alignment="CENTER_LEFT" spacing="15.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
-                            <children>
-                                <Button text="All" styleClass="category-btn" />
-                                <Button text="Art" styleClass="category-btn" />
-                                <Button text="Clothes" styleClass="category-btn" />
-                                <Button text="Electronics" styleClass="category-btn" />
-                                <Button text="Jewelry" styleClass="category-btn" />
-                                <Button text="Vehicle" styleClass="category-btn" />
-                                <Button text="Other" styleClass="category-btn" />
-                            </children>
-                        </HBox>
-
-                        <Button fx:id="sortbutton" text="Sort By" styleClass="sort-btn" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                    </children>
-                </AnchorPane>
-
-                <ScrollPane fitToWidth="true" styleClass="content-scroll" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="70.0">
-                    <content> 
-                        <FlowPane fx:id="productgrid" hgap="20.0" vgap="20.0">
-                            <padding>
-                                <Insets bottom="30.0" left="30.0" right="30.0" top="10.0"/>
-                            </padding>
-                        </FlowPane>
-                    </content>
-                </ScrollPane>
-            </children>
-        </AnchorPane>
-    </center>
 </BorderPane>

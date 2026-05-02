@@ -46,7 +46,7 @@ public class LoginController {
     }
     @FXML 
     private void  switchtohome(ActionEvent event) throws IOException {
-        Parent root = FXMLLoader.load(getClass().getResource("/com/groupproject/client/FXML/home.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("/com/groupproject/client/FXML/mainscreen.fxml"));
     
         // Bước 2: Tạo một Scene (Cảnh diễn) mới từ giao diện vừa tải
         Scene newScene = new Scene(root,1000,700);
