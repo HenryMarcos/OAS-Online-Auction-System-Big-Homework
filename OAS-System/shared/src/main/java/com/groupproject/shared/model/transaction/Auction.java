@@ -22,7 +22,7 @@ public class Auction extends Entity {
         this.sellerId = "";
         this.currentBid = 0.0;
         this.highestBidderId = "";
-        this.status = AuctionStatus.WAITING;
+        this.status = AuctionStatus.OPEN; // Mặc định khi tạo mới sẽ là OPEN, có thể thay đổi sau khi bắt đầu đấu giá
     }
 
     public Auction(String itemId, String sellerId, double currentBid, String highestBidderId) {
@@ -31,7 +31,7 @@ public class Auction extends Entity {
         this.sellerId = sellerId;
         this.currentBid = currentBid;
         this.highestBidderId = highestBidderId;
-        this.status = AuctionStatus.WAITING;
+        this.status = AuctionStatus.OPEN; // Mặc định khi tạo mới sẽ là OPEN, có thể thay đổi sau khi bắt đầu đấu giá
     }
 
     public String getItemId() {
