@@ -23,5 +23,12 @@ public class PrimaryController {
     @FXML
     private void switchToLogin() throws IOException {
         App.setRoot("login");
+<<<<<<< Updated upstream
+=======
+    }
+    @FXML
+    private void LogIn() throws IOException {
+        App.setRoot("Log in");
+>>>>>>> Stashed changes
     }
 }
