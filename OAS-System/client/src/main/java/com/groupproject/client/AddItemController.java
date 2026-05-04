@@ -1,11 +1,12 @@
 package com.groupproject.client;
+import com.groupproject.client.Data.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ResourceBundle;
-import javafx.fxml.Initializable;
+import java.time.LocalDate;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -23,7 +24,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.scene.layout.FlowPane;
 public class AddItemController implements Initializable {
     @FXML 
     private Spinner<Integer> endhour;
@@ -34,9 +34,7 @@ public class AddItemController implements Initializable {
     @FXML 
     private Label validationLabel;
     @FXML
-    private TextField description;
-    @FXML
-    ComboBox category;
+    ComboBox<String> category;
     @FXML
     private TextField name ;
     @FXML
@@ -52,8 +50,6 @@ public class AddItemController implements Initializable {
     @FXML
     private Label pricelabel;
     @FXML
-    private Label descriptionlabel;
-    @FXML
     private Button chooseImageButton;
     @FXML
     private Label imageLabel;
@@ -67,7 +63,6 @@ public class AddItemController implements Initializable {
         category.getItems().addAll("Art","Clothes","Electronics","Jewelry","Vehicle","Others");
         setupTextFieldAnimation(name,namelabel);
         setupTextFieldAnimation(startprice,pricelabel);
-        setupTextFieldAnimation(description,descriptionlabel);
         setupComboBoxAnimation(category, categorylabel);
         setupDatePickerAnimation(enddate,datelabel);
         FileChooser fileChooser = new FileChooser();
@@ -80,15 +75,26 @@ public class AddItemController implements Initializable {
             }
         });
         // kiem tra xem cac truong co duoc dien day du khong 
-        
         addButton.setOnMouseClicked( mouseEvent -> {
-            if (name.getText().isEmpty() || description.getText().isEmpty() || startprice.getText().isEmpty() || category.getValue()== null || LocalDateTime.now().isAfter(enddate.getValue().atTime(LocalTime.MAX)) ) {
+            if (name.getText().isEmpty() || startprice.getText().isEmpty() || category.getValue().isEmpty()|| imagefile.getName().isEmpty() || LocalDateTime.now().isAfter(enddate.getValue().atTime(LocalTime.MAX)) ) {
                 validationLabel.setVisible(true);
                 validationLabel.setText("Please fill all fields correctly");
                 return;
             }
             else {
-
+                LocalDate date = enddate.getValue();
+                int hour= endhour.getValue();
+                int minute= endminute.getValue();
+                int second= endsecond.getValue();
+                LocalDateTime endDateTime= LocalDateTime.of(date, LocalTime.of(hour, minute, second));
+                Item item = new Item(name.getText(),category.getValue(),Double.parseDouble(startprice.getText()),endDateTime,imagefile.toURI().toString());
+                ItemRespository.save(item);
+                if ( HomeController.getInstance() != null) {
+                    HomeController.getInstance().loadItems();
+                }
+                validationLabel.setVisible(true);
+                validationLabel.setStyle("-fx-text-fill:black");
+                validationLabel.setText("Add item successfully ! Please go back to HOME");
             }
                 
         });

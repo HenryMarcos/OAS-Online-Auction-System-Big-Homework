@@ -15,7 +15,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.stage.Stage?>
 
-<HBox  xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.LoginController">
+<HBox stylesheets="@../CSS/login.CSS" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.LoginController">
     <children>
         <VBox prefWidth="0" alignment="CENTER" spacing="20.0" styleClass="login-pane" HBox.hgrow="ALWAYS" maxWidth="Infinity">
             <padding>

@@ -26,7 +26,6 @@ public class SignupController {
     private void switchtologin(ActionEvent event) throws IOException {
         Parent root = FXMLLoader.load(getClass().getResource("FXML/login.fxml"));
         Scene scene = new Scene(root,1000,700);
-        scene.getStylesheets().add(getClass().getResource("CSS/login.css").toExternalForm());
         Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         currentStage.setTitle("Login | Auction System");
         // Bước 4: Kéo rèm! Gắn Cảnh mới lên Sân khấu và hiển thị

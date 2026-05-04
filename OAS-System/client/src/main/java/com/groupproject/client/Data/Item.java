@@ -1,18 +1,19 @@
 package com.groupproject.client.Data;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 public class Item {
     private String name;
     private String category;
     private String imagePath;
     private LocalDateTime enddate;
     private double startprice;
-    private String description;
-    public Item(String name, String category, double startprice,LocalDateTime enddate, String description ,String imagePath) {
+    private double currentprice;
+    public Item(String name, String category, double startprice,LocalDateTime enddate,String imagePath) {
         this.name= name;
         this.category=category;
         this.imagePath=imagePath;
         this.startprice= startprice;
-        this.description=description;
+        this.currentprice= startprice;
         this.enddate= enddate;
     }
     public void setName(String name) {
@@ -26,9 +27,6 @@ public class Item {
     }
     public void setEndDate(LocalDateTime enddate) {
         this.enddate= enddate;
-    }
-    public void setDescription(String description) {
-        this.description= description;
     }
     public void setImagePath(String imagePath) {
         this.imagePath= imagePath;
@@ -45,11 +43,18 @@ public class Item {
     public LocalDateTime getEndDate() {
         return enddate;
     }
-    public String getDescription() {
-        return description;
-    }
     public String getImagePath() {
         return imagePath;
+    }
+    public String getFormatEndDate() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        return enddate.format(formatter);
+    }
+    public void setCurrentPrice(double currentprice) {
+        this.currentprice= currentprice;
+    }
+    public double getCurrentPrice() {
+        return currentprice;
     }
     
 }

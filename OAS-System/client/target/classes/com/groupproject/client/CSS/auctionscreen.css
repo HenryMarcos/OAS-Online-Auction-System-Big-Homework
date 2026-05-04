@@ -3,7 +3,6 @@
 }
 
 .header-title {
-    -fx-text-fill: black;
     -fx-font-size: 20px;
     -fx-font-weight: bold;
 }
@@ -15,19 +14,18 @@
 }
 
 .product-name {
-    -fx-text-fill: #e2e8f0;
     -fx-font-size: 16px;
     -fx-font-weight: bold;
 }
 
 .current-price {
     -fx-text-fill: #22c55e;
-    -fx-font-size: 18px;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
 }
 
 .bid-button {
-    -fx-background-color: #f97316;
+    -fx-background-color: black;
     -fx-text-fill: white;
     -fx-font-weight: bold;
     -fx-padding: 10;

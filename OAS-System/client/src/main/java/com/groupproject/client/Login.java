@@ -23,7 +23,6 @@ public class Login extends Application {
         primaryStage.setTitle("Login | Auction System ");
         Parent root = FXMLLoader.load(getClass().getResource("FXML/login.fxml"));
         Scene scene = new Scene(root,1000,700);
-        scene.getStylesheets().add(getClass().getResource("CSS/login.css").toExternalForm());
         primaryStage.setScene(scene);
         primaryStage.show();
     }

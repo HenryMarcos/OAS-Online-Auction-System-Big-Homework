@@ -12,9 +12,6 @@
         <Label fx:id="message" wrapText="true" style="-fx-font-size: 14px; -fx-text-fill: #333333;" />
         <Region HBox.hgrow="ALWAYS" />
         <Label fx:id="notificationTime" minWidth="Region.USE_PREF_SIZE" />
-
-
-
     </children>
 
 

@@ -88,22 +88,7 @@
                                     </font>
                                 </Label>
                             </children>
-                        </StackPane>
-
-                        <StackPane alignment="CENTER_LEFT" maxWidth="Infinity">
-                            <children>
-                                <TextField fx:id="description" alignment="TOP_LEFT"  maxWidth="Infinity" prefHeight="60.0" styleClass="fields" />
-                                <Label fx:id="descriptionlabel" mouseTransparent="true" text="Description" textFill="#999999">
-                                    <StackPane.margin>
-                                        <Insets left="10.0" />
-                                    </StackPane.margin>
-                                    <font>
-                                        <Font size="16.0" />
-                                    </font>
-                                </Label>
-                            </children>
-                        </StackPane>
-                        
+                        </StackPane>                        
                         <HBox alignment="CENTER_LEFT" spacing="10.0">
                             <children>
                                 <Button fx:id="chooseImageButton" prefHeight="30.0" prefWidth="120.0" styleClass="myButtons" text="Choose Image" />

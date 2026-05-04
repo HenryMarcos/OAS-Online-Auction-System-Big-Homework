@@ -28,9 +28,6 @@ public class MainController  implements Initializable {
       Parent root = FXMLLoader.load(getClass().getResource("FXML/login.fxml"));
         
       Scene scene = new Scene(root, 1000, 700);
-
-      // Load file CSS (Dùng đường dẫn tương đối nếu file css để cùng thư mục với Main.java)
-      scene.getStylesheets().add(getClass().getResource("CSS/login.css").toExternalForm());
       Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
       currentStage.setTitle("Login | Auction System");
       // Bước 4: Kéo rèm! Gắn Cảnh mới lên Sân khấu và hiển thị
@@ -49,10 +46,6 @@ public class MainController  implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
          loadView("homecontent.fxml");
-         loadProducts();
-    }
-    private void loadProducts() {
-      System.out.println("Them san pham vao");
     }
     @FXML
     private void toggleProfilemenu() {

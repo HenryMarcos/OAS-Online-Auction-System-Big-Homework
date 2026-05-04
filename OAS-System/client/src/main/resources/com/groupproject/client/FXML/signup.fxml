@@ -10,7 +10,7 @@
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.Button?>
-<VBox alignment="CENTER" spacing="15.0"  xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.SignupController">
+<VBox stylesheets="@../CSS/signup.css" alignment="CENTER" spacing="15.0"  xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.SignupController">
     <padding>
         <Insets bottom="40.0" left="80.0" right="80.0" top="40.0" />
     </padding>

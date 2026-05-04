@@ -50,7 +50,6 @@ public class LoginController {
     
         // Bước 2: Tạo một Scene (Cảnh diễn) mới từ giao diện vừa tải
         Scene newScene = new Scene(root,1000,700);
-        newScene.getStylesheets().add(getClass().getResource("CSS/home.css").toExternalForm());
         // Bước 3: Lấy lại Sân khấu (Stage) hiện tại từ nút bấm mà người dùng vừa click
         Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         currentStage.setTitle("Home | Auction System");
@@ -62,12 +61,10 @@ public class LoginController {
     private void switchtoSignup(ActionEvent event) throws IOException {
         Parent root= FXMLLoader.load(getClass().getResource("/com/groupproject/client/FXML/signup.fxml"));
         Scene newScene= new Scene(root,1000,700);
-        newScene.getStylesheets().add(getClass().getResource("CSS/signup.css").toExternalForm());
         Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         currentStage.setTitle("Sign up | Auction System");
         // Bước 4: Kéo rèm! Gắn Cảnh mới lên Sân khấu và hiển thị
         currentStage.setScene(newScene);
         currentStage.show();
-
     }
 }

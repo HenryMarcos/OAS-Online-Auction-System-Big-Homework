@@ -12,7 +12,8 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.stage.Stage?>
 <?import javafx.scene.image.ImageView?>
-<BorderPane styleClass="main-container" fx:controller="com.groupproject.client.AuctionController" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" >
+<?import javafx.scene.image.Image?>
+<BorderPane stylesheets="@../CSS/auctionscreen.css" styleClass="main-container" fx:controller="com.groupproject.client.AuctionController" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" >
     <padding>
         <Insets top="15.0"/>
     </padding>
@@ -32,8 +33,12 @@
     <left>
         <VBox prefWidth="250.0" spacing="10.0" styleClass="section-pane">
             <children>
-                <Label styleClass="product-name" fx:id="productname"/>
-                <ImageView fitWidth="220.0" fitHeight="160.0" preserveRatio="true" fx:id="productImageView" />
+                <ImageView fitWidth="220.0" fitHeight="160.0" preserveRatio="true" fx:id="productImageView">
+                    <image> 
+                        <Image url="@../Image/sample.png"/>
+                    </image>
+                </ImageView>
+                <Label styleClass="product-name" fx:id="auctionproductname"/>
                 <Label fx:id="startprice" />
             </children>
         </VBox>
@@ -58,11 +63,11 @@
     <right>
         <VBox spacing="15.0" prefHeight="250.0" styleClass="section-pane">
             <children>
-                <Label  fx:id="currentprice" styleClass="current-price" text="Current price: " />
-                <Label fx:id="timeleft" styleClass="time-left" text="Time left : " />
+                <Label  fx:id="auctioncurrentprice" styleClass="current-price"/>
+                <Label fx:id="auctiontimeleft" styleClass="time-left" />
                 <Label text="Enter your price" />
                 <TextField fx:id="enterprice"  />
-                <Button fx:id="placebid" text="Place bid" maxWidth="Infinity" styleClass="bid-button" /> 
+                <Button fx:id="placebid" text="Place bid" maxWidth="Infinity" styleClass="bid-button" onAction="#handlePlaceBid" /> 
             </children>
         </VBox>
     </right>
