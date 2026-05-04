@@ -2,17 +2,14 @@ package com.groupproject.server;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-
 import java.net.ServerSocket;
 import java.net.Socket;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
-
 
 public class ServerController {
     @FXML

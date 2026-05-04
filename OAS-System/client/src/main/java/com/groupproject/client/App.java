@@ -11,7 +11,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-import com.groupproject.shared.User;
+import com.groupproject.shared.model.user.User;
 
 /**
  * JavaFX App
