@@ -4,26 +4,14 @@ package com.groupproject.server;
 
 
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
-
-import com.groupproject.server.Authentication.AuthHandler;
-import com.groupproject.server.Authentication.AuthHandlerFactory;
-import com.groupproject.shared.AuthRequest;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ServerApp {
 
@@ -103,8 +91,19 @@ public class ServerApp {
                          "username TEXT UNIQUE NOT NULL," + 
                          "email TEXT UNIQUE NOT NULL," +
                          "password TEXT NOT NULL)";
-            
             stmt.execute(sql);
+            
+            String auctionSql = "CREATE TABLE IF NOT EXISTS auctions (" +
+                                "id INTERGER PRIMARY KEY AUTOINCREMENT, " +
+                                "item_name TEXT NOT NULL, " +
+                                "starting_price REAL NOT NULL, " +
+                                "auction_duration LONG NOT NULL" +
+                                "current_bid REAL NOT NULL" +
+                                "highest_bidder TEXT," +
+                                "end_time DATETIME NOT NULL," + 
+                                "is_active BOOLEAN DEFAULT 1)";
+            stmt.execute(auctionSql);
+            
             System.out.println("Database initialized successfully!");
         } catch (Exception e) {
             System.out.println("Database error: " + e.getMessage());

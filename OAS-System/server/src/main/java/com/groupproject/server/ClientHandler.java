@@ -7,6 +7,7 @@ import java.net.Socket;
 import com.groupproject.server.Authentication.AuthHandler;
 import com.groupproject.server.Authentication.AuthHandlerFactory;
 import com.groupproject.shared.AuthRequest;
+import com.groupproject.shared.BidRequest;
 
 // --- NỘI HÀM: CHUÕI RIÊNG CHO MỖI CLIENT ---
 public class ClientHandler implements Runnable {
@@ -43,7 +44,11 @@ public class ClientHandler implements Runnable {
 
                     handler.handle(request, out);
                 }
+                else if (recievedData instanceof BidRequest) {
+                    BidRequest bidRequest = (BidRequest) recievedData;
 
+                    new BidHandler().handle(bidRequest, out);
+                }
                 else if (recievedData instanceof String) {
                     String message = (String) recievedData;
             
