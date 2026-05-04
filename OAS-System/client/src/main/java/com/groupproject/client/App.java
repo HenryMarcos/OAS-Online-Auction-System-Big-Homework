@@ -1,17 +1,17 @@
 package com.groupproject.client;
 
-import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 import com.groupproject.shared.model.user.User;
+
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 
 /**
  * JavaFX App
@@ -31,7 +31,9 @@ public class App extends Application {
         new Thread(() -> connectToServer()).start();
 
         // Vào màn hình login
-        scene = new Scene(loadFXML("login"), 640, 480);
+        //scene = new Scene(loadFXML("login"), 640, 480);
+        scene = new Scene(loadFXML("/com/groupproject/client/FXML/login"), 1000, 700);
+        stage.setTitle("Login | Auction System");
         stage.setScene(scene);
         stage.show();
     }

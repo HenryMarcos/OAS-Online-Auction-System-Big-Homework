@@ -1,7 +1,8 @@
-com\groupproject\client\App.class
-com\groupproject\client\SecondaryController.class
 module-info.class
+<<<<<<< HEAD
 com\groupproject\client\LoginController.class
 com\groupproject\client\PrimaryController.class
 com\groupproject\client\SignupController.class
 com\groupproject\client\SimpleChatAppController.class
+=======
+>>>>>>> origin/0.1.4

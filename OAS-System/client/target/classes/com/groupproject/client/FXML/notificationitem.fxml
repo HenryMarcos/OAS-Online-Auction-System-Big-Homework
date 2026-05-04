@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox ?>
+<?import javafx.scene.layout.Region?>
+
+<HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-border-color: #e0e0e0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-background-color: #fafafa;" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.NotificationItemController" >
+    <padding>
+        <Insets top="10.0" bottom="10.0" left="15.0" right="15.0" />
+    </padding>
+    <children>
+        <Label fx:id="message" wrapText="true" style="-fx-font-size: 14px; -fx-text-fill: #333333;" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Label fx:id="notificationTime" minWidth="Region.USE_PREF_SIZE" />
+    </children>
+
+
+
+
+</HBox>

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Button?>
@@ -7,7 +6,7 @@
 
 <VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.PrimaryController">
    <children>
-      <Label text="Primary View" />
+      <Label text="Primary View " />
       <Button fx:id="primaryButton" text="Switch to Secondary View" onAction="#switchToSecondary"/>
       <Button fx:id="shootButton" text="Shoot user over the wire" onAction="#shootUserOverTheWire"/>
       <Button fx:id="openChatApp" text="Open Simple chat app" onAction="#switchToSimpleChatApp"/>

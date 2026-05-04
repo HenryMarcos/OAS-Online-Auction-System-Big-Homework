@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\SignupController.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\PrimaryController.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\App.java
@@ -5,3 +6,22 @@ D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\LoginController.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\SecondaryController.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\module-info.java
+=======
+D:\ProjectOOP(chinh)\OAS-Online-Auction-System-Big-Homework\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\AuctionController.java
+D:\ProjectOOP(chinh)\OAS-Online-Auction-System-Big-Homework\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\PrimaryController.java
+D:\ProjectOOP(chinh)\OAS-Online-Auction-System-Big-Homework\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\SimpleChatAppController.java
+D:\ProjectOOP(chinh)\OAS-Online-Auction-System-Big-Homework\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\Login.java
+D:\ProjectOOP(chinh)\OAS-Online-Auction-System-Big-Homework\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\MainController.java
+D:\ProjectOOP(chinh)\OAS-Online-Auction-System-Big-Homework\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\AuctionScreen.java
+D:\ProjectOOP(chinh)\OAS-Online-Auction-System-Big-Homework\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\LoginController.java
+D:\ProjectOOP(chinh)\OAS-Online-Auction-System-Big-Homework\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\Data\Item.java
+D:\ProjectOOP(chinh)\OAS-Online-Auction-System-Big-Homework\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\SortingmenuController.java
+D:\ProjectOOP(chinh)\OAS-Online-Auction-System-Big-Homework\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\module-info.java
+D:\ProjectOOP(chinh)\OAS-Online-Auction-System-Big-Homework\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\AddItemController.java
+D:\ProjectOOP(chinh)\OAS-Online-Auction-System-Big-Homework\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\App.java
+D:\ProjectOOP(chinh)\OAS-Online-Auction-System-Big-Homework\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\NotificationController.java
+D:\ProjectOOP(chinh)\OAS-Online-Auction-System-Big-Homework\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\SignupController.java
+D:\ProjectOOP(chinh)\OAS-Online-Auction-System-Big-Homework\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\CardController.java
+D:\ProjectOOP(chinh)\OAS-Online-Auction-System-Big-Homework\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\HomeController.java
+D:\ProjectOOP(chinh)\OAS-Online-Auction-System-Big-Homework\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\SecondaryController.java
+>>>>>>> origin/0.1.4

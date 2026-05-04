@@ -1,7 +1,10 @@
 com\groupproject\shared\Item.class
+<<<<<<< HEAD
 com\groupproject\shared\AuthRequest.class
 com\groupproject\shared\Bidder.class
 com\groupproject\shared\Entity.class
+=======
+>>>>>>> origin/0.1.4
 module-info.class
 com\groupproject\shared\Entity.class
 com\groupproject\shared\User.class

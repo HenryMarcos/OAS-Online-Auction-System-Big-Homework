@@ -1,0 +1,86 @@
+<?import javafx.collections.FXCollections?>
+<?import javafx.collections.ObservableList?>
+<?import javafx.geometry.Insets?>
+<?import javafx.geometry.Pos?>
+<?import javafx.scene.Scene?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.XYChart?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.layout.*?>
+<?import javafx.stage.Stage?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<BorderPane stylesheets="@../CSS/auctionscreen.css" styleClass="main-container" fx:controller="com.groupproject.client.AuctionController" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" >
+    <padding>
+        <Insets top="15.0"/>
+    </padding>
+    <top>
+        <HBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS"> 
+            <padding>  
+                <Insets bottom="15.0"/> 
+            </padding>
+            <Label text="Auction Online" styleClass="header-title" fx:id="auctionsession"/>
+        </HBox>
+        <HBox alignment="CENTER_RIGHT" spacing="12.0">
+            <Label fx:id="participant" styleClass="participant-name"/>
+            <Button fx:id="exitbutton" styleClass="exit-button" text="EXIT ->" onAction="#switchtoHome" />      
+        </HBox>
+    </top>
+
+    <left>
+        <VBox prefWidth="250.0" spacing="10.0" styleClass="section-pane">
+            <children>
+                <ImageView fitWidth="220.0" fitHeight="160.0" preserveRatio="true" fx:id="productImageView">
+                    <image> 
+                        <Image url="@../Image/sample.png"/>
+                    </image>
+                </ImageView>
+                <Label styleClass="product-name" fx:id="auctionproductname"/>
+                <Label fx:id="startprice" />
+            </children>
+        </VBox>
+    </left>
+
+    <center>
+        <VBox spacing="10.0" VBox.vgrow="ALWAYS" >
+            <padding>
+                <Insets left="15.0" right="15.0" />
+            </padding>
+            <LineChart fx:id="linechart" title="Lich su bien dong gia" >
+                <xAxis >
+                    <CategoryAxis label ="Time" animated="false"/>
+                </xAxis>
+                <yAxis >
+                    <NumberAxis label="Price (k VND)" autoRanging="true" animated="false"/>
+                </yAxis>
+            </LineChart>
+        </VBox>
+    </center>
+
+    <right>
+        <VBox spacing="15.0" prefHeight="250.0" styleClass="section-pane">
+            <children>
+                <Label  fx:id="auctioncurrentprice" styleClass="current-price"/>
+                <Label fx:id="auctiontimeleft" styleClass="time-left" />
+                <Label text="Enter your price" />
+                <TextField fx:id="enterprice"  />
+                <Button fx:id="placebid" text="Place bid" maxWidth="Infinity" styleClass="bid-button" onAction="#handlePlaceBid" /> 
+            </children>
+        </VBox>
+    </right>
+
+    <bottom>
+        <TableView fx:id="bottomtable" prefHeight="160.0" >
+            <columns>
+                <TableColumn fx:id="usercol" text="Bidder" prefWidth="200.0"/>
+                <TableColumn fx:id="pricecol" text="Price" prefWidth="200.0" />
+                <TableColumn fx:id="timecol" text="Time" prefWidth="200.0" />
+            </columns>
+        </TableView>
+
+    </bottom>
+
+</BorderPane>

@@ -1,0 +1,73 @@
+.logout-button {
+    -fx-background-color: #ff0000;
+    -fx-background-radius: 10;
+    -fx-text-fill: white;
+    -fx-font-size: 15;
+    -fx-font-weight: bold;
+    -fx-padding: 10;
+    -fx-cursor: hand;
+}
+.category-btn {
+    -fx-background-color: #e8e8e8;
+    -fx-text-fill: #000000;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 8px 18px;
+    -fx-background-radius: 8px; /* Bo góc mềm mại */
+    -fx-cursor: hand; /* Biến con trỏ thành hình bàn tay */
+}
+.category-btn:hover, .category-btn.active {
+    -fx-background-color: #000000;
+    -fx-text-fill: #ffffff;
+}
+.sort-btn {
+    -fx-background-color: #f6c23e; 
+    -fx-text-fill: #000000;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 8px 20px;
+    -fx-background-radius: 8px;
+    -fx-cursor: hand;
+}
+
+/* Hiệu ứng khi di chuột vào nút Sort By (Màu vàng đậm hơn một chút) */
+.sort-btn:hover {
+    -fx-background-color: #e0b038;
+}
+.content-scroll {
+    -fx-background-color: transparent; /* Bỏ nền mặc định xấu xí của JavaFX */
+    -fx-padding: 0;
+}
+.content-scroll >.viewport {
+    -fx-background-color: transparent;
+}
+.left_borderpane {
+    -fx-background-color:#0b0b0b;
+    -fx-background-radius : 0 30 30 0;
+    -fx-padding: 30 15 30 15;
+}
+.button-left{
+    -fx-text-fill:white;
+    -fx-background-color: transparent;
+    -fx-font-size: 14px;
+    -fx-padding : 0 0 0 20;
+    -fx-cursor: hand;
+}
+.button-left:hover {
+    -fx-background-color:#ffb703;
+    -fx-font-weight:bold;
+    -fx-background-radius:10;
+}
+.region {
+    -fx-background-color: #333333;
+    -fx-margin: 10 0 0 0;
+
+}
+.sell-button{
+    -fx-background-color: #ffb703;
+    -fx-text-fil:black;
+    -fx-font-weight:bold;
+    -fx-font-size: 15px;
+    -fx-background-radius:10;
+    -fx-cursor:hand;
+}

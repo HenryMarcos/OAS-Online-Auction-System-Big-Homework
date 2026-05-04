@@ -4,10 +4,19 @@ import java.io.IOException;
 
 import com.groupproject.shared.AuthRequest;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
+
+
 
 public class SignupController {
     @FXML private TextField usernameField;
@@ -15,6 +24,8 @@ public class SignupController {
     @FXML private PasswordField passwordField;
     @FXML private PasswordField repeatPasswordField;
     @FXML private Label statusLabel;
+
+    @FXML private Hyperlink hyperlinklogin;
 
     @FXML
     private void handleSignUp() {
@@ -60,9 +71,17 @@ public class SignupController {
             statusLabel.setText("Connection error.");
         }
     }
-
+    
     @FXML
-    private void switchToLogin() throws IOException {
-        App.setRoot("login");
+    private void switchtologin(ActionEvent event) throws IOException {
+        Parent root = FXMLLoader.load(getClass().getResource("FXML/login.fxml"));
+        Scene scene = new Scene(root,1000,700);
+        Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        currentStage.setTitle("Login | Auction System");
+        // Bước 4: Kéo rèm! Gắn Cảnh mới lên Sân khấu và hiển thị
+        currentStage.setScene(scene);
+        currentStage.show();
+        //App.setRoot("login");
     }
 }
+

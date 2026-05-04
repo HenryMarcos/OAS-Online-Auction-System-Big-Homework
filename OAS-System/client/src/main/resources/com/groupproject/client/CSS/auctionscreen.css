@@ -1,0 +1,42 @@
+.main-container {
+    -fx-background-color: white; 
+}
+
+.header-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+.section-pane {
+    -fx-background-color: white;
+    -fx-padding: 15;
+    -fx-background-radius: 10;
+}
+
+.product-name {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.current-price {
+    -fx-text-fill: #22c55e;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.bid-button {
+    -fx-background-color: black;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 10;
+    -fx-cursor:hand;
+}
+.exit-button {
+    -fx-background-color: #ff0000;
+    -fx-background-radius: 10;
+    -fx-text-fill: white;
+    -fx-font-size: 15;
+    -fx-font-weight: bold;
+    -fx-padding: 10;
+    -fx-cursor: hand;
+}

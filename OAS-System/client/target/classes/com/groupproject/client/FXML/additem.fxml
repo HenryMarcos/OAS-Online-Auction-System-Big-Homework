@@ -1,0 +1,112 @@
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.layout.BorderPane?>             
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.ScrollPane?>
+<ScrollPane stylesheets="@../CSS/additem.css" prefHeight = "700.0" prefWidth="800.0" fitToWidth="true"  xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.AddItemController"  >
+    <content>
+        <StackPane fx:id="rootPane"  >
+            <children>
+                <VBox alignment="TOP_CENTER" maxWidth="500.0" spacing="35.0" StackPane.alignment="CENTER">
+                    <children>
+                        <Label alignment="CENTER" maxWidth="Infinity" text="Add Item" textAlignment="CENTER">
+                        <font>
+                            <Font name="Berlin Sans FB" size="31.0" />
+                        </font>
+                        <VBox.margin>
+                            <Insets bottom="20.0" top="20.0" />
+                        </VBox.margin>
+                        </Label>
+                        <StackPane alignment="CENTER_LEFT" maxWidth="Infinity" >
+                        <children>
+                                <TextField fx:id="name" maxWidth="Infinity" prefHeight="30.0" styleClass="fields" />
+                                <Label fx:id="namelabel" mouseTransparent="true" text="Name" textFill="#999999"  >
+                                    <StackPane.margin>
+                                        <Insets left="10.0" />
+                                    </StackPane.margin>
+                                    <font>
+                                        <Font size="16.0"/>
+                                    </font>
+                            </Label>
+                        </children>
+                        </StackPane>
+                        <StackPane alignment="CENTER_LEFT" maxWidth="Infinity">
+                            <children>
+                                <ComboBox fx:id="category"  maxWidth="Infinity" prefHeight="30.0" styleClass="fields"  />
+                                <Label fx:id="categorylabel" mouseTransparent="true" text="Category" textFill="#999999">
+                                    <StackPane.margin>
+                                        <Insets left="10.0" />
+                                    </StackPane.margin>
+                                    <font>
+                                        <Font size="16.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </StackPane>
+
+                        <StackPane alignment="CENTER_LEFT" maxWidth="Infinity">
+                            <children>
+                                <TextField fx:id="startprice" maxWidth="Infinity" prefHeight="30.0" styleClass="fields" />
+                                <Label fx:id="pricelabel" mouseTransparent="true" text="Starting Price" textFill="#999999">
+                                    <StackPane.margin>
+                                        <Insets left="10.0" />
+                                    </StackPane.margin>
+                                    <font>
+                                        <Font size="16.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </StackPane>
+
+                        <StackPane alignment="CENTER_LEFT" maxWidth="Infinity">
+                            <children>
+                                <HBox spacing="5.0" alignment="CENTER_LEFT" maxWidth="Infinity" >
+                                    <DatePicker fx:id="enddate"  maxWidth="Infinity" prefHeight="30.0" styleClass="fields" />
+                                    <Spinner fx:id="endhour" editable="true" prefHeight="30.0" prefWidth="100.0" styleClass="fields"  />
+
+                                    <Label text=":" textFill="#999999" style="-fx-font-size:16px" />
+                                    <Spinner fx:id="endminute" editable="true" prefHeight="30.0" prefWidth="100.0" styleClass="fields" />
+                                    <Label text=":" textFill="#999999" style="-fx-font-size:16px" />
+                                    <Spinner fx:id="endsecond" editable="true" prefHeight="30.0" prefWidth="100.0" styleClass="fields" />
+                                </HBox>
+                                <Label fx:id="datelabel" mouseTransparent="true" text="End Date" textFill="#999999">
+                                    <StackPane.margin>
+                                        <Insets left="10.0" />
+                                    </StackPane.margin>
+                                    <font>
+                                        <Font size="16.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </StackPane>                        
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                            <children>
+                                <Button fx:id="chooseImageButton" prefHeight="30.0" prefWidth="120.0" styleClass="myButtons" text="Choose Image" />
+                                <Label fx:id="imageLabel" text="No file selected" textFill="#6b6b6b" />
+                            </children>
+                        </HBox>
+                        <Label fx:id="validationLabel" maxWidth="Infinity" text="This is a validation label" textFill="RED" visible="false" />
+                        <Button fx:id="addButton" maxWidth="Infinity" prefHeight="35.0" styleClass="myButtons" text="Add Item">
+                            <VBox.margin>
+                                <Insets top="10.0" />
+                            </VBox.margin>
+                        </Button>
+                    </children>
+                    <padding>
+                        <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+                    </padding>
+                </VBox>
+            </children>
+        </StackPane>
+    </content>
+</ScrollPane>

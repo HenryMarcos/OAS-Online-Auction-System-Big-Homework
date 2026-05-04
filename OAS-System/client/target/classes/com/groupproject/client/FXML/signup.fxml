@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.Button?>
+<VBox stylesheets="@../CSS/signup.css" alignment="CENTER" spacing="15.0"  xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.SignupController">
+    <padding>
+        <Insets bottom="40.0" left="80.0" right="80.0" top="40.0" />
+    </padding>
+    <HBox alignment="TOP_RIGHT" fillHeight="false" prefHeight="60.0" prefWidth="379.0" VBox.vgrow="ALWAYS">
+      <VBox.margin>
+         <Insets right="5.0" />
+      </VBox.margin>
+      <children>
+         <Hyperlink fx:id="hyperlinklogin" styleClass="hyperlink" alignment="CENTER_RIGHT" prefHeight="26.0" prefWidth="238.0" text="Already have an account ? Log in ->" HBox.hgrow="ALWAYS" onAction="#switchtologin">
+         </Hyperlink>
+      </children>
+   </HBox>
+    <Label styleClass="signup-title" text="Sign up" >
+        <VBox.margin>
+            <Insets bottom="40.0" top="80.0"/>
+        </VBox.margin>
+    </Label>
+    <VBox maxWidth="400.0" spacing="5.0" >
+        <children>
+            <Label styleClass="signup-label" text="Username" />
+            <TextField fx:id="username" styleClass="input-field" />
+        </children>
+    </VBox>
+    <VBox maxWidth="400.0" spacing="5.0" >
+        <children>
+            <Label styleClass="signup-label" text="Email" />
+            <TextField fx:id="email" styleClass="input-field" />
+        </children>
+    </VBox>
+    <VBox maxWidth="400.0" spacing="5.0">
+        <children>
+            <Label styleClass="signup-label" text="Password" />
+            <HBox alignment="CENTER_LEFT" styleClass="password-wrapper">
+                <PasswordField fx:id="password1" styleClass="inner-password-field" HBox.hgrow="ALWAYS" />
+            </HBox>
+        </children>
+    </VBox>
+    <VBox maxWidth="400.0" spacing="5.0">
+        <children>
+            <Label styleClass="signup-label" text="Confirm password" />
+            <HBox alignment="CENTER_LEFT" styleClass="password-wrapper">
+                <PasswordField fx:id="password2" styleClass="inner-password-field" HBox.hgrow="ALWAYS" />
+            </HBox>
+        </children>
+    </VBox>
+    <HBox alignment="CENTER" prefHeight="6.0" prefWidth="230.0" spacing="10.0">
+        <children>
+            <Button styleClass="createaccount-button" text="Create account" onAction="#switchtologin" />
+        </children>
+        <padding>
+            <Insets top="10.0" />
+        </padding>
+    </HBox>
+
+</VBox>
+

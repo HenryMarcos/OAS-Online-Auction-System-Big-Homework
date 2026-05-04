@@ -22,3 +22,6 @@ jpackage --type exe --name OAS-App-Installer --runtime-image target/image --modu
 
 -Nếu có thỏa thuận người dùng(eula.rtf):
 jpackage --type exe --name OAS-App-Installer --runtime-image target/image --module com.groupproject.client/com.groupproject.client.App --icon logo.ico --win-shortcut --win-menu --win-dir-chooser --license-file eula.rtf
+
+- Chạy thử nhanh (xem phần giao diện, không chạy được nếu chương trình chạy yêu cầu kết nối socket ) :
+mvn javafx:run 

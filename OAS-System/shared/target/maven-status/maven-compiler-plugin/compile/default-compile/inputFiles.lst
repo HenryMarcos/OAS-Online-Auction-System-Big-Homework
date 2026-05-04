@@ -1,6 +1,13 @@
+<<<<<<< HEAD
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\shared\src\main\java\com\groupproject\shared\AuthRequest.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\shared\src\main\java\com\groupproject\shared\Bidder.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\shared\src\main\java\com\groupproject\shared\Entity.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\shared\src\main\java\com\groupproject\shared\Item.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\shared\src\main\java\com\groupproject\shared\User.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\shared\src\main\java\module-info.java
+=======
+D:\ProjectOOP(chinh)\OAS-Online-Auction-System-Big-Homework\OAS-Online-Auction-System-Big-Homework\OAS-System\shared\src\main\java\com\groupproject\shared\Entity.java
+D:\ProjectOOP(chinh)\OAS-Online-Auction-System-Big-Homework\OAS-Online-Auction-System-Big-Homework\OAS-System\shared\src\main\java\com\groupproject\shared\Item.java
+D:\ProjectOOP(chinh)\OAS-Online-Auction-System-Big-Homework\OAS-Online-Auction-System-Big-Homework\OAS-System\shared\src\main\java\com\groupproject\shared\User.java
+D:\ProjectOOP(chinh)\OAS-Online-Auction-System-Big-Homework\OAS-Online-Auction-System-Big-Homework\OAS-System\shared\src\main\java\module-info.java
+>>>>>>> origin/0.1.4

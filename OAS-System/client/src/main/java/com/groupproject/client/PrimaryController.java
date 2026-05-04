@@ -1,5 +1,4 @@
 package com.groupproject.client;
-
 import java.io.IOException;
 
 import javafx.fxml.FXML;

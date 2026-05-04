@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.geometry.Insets?>
+<HBox stylesheets="@../CSS/card.css" fx:id="cardroot" spacing="10.0" maxWidth="Infinity" styleClass="product-card" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.CardController">
+    <ImageView fx:id="image" fitHeight="150" fitWidth="150.0" preserveRatio="true" pickOnBounds="true" styleClass="image">
+        <image>
+            <Image url="@../Image/sample.png" />
+        </image>
+    </ImageView>
+
+    <!-- Phần thông tin bên dưới ảnh -->
+    <VBox spacing="6" styleClass="cardContent" maxWidth="Infinity">
+        <padding>
+            <Insets top="10" right="12" bottom="12" left="12" />
+        </padding>
+
+        <Label fx:id="productname" styleClass="titleCard" wrapText="true" maxWidth="Infinity">
+            <font> 
+                <Font name="Berlin Sans FB" size="18.0" />
+            </font>
+        </Label>
+
+        <Label fx:id="currentprice" styleClass="labels" maxWidth="Infinity">
+            <font>
+                <Font name="System Bold" size="15.0" />
+            </font>
+        </Label>
+
+        <Label fx:id="timeleft" styleClass="labels" maxWidth="Infinity">
+            <font>
+                <Font name="System Bold" size="15.0" />
+            </font>
+        </Label>
+
+        <Button onAction="#handleBid" text="Bid Now" styleClass="bidbutton" maxWidth="Infinity" prefHeight="30" />
+    </VBox>
+</HBox>
