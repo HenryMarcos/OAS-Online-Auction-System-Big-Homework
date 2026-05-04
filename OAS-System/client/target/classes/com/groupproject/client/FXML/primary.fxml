@@ -10,12 +10,8 @@
       <Button fx:id="primaryButton" text="Switch to Secondary View" onAction="#switchToSecondary"/>
       <Button fx:id="shootButton" text="Shoot user over the wire" onAction="#shootUserOverTheWire"/>
       <Button fx:id="openChatApp" text="Open Simple chat app" onAction="#switchToSimpleChatApp"/>
-<<<<<<< HEAD:OAS-System/client/target/classes/com/groupproject/client/primary.fxml
       <Button fx:id="openLogin" text="Login" onAction="#switchToLogin"/>
 
-=======
-      <Button fx:id = "Login" text="Log in" onAction="#switchtoAccount"/>
->>>>>>> origin/0.1.4:OAS-System/client/src/main/resources/com/groupproject/client/FXML/primary.fxml
    </children>
    <padding>
       <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
