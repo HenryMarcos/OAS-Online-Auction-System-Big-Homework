@@ -31,20 +31,20 @@
     <VBox maxWidth="400.0" spacing="5.0" >
         <children>
             <Label styleClass="signup-label" text="Username" />
-            <TextField fx:id="username" styleClass="input-field" />
+            <TextField fx:id="usernameField" styleClass="input-field" />
         </children>
     </VBox>
     <VBox maxWidth="400.0" spacing="5.0" >
         <children>
             <Label styleClass="signup-label" text="Email" />
-            <TextField fx:id="email" styleClass="input-field" />
+            <TextField fx:id="emailField" styleClass="input-field" />
         </children>
     </VBox>
     <VBox maxWidth="400.0" spacing="5.0">
         <children>
             <Label styleClass="signup-label" text="Password" />
             <HBox alignment="CENTER_LEFT" styleClass="password-wrapper">
-                <PasswordField fx:id="password1" styleClass="inner-password-field" HBox.hgrow="ALWAYS" />
+                <PasswordField fx:id="passwordField" styleClass="inner-password-field" HBox.hgrow="ALWAYS" />
             </HBox>
         </children>
     </VBox>
@@ -52,13 +52,13 @@
         <children>
             <Label styleClass="signup-label" text="Confirm password" />
             <HBox alignment="CENTER_LEFT" styleClass="password-wrapper">
-                <PasswordField fx:id="password2" styleClass="inner-password-field" HBox.hgrow="ALWAYS" />
+                <PasswordField fx:id="repeatPasswordField" styleClass="inner-password-field" HBox.hgrow="ALWAYS" />
             </HBox>
         </children>
     </VBox>
     <HBox alignment="CENTER" prefHeight="6.0" prefWidth="230.0" spacing="10.0">
         <children>
-            <Button styleClass="createaccount-button" text="Create account" onAction="#switchtologin" />
+            <Button styleClass="createaccount-button" text="Create account" onAction="#handleSignup" />
         </children>
         <padding>
             <Insets top="10.0" />
