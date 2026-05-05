@@ -14,6 +14,7 @@ import com.groupproject.shared.model.transaction.Auction;
 /** TODO:
  * - Chuyển đổi từ lưu trên RAM sang lưu vào CSDL thông qua DAO (Data Access Object) 
  * tách biệt hoàn toàn với lớp quản lý nghiệp vụ (AuctionManager) ở file auctionManager.java này
+ * Tạm thời chưa cần chuyển sang CSDL, vẫn lưu trên RAM để đợi test xong các nghiệp vụ
  * - Cần tạo thêm lớp ClientHandler dựa vào lớp Auction, 
  * BidTransaction, các lớp trong manager và pattern/observer
  * - Lớp ClientHandler cần xử lý các exception từ AuctionManager 
