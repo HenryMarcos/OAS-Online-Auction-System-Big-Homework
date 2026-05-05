@@ -10,6 +10,7 @@ public class Auction extends Entity {
 
     private String itemId; // ID của sản phẩm được đấu giá
     private String sellerId; // ID của người bán
+    private double startingPrice; // Giá khởi điểm của sản phẩm trong phiên đấu giá
     private double currentBid; // Giá hiện tại của sản phẩm trong phiên đấu giá
     private String highestBidderId; // ID của người đang có giá cao nhất
     private LocalDate startDate; // Ngày bắt đầu của phiên đấu giá
@@ -23,15 +24,17 @@ public class Auction extends Entity {
         this.currentBid = 0.0;
         this.highestBidderId = "";
         this.status = AuctionStatus.WAITING;
+        this.startingPrice = 0.0;
     }
 
-    public Auction(String itemId, String sellerId, double currentBid, String highestBidderId) {
+    public Auction(String itemId, String sellerId, double startingPrice, double currentBid, String highestBidderId, AuctionStatus status) {
         super();
         this.itemId = itemId;
         this.sellerId = sellerId;
+        this.startingPrice = startingPrice;
         this.currentBid = currentBid;
         this.highestBidderId = highestBidderId;
-        this.status = AuctionStatus.WAITING;
+        this.status = status;
     }
 
     public String getItemId() {
@@ -88,5 +91,13 @@ public class Auction extends Entity {
 
     public void setStatus(AuctionStatus status) {
         this.status = status;
+    }
+
+    public double getStartingPrice() {
+        return startingPrice;
+    }
+
+    public void setStartingPrice(double startingPrice) {
+        this.startingPrice = startingPrice;
     }
 }
