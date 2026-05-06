@@ -8,6 +8,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import com.groupproject.server.pattern.observer.AuctionObserver;
 import com.groupproject.server.pattern.observer.AuctionSubject;
 
+/**
+ * Lớp quản lý hệ thống phát thông báo của các phiên đấu giá.
+ * LƯU Ý: Hiện tại cấu trúc này đang lưu dữ liệu (danh sách phòng và người quan sát) hoàn toàn trên RAM 
+ * (thông qua ConcurrentHashMap). Nếu server khởi động lại, các kết nối/đăng ký nhận thông báo này sẽ bị mất.
+ */
 public class AuctionNotificationManager implements AuctionSubject {
     
     // Mỗi phiên đấu giá sẽ có một "phòng thông báo" riêng biệt để quản lý danh sách các Observer đang theo dõi phiên đó
