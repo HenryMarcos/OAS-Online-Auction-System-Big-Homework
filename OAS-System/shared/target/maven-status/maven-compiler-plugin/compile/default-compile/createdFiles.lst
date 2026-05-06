@@ -1,10 +1,28 @@
-com\groupproject\shared\Item.class
-<<<<<<< HEAD
-com\groupproject\shared\AuthRequest.class
-com\groupproject\shared\Bidder.class
-com\groupproject\shared\Entity.class
-=======
->>>>>>> origin/0.1.4
+com\groupproject\shared\model\user\Seller.class
+com\groupproject\shared\AuctionUpdate.class
+com\groupproject\shared\model\item\Item.class
+com\groupproject\shared\model\item\Vehicle.class
+com\groupproject\shared\BidRequest.class
 module-info.class
-com\groupproject\shared\Entity.class
-com\groupproject\shared\User.class
+com\groupproject\shared\model\user\User.class
+com\groupproject\shared\factory\ArtFactory.class
+com\groupproject\shared\CreateAuctionRequest.class
+com\groupproject\shared\model\item\Electronic.class
+com\groupproject\shared\factory\VehicleFactory.class
+com\groupproject\shared\exception\AuctionClosedException.class
+com\groupproject\shared\model\transaction\BidTransaction.class
+com\groupproject\shared\model\user\Bidder.class
+com\groupproject\shared\factory\ItemFactory.class
+com\groupproject\shared\AuthRequest.class
+com\groupproject\shared\exception\AuthenticationException.class
+com\groupproject\shared\model\base\Entity.class
+com\groupproject\shared\factory\ElectronicFactory.class
+com\groupproject\shared\exception\InvalidAuctionStateException.class
+com\groupproject\shared\factory\ItemCreator.class
+com\groupproject\shared\model\item\Art.class
+com\groupproject\shared\exception\AuctionNotFoundException.class
+com\groupproject\shared\exception\InvalidBidException.class
+com\groupproject\shared\model\transaction\Auction.class
+com\groupproject\shared\model\user\Admin.class
+com\groupproject\shared\model\enums\AuctionStatus.class
+com\groupproject\shared\AuctionItem.class

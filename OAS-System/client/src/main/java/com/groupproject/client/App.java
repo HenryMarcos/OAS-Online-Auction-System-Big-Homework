@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+import com.groupproject.shared.model.user.Bidder; // Import tất cả các lớp user từ package shared.model.user
 import com.groupproject.shared.model.user.User;
 
 import javafx.application.Application;
@@ -45,7 +46,7 @@ public class App extends Application {
     public static void connectToServer() {
         try {
             // Use your Google Cloud IP
-            socket = new Socket("34.9.27.87", 8080); 
+            socket = new Socket("34.9.27.87", 8080);
             out = new ObjectOutputStream(socket.getOutputStream());
             out.flush();
             in = new ObjectInputStream(socket.getInputStream());
@@ -61,7 +62,6 @@ public class App extends Application {
     }
 
     // Kiểm tra xem server và user có hoạt động trơn tru với nhau không 
-    
     static void shootUserOverTheWire() {
         // localhost nghĩa là tìm server trong máy của chính mình
         String serverIp = "memory-exact.gl.at.ply.gg";
@@ -75,7 +75,7 @@ public class App extends Application {
             System.out.println("Connected to the server");
 
             // Tạo 1 User để kiểm tra
-            User myUser = new User("Henry", "e@gmail.com", "Ninooo");
+            User myUser = new Bidder(0.0, "", "Henry", "e@gmail.com", "Ninooo");
 
             // Mở đường dẫn xử lý để gửi các đối tượng Java qua mạng
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
@@ -85,10 +85,10 @@ public class App extends Application {
 
             // Lệnh flush buộc dữ liệu thực sự rời khỏi máy client và di chuyển trên đường truyền
             out.flush();
-            } catch (Exception e) {
-                // Báo lỗi nếu thất bại
-                System.err.println("Could not connect to the server: " + e.getMessage());
-                e.printStackTrace();
+        } catch (Exception e) {
+            // Báo lỗi nếu thất bại
+            System.err.println("Could not connect to the server: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
