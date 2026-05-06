@@ -1,4 +1,4 @@
 @echo off
 set JLINK_VM_OPTIONS=
 set DIR=%~dp0
-"%DIR%\java" %JLINK_VM_OPTIONS% -m com.groupproject.client/com.groupproject.client.App %*
+"%DIR%\java" %JLINK_VM_OPTIONS% -m com.groupproject.client/com.groupproject.client.Login %*

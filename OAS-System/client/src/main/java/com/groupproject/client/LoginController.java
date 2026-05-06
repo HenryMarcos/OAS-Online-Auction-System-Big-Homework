@@ -77,7 +77,7 @@ public class LoginController {
                 statusLabel.setText(errorMsg);
             }
         } catch (Exception e) {
-            statusLabel.setText("Connection error.");
+            statusLabel.setText("Connection error." + e.getMessage());
         }
     }
 

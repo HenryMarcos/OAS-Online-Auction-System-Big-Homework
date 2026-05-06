@@ -2,7 +2,7 @@ package com.groupproject.shared.model.user;
 
 import com.groupproject.shared.model.base.Entity;
 
-public abstract class User extends Entity {
+public class User extends Entity {
     private static final long serialVersionUID = 1L;
 
     private String username;

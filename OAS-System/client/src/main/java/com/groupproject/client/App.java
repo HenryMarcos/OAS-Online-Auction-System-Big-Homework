@@ -27,6 +27,7 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        System.out.println("NUH UH");
         // Kết nối với server 1 lần duy nhất khi bắt đầu
         new Thread(() -> connectToServer()).start();
 
@@ -49,8 +50,10 @@ public class App extends Application {
             out = new ObjectOutputStream(socket.getOutputStream());
             out.flush();
             in = new ObjectInputStream(socket.getInputStream());
+            System.out.println("Connected to server for login");
         } catch (Exception e) {
             System.out.println("Could not connect to server for login.");
+            e.printStackTrace();
         }
     }
 

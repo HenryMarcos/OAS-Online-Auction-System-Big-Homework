@@ -62,6 +62,7 @@ public class ClientHandler implements Runnable {
 
         } catch (Exception e) {
             ServerApp.log("A client disconnected");
+            e.printStackTrace();
         } finally {
             // CLEANUP: Khi client rời, xóa client trong danh sách đi
             if (out != null) {
