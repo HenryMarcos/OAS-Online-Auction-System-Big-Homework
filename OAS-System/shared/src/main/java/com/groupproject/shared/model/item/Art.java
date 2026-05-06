@@ -9,8 +9,8 @@ public class Art extends Item {
         super();
     }
 
-    public Art(String name, double basePrice, String sellerId, String description, String artist) {
-        super(name, basePrice, sellerId, description);
+    public Art(String name, String description, String artist) {
+        super(name, description);
         this.artist = artist;
     }
 

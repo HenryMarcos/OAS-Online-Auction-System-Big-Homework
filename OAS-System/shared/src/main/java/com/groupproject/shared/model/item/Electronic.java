@@ -10,8 +10,8 @@ public class Electronic extends Item {
         super();
     }
 
-    public Electronic(String name, double basePrice, String sellerId, String description, String brand, String model) {
-        super(name, basePrice, sellerId, description);
+    public Electronic(String name, String description, String brand, String model) {
+        super(name, description);
         this.brand = brand;
         this.model = model;
     }

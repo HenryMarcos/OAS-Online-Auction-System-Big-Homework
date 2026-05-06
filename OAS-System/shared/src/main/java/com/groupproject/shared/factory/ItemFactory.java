@@ -14,11 +14,11 @@ public class ItemFactory {
         creators.put("vehicle", new VehicleFactory());
     }
 
-    public static Item createItem(String type, String name, double basePrice, String sellerId, String description, String... attributes) {
+    public static Item createItem(String type, String name, String description, String... attributes) {
         ItemCreator creator = creators.get(type.trim().toLowerCase());
         if (creator == null) {
             throw new IllegalArgumentException("Loại sản phẩm không hợp lệ: " + type);
         }
-        return creator.createItem(name, basePrice, sellerId, description, attributes);
+        return creator.createItem(name, description, attributes);
     }
 }
