@@ -3,6 +3,9 @@ package com.groupproject.server.manager;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.groupproject.shared.exception.AuctionClosedException;
 import com.groupproject.shared.exception.AuctionNotFoundException;
 import com.groupproject.shared.exception.AuthenticationException;
@@ -28,13 +31,16 @@ import com.groupproject.shared.model.transaction.Auction;
  */
 public class AuctionManager {
 
+    // Khởi tạo Logger cho lớp AuctionManager
+    private static final Logger logger = LoggerFactory.getLogger(AuctionManager.class);
+
     // Danh sách lưu trữ các phiên đấu giá đang được quản lý trên RAM của Server
     private final Map<String, Auction> auctionMap;
 
     // Mẫu thiết kế Bill Pugh Singleton 
     private AuctionManager() {
         this.auctionMap = new ConcurrentHashMap<>();
-        System.out.println("AuctionManager đã khởi tạo thành công!");
+        logger.info("AuctionManager đã khởi tạo thành công!");
     }
 
     private static class Helper {
@@ -63,7 +69,7 @@ public class AuctionManager {
         auction.setStatus(AuctionStatus.WAITING);
         auctionMap.put(auction.getId(), auction);
         
-        System.out.println("Đã tạo phiên đấu giá (WAITING): " + auction.getId());
+        logger.info("Đã tạo phiên đấu giá (WAITING): {}", auction.getId());
     }
 
     /**
@@ -77,7 +83,7 @@ public class AuctionManager {
             // Chỉ cho phép bắt đầu nếu đang ở trạng thái WAITING
             if (auction.getStatus() == AuctionStatus.WAITING) {
                 auction.setStatus(AuctionStatus.ACTIVED);
-                System.out.println("Đã bắt đầu phiên đấu giá (ACTIVED): " + auctionId);
+                logger.info("Đã bắt đầu phiên đấu giá (ACTIVED): {}", auctionId);
                 // Gửi thông báo cho mọi người trong phòng: "Phiên đấu giá đã bắt đầu, hãy đặt giá!"
                 AuctionNotificationManager.getInstance().notifyAuctionStarted(auctionId);
             } else {
@@ -97,7 +103,7 @@ public class AuctionManager {
             // Chỉ cho phép đóng nếu đang ở trạng thái ACTIVED
             if (auction.getStatus() == AuctionStatus.ACTIVED) {
                 auction.setStatus(AuctionStatus.ENDED);
-                System.out.println("Đã đóng phiên đấu giá (ENDED) chờ xử lý: " + auctionId);
+                logger.info("Đã đóng phiên đấu giá (ENDED) chờ xử lý: {}", auctionId);
                 // Gửi thông báo cho mọi người trong phòng: "Đã hết giờ, đang chờ chốt kết quả!"
                 AuctionNotificationManager.getInstance().notifyAuctionEnded(auctionId);
             } else {
@@ -118,7 +124,7 @@ public class AuctionManager {
             if (auction.getStatus() == AuctionStatus.ENDED) {
                 auction.setStatus(AuctionStatus.FINISHED);
                 auctionMap.remove(auctionId); // Xóa khỏi bộ nhớ sau khi đã hoàn thành và xử lý xong giao dịch
-                System.out.println("Đã hoàn thành và chốt giao dịch (FINISHED): " + auctionId);
+                logger.info("Đã hoàn thành và chốt giao dịch (FINISHED): {}", auctionId);
                 // Gửi thông báo cho mọi người trong phòng: "Phiên đấu giá đã hoàn thành!"
                 AuctionNotificationManager.getInstance().notifyAuctionFinished(auctionId, auction.getHighestBidderId(), auction.getCurrentBid());
             } else {
@@ -139,9 +145,9 @@ public class AuctionManager {
             if (auction.getStatus() == AuctionStatus.WAITING || auction.getStatus() == AuctionStatus.ACTIVED) {
                 auction.setStatus(AuctionStatus.CANCELLED);
                 auctionMap.remove(auctionId);
-                System.out.println("Đã hủy phiên đấu giá (CANCELLED): " + auctionId);
+                logger.info("Đã hủy phiên đấu giá (CANCELLED): {}", auctionId);
                 // Gửi thông báo cho mọi người trong phòng: "Phiên đấu giá đã bị hủy, vui lòng rời phòng!"
-                AuctionNotificationManager.getInstance().notifyAuctionCancelled(auctionId, "Phiên đấu giá đã bị hủy vì ...");
+                AuctionNotificationManager.getInstance().notifyAuctionCancelled(auctionId, "Phiên đấu giá đã bị hủy do người bán/hệ thống.");
             } else {
                 throw new InvalidAuctionStateException("Chỉ có thể hủy phiên đấu giá đang ở trạng thái WAITING hoặc ACTIVED. Trạng thái hiện tại: " + auction.getStatus());
             }
@@ -170,7 +176,7 @@ public class AuctionManager {
             auction.setCurrentBid(bidAmount);
             auction.setHighestBidderId(bidderId);
             
-            System.out.println("Thành công: User " + bidderId + " dẫn đầu phiên " + auctionId + " với giá " + bidAmount);
+            logger.info("Thành công: User {} dẫn đầu phiên {} với giá {}", bidderId, auctionId, bidAmount);
             
             // Gửi thông báo cho mọi người trong phòng: "Có một mức giá mới được đặt, hãy cập nhật!"
             AuctionNotificationManager.getInstance().notifyBidUpdated(auctionId, bidAmount, bidderId);
@@ -192,8 +198,6 @@ public class AuctionManager {
         }
 
         // Giá đặt phải cao hơn giá hiện tại (nếu có) hoặc giá khởi điểm nếu chưa có ai đặt giá nào
-        // Nếu currentBid = 0 thì nghĩa là chưa có ai đặt giá nào, lúc này sẽ so sánh với startingPrice
-        // Nếu currentBid > 0 thì nghĩa là đã có người đặt giá, lúc này sẽ so sánh với currentBid
         double currentHighest = (auction.getCurrentBid() > 0) ? auction.getCurrentBid() : auction.getStartingPrice();
 
         if (bidAmount <= currentHighest) {
