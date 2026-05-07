@@ -39,7 +39,7 @@
                     </image>
                 </ImageView>
                 <Label styleClass="product-name" fx:id="auctionproductname"/>
-                <Label fx:id="startprice" />
+                <Label fx:id="description" />
             </children>
         </VBox>
     </left>
@@ -49,12 +49,12 @@
             <padding>
                 <Insets left="15.0" right="15.0" />
             </padding>
-            <LineChart fx:id="linechart" title="Lich su bien dong gia" >
+            <LineChart fx:id="linechart" legendVisible="false" createSymbols="false" title="Live Price" animated="false" >
                 <xAxis >
                     <CategoryAxis label ="Time" animated="false"/>
                 </xAxis>
                 <yAxis >
-                    <NumberAxis label="Price (k VND)" autoRanging="true" animated="false"/>
+                    <NumberAxis fx:id="priceAxis" label="Price (USD)" forceZeroInRange="false"  autoRanging="true" animated="false"/>
                 </yAxis>
             </LineChart>
         </VBox>

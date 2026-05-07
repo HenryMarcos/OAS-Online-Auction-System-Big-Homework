@@ -5,8 +5,8 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import com.groupproject.client.Data.Item;
-import com.groupproject.client.Data.ItemRespository;
+import com.groupproject.client.Utlis.Item;
+import com.groupproject.client.Utlis.ItemRespository;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;

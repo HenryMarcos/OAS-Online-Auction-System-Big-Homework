@@ -27,49 +27,45 @@
                             <Insets bottom="20.0" top="20.0" />
                         </VBox.margin>
                         </Label>
-                        <StackPane alignment="CENTER_LEFT" maxWidth="Infinity" >
-                        <children>
-                                <TextField fx:id="name" maxWidth="Infinity" prefHeight="30.0" styleClass="fields" />
-                                <Label fx:id="namelabel" mouseTransparent="true" text="Name" textFill="#999999"  >
-                                    <StackPane.margin>
-                                        <Insets left="10.0" />
-                                    </StackPane.margin>
-                                    <font>
-                                        <Font size="16.0"/>
-                                    </font>
-                            </Label>
-                        </children>
-                        </StackPane>
-                        <StackPane alignment="CENTER_LEFT" maxWidth="Infinity">
+                        <VBox alignment="CENTER_LEFT" spacing="5.0" maxWidth="Infinity" >
                             <children>
+                                <Label text="Name">
+                                    <font>
+                                        <Font size="14.0" />
+                                    </font>
+                                </Label>
+                                <TextField fx:id="name" prefHeight="40.0" styleClass="fields" />
+                            </children>
+                        </VBox>
+                        <VBox alignment="CENTER_LEFT" spacing="5.0" maxWidth="Infinity">
+                            <children>
+                                <Label mouseTransparent="true" text="Category" >
+                                    <font>
+                                        <Font size="14.0" />
+                                    </font>
+                                </Label>
                                 <ComboBox fx:id="category"  maxWidth="Infinity" prefHeight="30.0" styleClass="fields"  />
-                                <Label fx:id="categorylabel" mouseTransparent="true" text="Category" textFill="#999999">
-                                    <StackPane.margin>
-                                        <Insets left="10.0" />
-                                    </StackPane.margin>
+                            </children>
+                        </VBox>
+
+                        <VBox alignment="CENTER_LEFT" spacing="5.0" maxWidth="Infinity">
+                            <children>
+                                <Label mouseTransparent="true" text="Starting Price" >
                                     <font>
-                                        <Font size="16.0" />
+                                        <Font size="14.0" />
                                     </font>
                                 </Label>
-                            </children>
-                        </StackPane>
-
-                        <StackPane alignment="CENTER_LEFT" maxWidth="Infinity">
-                            <children>
                                 <TextField fx:id="startprice" maxWidth="Infinity" prefHeight="30.0" styleClass="fields" />
-                                <Label fx:id="pricelabel" mouseTransparent="true" text="Starting Price" textFill="#999999">
-                                    <StackPane.margin>
-                                        <Insets left="10.0" />
-                                    </StackPane.margin>
+                            </children>
+                        </VBox>
+
+                        <VBox alignment="CENTER_LEFT" spacing="5.0" maxWidth="Infinity">
+                            <children>
+                                <Label  mouseTransparent="true" text="End Date" > 
                                     <font>
-                                        <Font size="16.0" />
+                                        <Font size="14.0" />
                                     </font>
                                 </Label>
-                            </children>
-                        </StackPane>
-
-                        <StackPane alignment="CENTER_LEFT" maxWidth="Infinity">
-                            <children>
                                 <HBox spacing="5.0" alignment="CENTER_LEFT" maxWidth="Infinity" >
                                     <DatePicker fx:id="enddate"  maxWidth="Infinity" prefHeight="30.0" styleClass="fields" />
                                     <Spinner fx:id="endhour" editable="true" prefHeight="30.0" prefWidth="100.0" styleClass="fields"  />
@@ -79,16 +75,20 @@
                                     <Label text=":" textFill="#999999" style="-fx-font-size:16px" />
                                     <Spinner fx:id="endsecond" editable="true" prefHeight="30.0" prefWidth="100.0" styleClass="fields" />
                                 </HBox>
-                                <Label fx:id="datelabel" mouseTransparent="true" text="End Date" textFill="#999999">
-                                    <StackPane.margin>
-                                        <Insets left="10.0" />
-                                    </StackPane.margin>
+                            </children>
+                        </VBox>
+
+                        <VBox alignment="CENTER_LEFT" spacing="5.0" maxWidth="Infinity">
+                            <children>
+                            <Label  mouseTransparent="true" text="Description">
                                     <font>
-                                        <Font size="16.0" />
+                                        <Font size="14.0" />
                                     </font>
                                 </Label>
+                                <TextField fx:id="description" maxWidth="Infinity" prefHeight="30.0" styleClass="fields" />
                             </children>
-                        </StackPane>                        
+                        </VBox>
+
                         <HBox alignment="CENTER_LEFT" spacing="10.0">
                             <children>
                                 <Button fx:id="chooseImageButton" prefHeight="30.0" prefWidth="120.0" styleClass="myButtons" text="Choose Image" />

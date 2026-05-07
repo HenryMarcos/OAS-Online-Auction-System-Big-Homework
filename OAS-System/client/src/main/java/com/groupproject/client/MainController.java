@@ -11,10 +11,9 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.scene.layout.BorderPane;
 public class MainController  implements Initializable {
     @FXML
     private BorderPane mainBorderPane;
@@ -42,6 +41,10 @@ public class MainController  implements Initializable {
    @FXML
    private void switchtoAddItem() throws IOException {
       loadView("additem.fxml");
+   }
+   @FXML
+   private void switchtoProfile() throws IOException {
+        loadView("profilecontent.fxml");
    }
     @Override
     public void initialize(URL location, ResourceBundle resources) {

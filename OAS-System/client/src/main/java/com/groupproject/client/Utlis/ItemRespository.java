@@ -1,6 +1,6 @@
-package com.groupproject.client.Data;
+package com.groupproject.client.Utlis;
 import java.util.*;
-
+// sẽ được thay thế bằng database 
 public class ItemRespository {
     private static ArrayList<Item> items = new ArrayList<>();
     public static void save (Item item) {

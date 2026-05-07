@@ -14,16 +14,16 @@
             <Image url="@../Image/sample.png" />
         </image>
     </ImageView>
-
-    <!-- Phần thông tin bên dưới ảnh -->
-    <VBox spacing="6" styleClass="cardContent" maxWidth="Infinity">
+    <!-- them label de hien thi trạng thái của một vật phẩm đấu giá : OPEN, RUNNING, CANCELED, FINISHED -->
+    <!-- Phần thông tin bên trai ảnh -->
+    <VBox spacing="6.0" styleClass="cardContent" maxWidth="Infinity">
         <padding>
             <Insets top="10" right="12" bottom="12" left="12" />
         </padding>
 
         <Label fx:id="productname" styleClass="titleCard" wrapText="true" maxWidth="Infinity">
             <font> 
-                <Font name="Berlin Sans FB" size="18.0" />
+                <Font name="Berlin Sans FB" size="15.0" />
             </font>
         </Label>
 

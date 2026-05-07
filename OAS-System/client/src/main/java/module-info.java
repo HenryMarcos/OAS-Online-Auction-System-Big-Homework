@@ -7,5 +7,6 @@ module com.groupproject.client {
     requires com.groupproject.shared;
 
     opens com.groupproject.client to javafx.fxml, javafx.graphics;
+    opens com.groupproject.client.Utlis to javafx.base;
     exports com.groupproject.client;
 }
