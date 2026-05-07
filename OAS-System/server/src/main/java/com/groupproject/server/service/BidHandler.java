@@ -1,7 +1,8 @@
-package com.groupproject.server;
+package com.groupproject.server.service;
 
 import java.io.ObjectOutputStream;
 
+import com.groupproject.server.core.ServerApp;
 import com.groupproject.shared.AuctionUpdate;
 import com.groupproject.shared.BidRequest;
 

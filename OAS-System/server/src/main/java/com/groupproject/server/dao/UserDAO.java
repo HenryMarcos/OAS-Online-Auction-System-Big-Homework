@@ -1,21 +1,19 @@
-package com.groupproject.server.Authentication;
+package com.groupproject.server.dao;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import com.groupproject.server.utils.Config;
 import com.groupproject.shared.AuthRequest;
 
-public class DatabaseHelper {
-
-    private static final String DB_URL = "jdbc:sqlite:users.db";
-
+public class UserDAO {
     public static synchronized boolean saveUser(String username, String email, String password) {
         // Câu lệnh sql để chèn user mới
         String sql = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
 
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(Config.DATABASE_URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, username);
@@ -41,7 +39,7 @@ public class DatabaseHelper {
         // Câu lệnh SQL tìm user có username và password khớp
         String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
 
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(Config.DATABASE_URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, username);

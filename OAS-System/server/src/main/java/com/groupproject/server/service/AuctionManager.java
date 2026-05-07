@@ -1,4 +1,4 @@
-package com.groupproject.server;
+package com.groupproject.server.service;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -7,17 +7,17 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.groupproject.server.core.ServerApp;
+import com.groupproject.server.utils.Config;
 import com.groupproject.shared.AuctionItem;
 import com.groupproject.shared.BidRequest;
 
 public class AuctionManager {
-    private static final String DB_URL = "jdbc:sqlite:users.db";
-
     public static synchronized boolean proccessBid(int auctionId, String bidderUsername, double bidAmount) {
         String checkSql = "SELECT current_bid, is_active FROM auctions WHERE id = ?";
         String updateSql = "UPDATE auctions SET current_bid = ?, highest_bidder = ? WHERE id = ?";
 
-        try (Connection conn = DriverManager.getConnection(DB_URL)) {
+        try (Connection conn = DriverManager.getConnection(Config.DATABASE_URL)) {
 
             // Kiểm tra xem bid hợp lý chưa
             try (PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
@@ -62,7 +62,7 @@ public class AuctionManager {
         List<AuctionItem> activeAuctions = new ArrayList<>();
         String sql = "SELECT * FROM auctions WHERE is_active = 1";
 
-        try (Connection conn = DriverManager.getConnection(DB_URL)) {
+        try (Connection conn = DriverManager.getConnection(Config.DATABASE_URL)) {
             PreparedStatement pstmt = conn.prepareStatement(sql);
             ResultSet rs = pstmt.executeQuery();
 

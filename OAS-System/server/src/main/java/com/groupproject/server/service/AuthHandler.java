@@ -1,4 +1,4 @@
-package com.groupproject.server.Authentication;
+package com.groupproject.server.service;
 
 import java.io.ObjectOutputStream;
 

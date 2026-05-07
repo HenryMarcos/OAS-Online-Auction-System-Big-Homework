@@ -10,12 +10,6 @@ public class Vehicle extends Item {
         super();
     }
 
-    public Vehicle(String name, double basePrice, String sellerId, String description, String brand, String model) {
-        super(name, basePrice, sellerId, description);
-        this.brand = brand;
-        this.model = model;
-    }
-
     public String getBrand() {
         return brand;
     }

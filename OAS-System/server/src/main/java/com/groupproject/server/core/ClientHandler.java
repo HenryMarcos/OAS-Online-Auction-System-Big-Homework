@@ -1,11 +1,12 @@
-package com.groupproject.server;
+package com.groupproject.server.core;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-import com.groupproject.server.Authentication.AuthHandler;
-import com.groupproject.server.Authentication.AuthHandlerFactory;
+import com.groupproject.server.service.AuthHandler;
+import com.groupproject.server.service.AuthHandlerFactory;
+import com.groupproject.server.service.BidHandler;
 import com.groupproject.shared.AuthRequest;
 import com.groupproject.shared.BidRequest;
 

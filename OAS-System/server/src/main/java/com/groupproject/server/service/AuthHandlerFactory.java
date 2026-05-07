@@ -1,4 +1,4 @@
-package com.groupproject.server.Authentication;
+package com.groupproject.server.service;
 
 public class AuthHandlerFactory {
     public static AuthHandler getHandler(String type) {

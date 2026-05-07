@@ -9,11 +9,6 @@ public class Art extends Item {
         super();
     }
 
-    public Art(String name, double basePrice, String sellerId, String description, String artist) {
-        super(name, basePrice, sellerId, description);
-        this.artist = artist;
-    }
-
     public String getArtist() {
         return artist;
     }

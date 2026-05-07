@@ -38,7 +38,7 @@ public class MainTest {
                 "Van Gogh" // Các thuộc tính riêng của Art
         );
         
-        System.out.println("- Đã tạo thành công sản phẩm: " + myArt.getName());
+        System.out.println("- Đã tạo thành công sản phẩm: " + myArt.getTitle());
         System.out.println("- Class thực sự của đối tượng này là: " + myArt.getClass().getSimpleName());
         
         // Ép kiểu về Art để lấy thuộc tính riêng in ra thử

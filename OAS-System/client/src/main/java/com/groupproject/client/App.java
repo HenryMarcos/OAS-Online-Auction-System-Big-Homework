@@ -47,9 +47,9 @@ public class App extends Application {
         try {
             // Use your Google Cloud IP
             socket = new Socket("34.9.27.87", 8080); 
-            out = new ObjectOutputStream(socket.getOutputStream());
+            out = new ObjectOutputStream(socket.getOutputStream()); // Gửi cho server
             out.flush();
-            in = new ObjectInputStream(socket.getInputStream());
+            in = new ObjectInputStream(socket.getInputStream()); // Nhận từ server
             System.out.println("Connected to server for login");
         } catch (Exception e) {
             System.out.println("Could not connect to server for login.");
