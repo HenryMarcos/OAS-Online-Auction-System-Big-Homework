@@ -57,16 +57,21 @@ public class AuctionNotificationManager implements AuctionSubject {
         if (observer == null || auctionId == null) {
             throw new IllegalArgumentException("Observer và auctionId không được null");
         }
-        List<AuctionObserver> room = roomObservers.get(auctionId);
-        if (room != null) {
-            room.remove(observer);
-            logger.info("Đã hủy đăng ký Observer khỏi Kênh {}", auctionId);
+        // compute() lock key này lại trong suốt quá trình thực thi lambda,
+        // đảm bảo không có thread nào chen vào giữa remove() và isEmpty().
+        // Trả về null → ConcurrentHashMap tự xóa entry đó khỏi map.
+        roomObservers.compute(auctionId, (id, room) -> {
+            if (room == null) return null; // room chưa tồn tại, không làm gì
             
+            room.remove(observer);
+            logger.info("Đã hủy đăng ký Observer khỏi Kênh {}", id);
+
             if (room.isEmpty()) {
-                roomObservers.remove(auctionId);
-                logger.debug("Kênh {} không còn ai theo dõi, đã xóa phòng thông báo.", auctionId);
+                logger.debug("Kênh {} không còn ai theo dõi, đã xóa phòng thông báo.", id);
+                return null; // trả về null → ConcurrentHashMap xóa entry này
             }
-        }
+            return room; // còn người → giữ lại
+        });
     }
 
     // =========================================================================
