@@ -5,6 +5,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.groupproject.server.pattern.observer.AuctionObserver;
 import com.groupproject.server.pattern.observer.AuctionSubject;
 
@@ -15,13 +18,17 @@ import com.groupproject.server.pattern.observer.AuctionSubject;
  */
 public class AuctionNotificationManager implements AuctionSubject {
     
+    // 1. KHỞI TẠO LOGGER (Chuẩn SLF4J)
+    private static final Logger logger = LoggerFactory.getLogger(AuctionNotificationManager.class);
+
     // Mỗi phiên đấu giá sẽ có một "phòng thông báo" riêng biệt để quản lý danh sách các Observer đang theo dõi phiên đó
     private final Map<String, List<AuctionObserver>> roomObservers;
 
     // Mẫu thiết kế Bill Pugh Singleton 
     private AuctionNotificationManager() {
         this.roomObservers = new ConcurrentHashMap<>();
-        System.out.println("AuctionNotificationManager (Hệ thống thông báo) đã được khởi tạo!");
+        // 2. Thay thế System.out bằng logger.info
+        logger.info("AuctionNotificationManager (Hệ thống thông báo) đã được khởi tạo!");
     }
 
     private static class Helper {
@@ -35,31 +42,36 @@ public class AuctionNotificationManager implements AuctionSubject {
     @Override
     // Đăng ký một người quan sát mới (Cho phép người mới bật radio dò đúng tần số).
     public void addObserver(String auctionId, AuctionObserver observer) {
-        // Kiểm tra đầu vào, đảm bảo không null và có ID hợp lệ
         if (observer == null || auctionId == null) {
             throw new IllegalArgumentException("Observer và auctionId không được null");
         }
-        // Sử dụng computeIfAbsent để tạo mới danh sách Observer cho auctionId nếu chưa tồn tại, sau đó thêm observer vào danh sách
         roomObservers.computeIfAbsent(auctionId, k -> new CopyOnWriteArrayList<>()).add(observer);
-        System.out.println("Đã đăng ký Observer mới cho Kênh " + auctionId);
+        
+        // Cú pháp {} giúp tự động chèn biến vào chuỗi mà không cần dùng dấu + cộng chuỗi rườm rà
+        logger.info("Đã đăng ký Observer mới cho Kênh {}", auctionId);
     }
 
     @Override
     // Hủy đăng ký một người quan sát (Người dùng tắt radio, không nghe nữa).
     public void removeObserver(String auctionId, AuctionObserver observer) {
-        // Kiểm tra đầu vào, đảm bảo không null và có ID hợp lệ
         if (observer == null || auctionId == null) {
             throw new IllegalArgumentException("Observer và auctionId không được null");
         }
-        List<AuctionObserver> room = roomObservers.get(auctionId);
-        if (room != null) {
+        // compute() lock key này lại trong suốt quá trình thực thi lambda,
+        // đảm bảo không có thread nào chen vào giữa remove() và isEmpty().
+        // Trả về null → ConcurrentHashMap tự xóa entry đó khỏi map.
+        roomObservers.compute(auctionId, (id, room) -> {
+            if (room == null) return null; // room chưa tồn tại, không làm gì
+            
             room.remove(observer);
-            System.out.println("Đã hủy đăng ký Observer khỏi Kênh " + auctionId);
+            logger.info("Đã hủy đăng ký Observer khỏi Kênh {}", id);
+
             if (room.isEmpty()) {
-                // Nếu không còn ai theo dõi phiên đấu giá này nữa, có thể xóa luôn phòng thông báo để giải phóng tài nguyên
-                roomObservers.remove(auctionId);
+                logger.debug("Kênh {} không còn ai theo dõi, đã xóa phòng thông báo.", id);
+                return null; // trả về null → ConcurrentHashMap xóa entry này
             }
-        }
+            return room; // còn người → giữ lại
+        });
     }
 
     // =========================================================================
@@ -74,82 +86,58 @@ public class AuctionNotificationManager implements AuctionSubject {
     // =========================================================================
 
     @Override
-    // Thông báo có giá mới được đặt thành công.
     public void notifyBidUpdated(String auctionId, double newBidAmount, String highestBidderId) {
         List<AuctionObserver> room = getRoomObservers(auctionId);
-        // Nếu có ai đang theo dõi phiên đấu giá này thì mới phát thông báo
         if (room != null && !room.isEmpty()) {
-            System.out.println("[Phát thanh] Có giá mới (" + newBidAmount + ") tại Kênh " + auctionId);
-            // Phát thông báo đến tất cả những ai đang theo dõi phiên đấu giá này
+            logger.info("[Phát thanh] Có giá mới ({}) tại Kênh {} bởi User {}", newBidAmount, auctionId, highestBidderId);
             for (AuctionObserver observer : room) {
-                // Gọi hàm onBidUpdated() của mỗi Observer để họ cập nhật giao diện hoặc trạng thái bên client
                 observer.onBidUpdated(auctionId, newBidAmount, highestBidderId);
             }
         }
     }
 
     @Override
-    // Thông báo phiên đấu giá đã bắt đầu.
     public void notifyAuctionStarted(String auctionId) {
         List<AuctionObserver> room = getRoomObservers(auctionId);
-        // Nếu có ai đang theo dõi phiên đấu giá này thì mới phát thông báo
         if (room != null && !room.isEmpty()) {
-            System.out.println("[Phát thanh] Bắt đầu phiên tại Kênh " + auctionId);
-            // Phát thông báo đến tất cả những ai đang theo dõi phiên đấu giá này
+            logger.info("[Phát thanh] Bắt đầu phiên tại Kênh {}", auctionId);
             for (AuctionObserver observer : room) {
-                // Gọi hàm onAuctionStarted() của mỗi Observer để họ cập nhật giao diện hoặc trạng thái bên client
                 observer.onAuctionStarted(auctionId);
             }
         }
     }
 
     @Override
-    // Thông báo phiên đấu giá đã hết giờ.
     public void notifyAuctionEnded(String auctionId) {
         List<AuctionObserver> room = getRoomObservers(auctionId);
-        // Nếu có ai đang theo dõi phiên đấu giá này thì mới phát thông báo
         if (room != null && !room.isEmpty()) {
-            System.out.println("[Phát thanh] Hết giờ đặt giá tại Kênh " + auctionId);
-            // Phát thông báo đến tất cả những ai đang theo dõi phiên đấu giá này
+            logger.info("[Phát thanh] Hết giờ đặt giá tại Kênh {}", auctionId);
             for (AuctionObserver observer : room) {
-                // Gọi hàm onAuctionEnded() của mỗi Observer để họ cập nhật giao diện hoặc trạng thái bên client
                 observer.onAuctionEnded(auctionId);
             }
         }
     }
 
     @Override
-    // Thông báo phiên đấu giá đã hoàn tất và chốt giao dịch.
     public void notifyAuctionFinished(String auctionId, String winnerId, double finalPrice) {
         List<AuctionObserver> room = getRoomObservers(auctionId);
-        // Nếu có ai đang theo dõi phiên đấu giá này thì mới phát thông báo
         if (room != null && !room.isEmpty()) {
-            System.out.println("[Phát thanh] Chốt giao dịch thành công tại Kênh " + auctionId);
-            // Phát thông báo đến tất cả những ai đang theo dõi phiên đấu giá này
+            logger.info("[Phát thanh] Chốt giao dịch thành công tại Kênh {}. Người thắng: {}, Giá: {}", auctionId, winnerId, finalPrice);
             for (AuctionObserver observer : room) {
-                // Gọi hàm onAuctionFinished() của mỗi Observer để họ cập nhật giao diện hoặc trạng thái bên client
                 observer.onAuctionFinished(auctionId, winnerId, finalPrice);
             }
-            
-            // Xóa toàn bộ phòng thông báo trên RAM sau khi đã hoàn tất giao dịch
             roomObservers.remove(auctionId);
         }
     }
 
     @Override
-    // Thông báo phiên đấu giá đã bị hủy bỏ giữa chừng.
     public void notifyAuctionCancelled(String auctionId, String reason) {
         List<AuctionObserver> room = getRoomObservers(auctionId);
-        // Nếu có ai đang theo dõi phiên đấu giá này thì mới phát thông báo
         if (room != null && !room.isEmpty()) {
-            System.out.println("[Phát thanh] Phiên " + auctionId + " đã bị hủy. Lý do: " + reason);
-            // Phát thông báo đến tất cả những ai đang theo dõi phiên đấu giá này
+            logger.warn("[Phát thanh] Phiên {} đã bị hủy. Lý do: {}", auctionId, reason);
             for (AuctionObserver observer : room) {
-                // Gọi hàm onAuctionCancelled() của mỗi Observer để họ cập nhật giao diện hoặc trạng thái bên client
                 observer.onAuctionCancelled(auctionId, reason);
             }
-            
-            // Xóa toàn bộ phòng thông báo trên RAM sau khi đã hủy phiên đấu giá
             roomObservers.remove(auctionId);
         }
     }

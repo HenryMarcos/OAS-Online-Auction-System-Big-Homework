@@ -9,6 +9,9 @@ module com.groupproject.server {
     // Cấp quyền truy cập vào thư viện Database
     requires java.sql;
 
+    // Cấp quyền truy cập vào thư viện SLF4J cho logging
+    requires org.slf4j;
+
     opens com.groupproject.server to javafx.fxml, javafx.graphics;
     exports com.groupproject.server;
 }
