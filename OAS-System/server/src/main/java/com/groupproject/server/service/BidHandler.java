@@ -4,7 +4,7 @@ import java.io.ObjectOutputStream;
 
 import com.groupproject.server.core.ServerApp;
 import com.groupproject.shared.AuctionUpdate;
-import com.groupproject.shared.BidRequest;
+import com.groupproject.shared.network.BidRequest;
 
 public class BidHandler {
     public void handle(BidRequest bidRequest, ObjectOutputStream senderOut) throws Exception {

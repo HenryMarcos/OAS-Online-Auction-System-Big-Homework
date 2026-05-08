@@ -7,12 +7,13 @@ import java.util.List;
 public class Category implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private int id;
-    private String name;
+    private final int id; // Category's id
+    private String name; // Tên của category
     private Integer parentId; // Dùng Integer để có thể đặt null
-    private List<Category> subCategories;
-    private List<String> requiredFields;
+    private List<Category> subCategories; // Các category con nằm trong category này
+    private List<String> requiredFields; // Các yêu cầu mà người dùng phải nhập vào khi chọn category này
 
+    // Contructor
     public Category(int id, String name, Integer parentId) {
         this.id = id;
         this.name = name;

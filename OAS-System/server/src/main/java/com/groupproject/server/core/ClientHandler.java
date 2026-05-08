@@ -3,12 +3,15 @@ package com.groupproject.server.core;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.List;
 
-import com.groupproject.server.service.AuthHandler;
-import com.groupproject.server.service.AuthHandlerFactory;
+import com.groupproject.server.dao.CategoryDAO;
+import com.groupproject.server.handlers.RequestDispatcher;
 import com.groupproject.server.service.BidHandler;
-import com.groupproject.shared.AuthRequest;
-import com.groupproject.shared.BidRequest;
+import com.groupproject.shared.network.BidRequest;
+import com.groupproject.shared.network.NetworkRequest;
+import com.groupproject.shared.network.Request;
+import com.groupproject.shared.network.Response;
 
 // --- NỘI HÀM: CHUÕI RIÊNG CHO MỖI CLIENT ---
 public class ClientHandler implements Runnable {
@@ -24,26 +27,46 @@ public class ClientHandler implements Runnable {
     public void run() {
         try {
             // Mở đường dẫn (out trước in sau)
-            out = new ObjectOutputStream(socket.getOutputStream());
+            out = new ObjectOutputStream(socket.getOutputStream()); // Từ server đến client
             out.flush();
-            in = new ObjectInputStream(socket.getInputStream());
+            in = new ObjectInputStream(socket.getInputStream()); // Từ client đến server
 
             // Thêm client vào danh sách báo tin chính 1 cách an toàn 
             synchronized (ServerApp.clientWriters) {
                 ServerApp.clientWriters.add(out);
             }
 
+            RequestDispatcher dispatcher = new RequestDispatcher();
+
             // Vòng lặp vô hạn riêng cho client này
             while (true) {
-                
+                // Kiểm tra xem client gửi gì
                 Object recievedData = in.readObject();
 
-                if (recievedData instanceof AuthRequest) {
-                    AuthRequest request = (AuthRequest) recievedData;
 
-                    AuthHandler handler = AuthHandlerFactory.getHandler(request.getType());
+                if (recievedData instanceof Request) {
+                    Request request = (Request) recievedData;
+                    Response serverReply = dispatcher.dispatch(request);
 
-                    handler.handle(request, out);
+                    if (serverReply != null) {
+                        out.writeObject(serverReply);
+                        out.flush();
+                        out.reset();
+                    }
+                }
+                else if (recievedData instanceof NetworkRequest) {
+                    NetworkRequest networkRequest = (NetworkRequest) recievedData;
+
+                    if (networkRequest.getAction().equals("GET_CATEGORY_FIELDS")) {
+
+                        int categoryId = (int) networkRequest.getPayload();
+
+                        List<String> requiredFields = CategoryDAO.getRequiredFieldsForCategory(categoryId);
+                        out.writeObject(requiredFields);
+                        out.flush();
+                        
+                        System.out.println("Sent " + requiredFields.size() + " fields to the client.");
+                    }
                 }
                 else if (recievedData instanceof BidRequest) {
                     BidRequest bidRequest = (BidRequest) recievedData;

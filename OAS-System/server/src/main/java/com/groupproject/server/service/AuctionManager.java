@@ -10,7 +10,7 @@ import java.util.List;
 import com.groupproject.server.core.ServerApp;
 import com.groupproject.server.utils.Config;
 import com.groupproject.shared.AuctionItem;
-import com.groupproject.shared.BidRequest;
+import com.groupproject.shared.network.BidRequest;
 
 public class AuctionManager {
     public static synchronized boolean proccessBid(int auctionId, String bidderUsername, double bidAmount) {

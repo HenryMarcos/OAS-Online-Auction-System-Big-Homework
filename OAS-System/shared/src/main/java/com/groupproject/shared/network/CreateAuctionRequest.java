@@ -1,4 +1,4 @@
-package com.groupproject.shared;
+package com.groupproject.shared.network;
 
 import com.groupproject.shared.model.transaction.Auction;
 

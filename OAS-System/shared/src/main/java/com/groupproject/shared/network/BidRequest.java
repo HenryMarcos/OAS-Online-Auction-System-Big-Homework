@@ -1,4 +1,4 @@
-package com.groupproject.shared;
+package com.groupproject.shared.network;
 
 import java.io.Serializable;
 

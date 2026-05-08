@@ -2,7 +2,11 @@ package com.groupproject.client;
 
 import java.io.IOException;
 
-import com.groupproject.shared.AuthRequest;
+import com.groupproject.client.network.EventRouter;
+import com.groupproject.client.network.RequestSender;
+import com.groupproject.client.utils.SessionManager;
+import com.groupproject.shared.network.LoginRequest;
+import com.groupproject.shared.network.LoginResponse;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -14,6 +18,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class LoginController {
@@ -29,6 +34,8 @@ public class LoginController {
     public void initialize() {
         // Vẫn giữ dòng này để đồng bộ chữ giữa 2 ô nhập mật khẩu
         passwordField.textProperty().bindBidirectional(passwordTextField.textProperty());
+
+        EventRouter.getInstance().on(LoginResponse.class, this::handleLoginResponse);
     }
 
     // Hàm này được gọi khi bấm nút con mắt (Do đã set onAction="#togglePasswordVisibility" trong FXML)
@@ -53,30 +60,22 @@ public class LoginController {
         String password = passwordField.getText();
         
         if (username.isEmpty() || password.isEmpty()) {
+            statusLabel.setTextFill(Color.RED);
             statusLabel.setText("Please enter both fields.");
             return;
         }
 
+        // Give the user some visual feedback while they wait
+        statusLabel.setTextFill(Color.BLUE);
+        statusLabel.setText("Logging in...");
+
         try {
             // Tạo và gửi yêu cầu đăng nhập cho server
-            AuthRequest request = new AuthRequest("LOGIN", username, password);
-            App.out.writeObject(request);
-            App.out.flush();
+            LoginRequest loginRequest = new LoginRequest(username, password);
+            RequestSender.send(loginRequest);
 
-            // Wait for the server's response
-            String response = (String) App.in.readObject();
-            
-            if (response.equals("SERVER:AUTH_SUCCESS")) {
-                statusLabel.setTextFill(javafx.scene.paint.Color.GREEN);
-                statusLabel.setText("Success! Loading chat...");
-                // TODO: Switch scene to your Chat App here!
-            } else {
-                // Extracts the error message sent from the server
-                String errorMsg = response.split(":")[2];
-                statusLabel.setTextFill(javafx.scene.paint.Color.RED);
-                statusLabel.setText(errorMsg);
-            }
         } catch (Exception e) {
+            statusLabel.setTextFill(Color.RED);
             statusLabel.setText("Connection error." + e.getMessage());
         }
     }
@@ -105,6 +104,30 @@ public class LoginController {
         currentStage.show();
 
         //App.setRoot("signup");
+    }
+
+    // Hàm xử lý kết quả nhận về từ server
+    private void handleLoginResponse(LoginResponse response) {
+        if (response.isSuccess()) { handleSuccessfulLogin(response); }
+        else { handleFailedLogin(response); }
+    }
+
+    private void handleSuccessfulLogin(LoginResponse response) {
+        // Thông báo cho client rằng đã thành công
+        statusLabel.setTextFill(javafx.scene.paint.Color.GREEN);
+        statusLabel.setText("Success! Loading chat...");
+        // Lưu user
+        SessionManager.getInstance().setCurrentUser(response.getUser());
+
+        // TODO: Chuyển sang màn hình chính
+    }
+
+    private void handleFailedLogin(LoginResponse response) {
+        // Show error message on the screen
+        System.out.println("Error: ");
+        // errorLabel.setText(response.getMessage());
+        statusLabel.setTextFill(Color.RED);
+        statusLabel.setText(response.getMessage());
     }
 
 }

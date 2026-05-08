@@ -6,7 +6,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import com.groupproject.server.utils.Config;
-import com.groupproject.shared.AuthRequest;
+import com.groupproject.shared.network.LoginRequest;
+import com.groupproject.shared.network.SignupRequest;
 
 public class UserDAO {
     public static synchronized boolean saveUser(String username, String email, String password) {
@@ -31,7 +32,7 @@ public class UserDAO {
         }
     }
 
-    public static synchronized boolean saveUser(AuthRequest request) {
+    public static synchronized boolean saveUser(SignupRequest request) {
         return saveUser(request.getUsername(), request.getEmail(), request.getPassword());
     }
 
@@ -54,7 +55,7 @@ public class UserDAO {
         }
     }
 
-    public static synchronized boolean checkUser(AuthRequest request) {
+    public static synchronized boolean checkUser(LoginRequest request) {
         return checkUser(request.getUsername(), request.getPassword());
     }
 }

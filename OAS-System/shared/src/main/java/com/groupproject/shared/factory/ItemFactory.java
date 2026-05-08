@@ -6,13 +6,15 @@ import java.util.Map;
 import com.groupproject.shared.model.item.Item;
 
 public class ItemFactory {
-    private static final Map<String, ItemCreator> creators = new HashMap<>();
+    //private static final Map<String, ItemCreator> creators = new HashMap<>();
 
+    /* 
     static {
         creators.put("art", new ArtFactory());
         creators.put("electronic", new ElectronicFactory());
         creators.put("vehicle", new VehicleFactory());
     }
+    
 
     public static Item createItem(String type, String name, double basePrice, String sellerId, String description, String... attributes) {
         ItemCreator creator = creators.get(type.trim().toLowerCase());
@@ -21,4 +23,5 @@ public class ItemFactory {
         }
         return creator.createItem(name, basePrice, sellerId, description, attributes);
     }
+    */
 }

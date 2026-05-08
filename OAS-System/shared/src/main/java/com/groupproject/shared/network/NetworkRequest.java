@@ -1,8 +1,6 @@
-package com.groupproject.shared;
+package com.groupproject.shared.network;
 
-import java.io.Serializable;
-
-public class NetworkRequest implements Serializable {
+public class NetworkRequest extends Request {
     private String action;
     private Object payload;
 
@@ -12,4 +10,5 @@ public class NetworkRequest implements Serializable {
     }
 
     public String getAction() { return action; }
+    public Object getPayload() { return payload; }
 }

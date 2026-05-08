@@ -2,7 +2,12 @@ package com.groupproject.client;
 
 import java.io.IOException;
 
-import com.groupproject.shared.AuthRequest;
+import com.groupproject.client.network.EventRouter;
+import com.groupproject.client.network.RequestSender;
+import com.groupproject.client.utils.SessionManager;
+import com.groupproject.shared.model.user.User;
+import com.groupproject.shared.network.SignupRequest;
+import com.groupproject.shared.network.SignupResponse;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -14,6 +19,7 @@ import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 
@@ -26,6 +32,30 @@ public class SignupController {
     @FXML private Label statusLabel;
 
     @FXML private Hyperlink hyperlinklogin;
+
+    @FXML
+    public void initialize() {
+        EventRouter.getInstance().on(SignupResponse.class, response -> {
+            if (response.isSuccess() && response instanceof SignupResponse) {
+                SignupResponse signupResponse = (SignupResponse) response;
+                // Thông báo cho client rằng đã thành công
+                statusLabel.setTextFill(javafx.scene.paint.Color.GREEN);
+                statusLabel.setText("Success! Loading chat...");
+                // Lưu user
+                User user = signupResponse.getUser();
+                SessionManager.getInstance().setCurrentUser(user);
+
+                System.out.println("Signup Success! Switching screens...");
+                // TODO: đổi sang màn hình chính
+            } else {
+                // Show error message on the screen
+                System.out.println("Error: ");
+                // errorLabel.setText(response.getMessage());
+                statusLabel.setTextFill(Color.RED);
+                statusLabel.setText(response.getMessage());
+            }
+        });
+    }
 
     @FXML
     private void handleSignUp() {
@@ -48,23 +78,9 @@ public class SignupController {
 
         try {
             // Gửi chuỗi yêu cầu đăng ký 
-            AuthRequest request = new AuthRequest("SIGNUP", username, email, password);
-            App.out.writeObject(request);
-            App.out.flush();
 
-            // Chờ thông báo của server
-            String response = (String) App.in.readObject();
-
-            if (response.equals("SERVER:AUTH_SUCCESS")) {
-                statusLabel.setTextFill(javafx.scene.paint.Color.GREEN);
-                statusLabel.setText("Success! Loading chat...");
-                App.setRoot("simpleChatApp"); // Transition to Chat
-            } else {
-                String errorMsg = response.split(":")[2];
-                statusLabel.setTextFill(javafx.scene.paint.Color.RED);
-                statusLabel.setText(errorMsg);
-            }
-
+            SignupRequest request = new SignupRequest(username, email, password, repeatPassword);
+            RequestSender.send(request);
 
         } catch (Exception e) {
             statusLabel.setTextFill(javafx.scene.paint.Color.RED);
@@ -82,6 +98,31 @@ public class SignupController {
         currentStage.setScene(scene);
         currentStage.show();
         //App.setRoot("login");
+    }
+
+    // Hàm xử lý kết quả nhận về từ server
+    private void handleSignupResponse(SignupResponse response) {
+        if (response.isSuccess()) { handleSuccessfulSignup(response); }
+        else { handleFailedSignup(response); }
+    }
+
+    private void handleSuccessfulSignup(SignupResponse response) {
+        // Thông báo cho client rằng đã thành công
+        statusLabel.setTextFill(javafx.scene.paint.Color.GREEN);
+        statusLabel.setText("Success! Loading chat...");
+        // Lưu user
+        SessionManager.getInstance().setCurrentUser(response.getUser());
+
+        System.out.println("Signup Success! Switching screens...");
+        // TODO: đổi sang màn hình chính
+    }
+
+    private void handleFailedSignup(SignupResponse response) {
+        // Show error message on the screen
+        System.out.println("Error: ");
+        // errorLabel.setText(response.getMessage());
+        statusLabel.setTextFill(Color.RED);
+        statusLabel.setText(response.getMessage());
     }
 }
 
