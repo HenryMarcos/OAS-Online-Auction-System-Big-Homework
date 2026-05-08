@@ -50,7 +50,7 @@
                 <children>
                     <Hyperlink styleClass="forgot-password-link" text="Forgot Password ? "/>
                     <HBox HBox.hgrow="ALWAYS"/>
-                    <Button styleClass="login-button" minWidth="120.0" text="Login"  onAction="#handleLogin"/>
+                    <Button fx:id="loginButton" styleClass="login-button" minWidth="120.0" text="Login"  onAction="#handleLogin"/>
                 </children>
             </HBox>
             <HBox alignment="CENTER" prefHeight="6.0" prefWidth="230.0" spacing="10.0">

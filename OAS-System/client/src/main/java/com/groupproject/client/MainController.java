@@ -3,17 +3,15 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import com.groupproject.client.utils.SceneNavigator;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
-
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 import javafx.scene.layout.BorderPane;
 public class MainController  implements Initializable {
     @FXML
@@ -24,15 +22,8 @@ public class MainController  implements Initializable {
     private Button profilebtn;
     @FXML 
     private void switchtologin(ActionEvent event) throws IOException {
-        
-      Parent root = FXMLLoader.load(getClass().getResource("FXML/login.fxml"));
-        
-      Scene scene = new Scene(root, 1000, 700);
-      Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-      currentStage.setTitle("Login | Auction System");
-      // Bước 4: Kéo rèm! Gắn Cảnh mới lên Sân khấu và hiển thị
-      currentStage.setScene(scene);
-      currentStage.show();
+        SceneNavigator.goTo("/com/groupproject/client/FXML/login.fxml");
+      
    }
    // Khi nhan vao nut Home o man hinh chinh 
    @FXML
@@ -45,7 +36,10 @@ public class MainController  implements Initializable {
    }
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // yêu cầu nhả ra các categories đã có sẵn trong máy.
          loadView("homecontent.fxml");
+         // lắng nghe gọi GetCategoriesResponse 
+
     }
     @FXML
     private void toggleProfilemenu() {

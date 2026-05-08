@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-
+import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.network.ServerListener;
 import com.groupproject.shared.model.user.User;
@@ -34,10 +34,14 @@ public class App extends Application {
 
         // Vào màn hình login
         //scene = new Scene(loadFXML("login"), 640, 480);
-        scene = new Scene(loadFXML("/com/groupproject/client/FXML/login"), 1000, 700);
-        stage.setTitle("Login | Auction System");
-        stage.setScene(scene);
-        stage.show();
+        SceneNavigator.setMainStage(stage);
+        
+        // 2. Chuyển đến màn hình đầu tiên (ví dụ: màn hình Đăng nhập)
+        SceneNavigator.goTo("/com/groupproject/client/FXML/login.fxml");
+        
+        // 3. Cài đặt tiêu đề và hiển thị (nếu goTo chưa show)
+        stage.setTitle("Hệ thống đấu giá OAS");
+        
     }
 
     static void setRoot(String fxml) throws IOException {

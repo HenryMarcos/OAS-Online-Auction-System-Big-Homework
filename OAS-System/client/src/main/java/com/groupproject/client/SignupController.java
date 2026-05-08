@@ -35,26 +35,7 @@ public class SignupController {
 
     @FXML
     public void initialize() {
-        EventRouter.getInstance().on(SignupResponse.class, response -> {
-            if (response.isSuccess() && response instanceof SignupResponse) {
-                SignupResponse signupResponse = (SignupResponse) response;
-                // Thông báo cho client rằng đã thành công
-                statusLabel.setTextFill(javafx.scene.paint.Color.GREEN);
-                statusLabel.setText("Success! Loading chat...");
-                // Lưu user
-                User user = signupResponse.getUser();
-                SessionManager.getInstance().setCurrentUser(user);
-
-                System.out.println("Signup Success! Switching screens...");
-                // TODO: đổi sang màn hình chính
-            } else {
-                // Show error message on the screen
-                System.out.println("Error: ");
-                // errorLabel.setText(response.getMessage());
-                statusLabel.setTextFill(Color.RED);
-                statusLabel.setText(response.getMessage());
-            }
-        });
+        EventRouter.getInstance().on(SignupResponse.class, this::handleSignupResponse);
     }
 
     @FXML
@@ -90,14 +71,7 @@ public class SignupController {
     
     @FXML
     private void switchtologin(ActionEvent event) throws IOException {
-        Parent root = FXMLLoader.load(getClass().getResource("FXML/login.fxml"));
-        Scene scene = new Scene(root,1000,700);
-        Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        currentStage.setTitle("Login | Auction System");
-        // Bước 4: Kéo rèm! Gắn Cảnh mới lên Sân khấu và hiển thị
-        currentStage.setScene(scene);
-        currentStage.show();
-        //App.setRoot("login");
+        SceneNavigator.goTo("/com/groupproject/client/FXML/login.fxml");
     }
 
     // Hàm xử lý kết quả nhận về từ server
@@ -114,7 +88,8 @@ public class SignupController {
         SessionManager.getInstance().setCurrentUser(response.getUser());
 
         System.out.println("Signup Success! Switching screens...");
-        // TODO: đổi sang màn hình chính
+        // chuyển sang màn hình chính
+        SceneNavigator.goTo("/com/groupproject/client/FXML/mainscreen.fxml");
     }
 
     private void handleFailedSignup(SignupResponse response) {

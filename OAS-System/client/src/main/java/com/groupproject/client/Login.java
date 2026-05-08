@@ -13,7 +13,6 @@ import javafx.stage.Stage;
 
 
 public class Login extends Application {
-
     private PasswordField passwordField;
     private TextField passwordTextField;
     private ToggleButton eyeButton;

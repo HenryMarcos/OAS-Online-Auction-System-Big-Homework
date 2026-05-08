@@ -22,7 +22,7 @@ public class SceneNavigator {
                 FXMLLoader loader = new FXMLLoader(SceneNavigator.class.getResource(fxmlPath));
                 Parent root = loader.load();
                 
-                mainStage.setScene(new Scene(root));
+                mainStage.setScene(new Scene(root,1000,700));
                 mainStage.show();
                 
             } catch (IOException e) {
