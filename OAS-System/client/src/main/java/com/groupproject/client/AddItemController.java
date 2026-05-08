@@ -35,7 +35,7 @@ public class AddItemController implements Initializable {
     @FXML 
     private Label validationLabel;
     @FXML
-    ComboBox<String> category;
+    ComboBox<Category> category;
     @FXML
     private TextField name ;
     @FXML
@@ -61,11 +61,14 @@ public class AddItemController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         // them cac category , set hieu ung khi ma mot truong duoc dien 
-        category.getItems().addAll("Art","Clothes","Electronics","Jewelry","Vehicle","Others");
-        setupTextFieldAnimation(name,namelabel);
-        setupTextFieldAnimation(startprice,pricelabel);
-        setupComboBoxAnimation(category, categorylabel);
-        setupDatePickerAnimation(enddate,datelabel);
+        // 
+        endhour.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0,23,0));
+        endminute.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0,59,0));
+        endsecond.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0,59,0));
+
+        enddate.valueProperty().addListener((obs,oldval,newval) -> {
+            datelabel.setVisible(newval==null);
+        });
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select Image of Product");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.gif"));
@@ -96,52 +99,9 @@ public class AddItemController implements Initializable {
                 validationLabel.setVisible(true);
                 validationLabel.setStyle("-fx-text-fill:black");
                 validationLabel.setText("Add item successfully ! Please go back to HOME");
-            }
-                
+            }      
         });
-        // lay ra gio / phut / giay 
-        endhour.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0,23,0));
-        endminute.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0,59,0));
-        endsecond.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0,59,0));
-
-        enddate.valueProperty().addListener((obs,oldval,newval) -> {
-            datelabel.setVisible(newval==null);
-        });
-
     }   
-    private void setupTextFieldAnimation(TextField field, Label label) {
-            field.focusedProperty().addListener((obs,oldval,newval) -> {
-                boolean shouldmoveup = (newval || !field.getText().isEmpty());
-                animateLabel(label,shouldmoveup);
-            });
-    }
-    private void setupComboBoxAnimation(ComboBox<String> category, Label categorylabel) {
-            category.focusedProperty().addListener((obs,oldval,newval) -> {
-                boolean shouldmoveup = (newval || category.getValue() != null);
-                animateLabel(categorylabel,shouldmoveup);
-            });
-    }
-    private void setupDatePickerAnimation(DatePicker enddate, Label datelabel) {
-            enddate.focusedProperty().addListener((obs,oldval,newval) -> {
-                boolean shouldmoveup = ( newval || enddate.getValue() != null) ;
-                animateLabel(datelabel,shouldmoveup);
-            });
-    }
-
-    private void animateLabel (Label label,boolean shouldmoveup) {
-        if (shouldmoveup) {
-            label.setTranslateY(-40); // Bay lên 40px
-            label.setScaleX(0.85);    // Thu nhỏ lại 85%
-            label.setScaleY(0.85);
-            label.setTextFill(Color.web("#000000"));
-        }
-        else {
-            label.setTranslateY(0);
-            label.setScaleX(1.0);
-            label.setScaleY(1.0);
-            label.setTextFill(Color.web("#999999"));
-        }
-    }
     @FXML
     private void switchtoHome(ActionEvent event) throws IOException {
       SceneNavigator.goTo("/com/groupproject/client/FXML/mainscreen.fxml");
