@@ -3,11 +3,18 @@ package com.groupproject.client;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+
 import java.util.ResourceBundle;
 
+import com.groupproject.shared.network.GetCategoriesRequest;
+import com.groupproject.shared.network.GetCategoriesResponse;
 import com.groupproject.client.Data.Item;
 import com.groupproject.client.Data.ItemRespository;
-
+import com.groupproject.client.network.EventRouter;
+import com.groupproject.client.network.RequestSender;
+import com.groupproject.client.utils.SessionManager;
+import com.groupproject.shared.model.categories.Category;
+import com.groupproject.shared.model.user.User;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -27,9 +34,10 @@ public class HomeController implements  Initializable {
    private GridPane productgrid;
    @FXML
    private Button sortbutton;
+   @FXML private HBox categoryBar;
    // Khi nhan vao nut Log out o mep ben phai cua man hinh 
 
-
+   // man hinh moi khi an vao nut sortby
    public void addEventHandles()  {
       sortbutton.setOnMouseClicked(mouseEvent -> {
          Stage stage = new Stage();
@@ -49,9 +57,10 @@ public class HomeController implements  Initializable {
    public void initialize(URL location, ResourceBundle resources) {
       instance = this;
       addEventHandles();
-      
+      loadItems();
    }
    public void loadItems() {
+      /* 
       productgrid.getChildren().clear();
       
       List<Item> items = ItemRespository.getAll();
@@ -69,6 +78,27 @@ public class HomeController implements  Initializable {
          catch( IOException e) {
             e.printStackTrace();
          }
+      }
+         */
+      EventRouter.getInstance().on(GetCategoriesResponse.class, response -> {
+         if (response.isSuccess()) {
+            categoryBar.getChildren().clear(); // tai sao lai nen xoa 
+            for (Category category : response.categories) {
+               Button button = new Button(category.getName());
+               button.getStyleClass().add("category-btn");
+               button.setOnAction(e -> {
+                  // test thu in ra console xem co hoat dong dung khong ? 
+                  // gui yeu cau dua lay category id cua all, electronics,...
+                  System.out.println("Dang loc items cua " + category.getName());
+                  // gửi yêu cầu cho sever trả về các item theo trường thông tin này 
+               });
+               categoryBar.getChildren().add(button);
+            }
+         }
+      });
+      User currentUser = SessionManager.getInstance().getCurrentUser();
+      if ( currentUser != null) {
+         RequestSender.send(new GetCategoriesRequest(currentUser));
       }
    }
    public static HomeController getInstance() {

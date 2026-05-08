@@ -4,9 +4,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import com.groupproject.client.utils.SceneNavigator;
+
 import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.network.ServerListener;
+import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.shared.model.user.User;
 
 import javafx.application.Application;
@@ -47,7 +48,6 @@ public class App extends Application {
     static void setRoot(String fxml) throws IOException {
         scene.setRoot(loadFXML(fxml));
     }
-
     public static void connectToServer() {
         try {
             // Use your Google Cloud IP
@@ -68,7 +68,6 @@ public class App extends Application {
             e.printStackTrace();
         }
     }
-
     // Load file fxml
     private static Parent loadFXML(String fxml) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource(fxml + ".fxml"));

@@ -22,7 +22,7 @@ public class SessionManager {
 
     public void setCurrentUser(User user) {
         currentUser = user;
-        System.out.println("Session updated: User " + user.getUsername() + " is now logged in.");
+        System.out.println("Session updated: User " + (user != null ?user.getUsername() :"Unknown") + " is now logged in.");
     }
 
     public User getCurrentUser() { return currentUser; }

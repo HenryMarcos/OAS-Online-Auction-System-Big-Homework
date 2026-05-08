@@ -80,11 +80,6 @@ public class LoginController {
             statusLabel.setText("Connection error." + e.getMessage());
         }
     }
-
-    @FXML 
-    private void  switchtohome(ActionEvent event) throws IOException {
-        SceneNavigator.goTo("/com/groupproject/client/FXML/mainscreen.fxml");
-    }
     @FXML
     private void switchtoSignup(ActionEvent event) throws IOException {
         SceneNavigator.goTo("/com/groupproject/client/FXML/signup.fxml");

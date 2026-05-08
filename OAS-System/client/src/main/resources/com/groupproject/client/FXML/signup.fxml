@@ -58,7 +58,7 @@
     </VBox>
     <HBox alignment="CENTER" prefHeight="6.0" prefWidth="230.0" spacing="10.0">
         <children>
-            <Button styleClass="createaccount-button" text="Create account" onAction="#handleSignup" />
+            <Button fx:id="signupButton" styleClass="createaccount-button" text="Create account" onAction="#handleSignup" />
         </children>
         <padding>
             <Insets top="10.0" />

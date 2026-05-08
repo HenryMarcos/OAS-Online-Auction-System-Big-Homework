@@ -2,9 +2,9 @@ package com.groupproject.client;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
-
+import javafx.stage.Stage;
 import com.groupproject.client.utils.SceneNavigator;
-
+import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -13,13 +13,20 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.BorderPane;
-public class MainController  implements Initializable {
+
+public class MainController extends Application  implements Initializable {
     @FXML
     private BorderPane mainBorderPane;
     @FXML
     private VBox profilesubmenu;
     @FXML 
     private Button profilebtn;
+    // test chay ham home
+    @Override
+    public void start(Stage primarystage) throws IOException {
+        SceneNavigator.setMainStage(primarystage);
+        SceneNavigator.goTo("/com/groupproject/client/FXML/mainscreen.fxml");
+    }
     @FXML 
     private void switchtologin(ActionEvent event) throws IOException {
         SceneNavigator.goTo("/com/groupproject/client/FXML/login.fxml");
@@ -71,6 +78,9 @@ public class MainController  implements Initializable {
     @FXML
     private void switchtoNotification() {
         loadView("notification.fxml");
+    }
+    public static void main(String[] args) {
+        launch(args);
     }
 
 }
