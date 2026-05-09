@@ -55,8 +55,6 @@ public class HomeController implements  Initializable {
    }
    @Override
    public void initialize(URL location, ResourceBundle resources) {
-      List<Category> savedCategories = SessionManager.getInstance().getCurrentCategories();
-
       instance = this;
       addEventHandles();
       loadItems();

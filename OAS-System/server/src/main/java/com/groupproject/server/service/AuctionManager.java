@@ -19,7 +19,7 @@ public class AuctionManager {
 
         try (Connection conn = DriverManager.getConnection(Config.DATABASE_URL)) {
 
-            // Kiểm tra xem bid hợp lý chưa
+            // Kiểm tra xem bid hợp lý chưa trong trường hợp mà bidder đã vượt qua test của BidHandler
             try (PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
                 checkStmt.setInt(1, auctionId);
                 ResultSet rs = checkStmt.executeQuery();

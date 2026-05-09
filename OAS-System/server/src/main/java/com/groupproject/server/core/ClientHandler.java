@@ -35,7 +35,7 @@ public class ClientHandler implements Runnable {
             synchronized (ServerApp.clientWriters) {
                 ServerApp.clientWriters.add(out);
             }
-
+            // nơi tập hợp của các yêu cầu xử lý từ client gửi lên sever của mỗi user
             RequestDispatcher dispatcher = new RequestDispatcher();
 
             // Vòng lặp vô hạn riêng cho client này

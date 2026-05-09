@@ -3,10 +3,10 @@ package com.groupproject.shared;
 import java.io.Serializable;
 
 public class AuctionItem implements Serializable {
-    private int id;
+    private int id; // id của phiên đấu giá 
     private String itemName;
     private Double currentBid;
-    private String highestBid;
+    private String highestBid; // người có giá đặt cao nhất
 
     public AuctionItem(int id, String itemName, Double currentBid, String highestBid) {
         this.id = id;

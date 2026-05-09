@@ -1,21 +1,27 @@
 package com.groupproject.client;
 import com.groupproject.client.Data.*;
+
 import java.io.IOException;
+import java.net.URL;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
+import java.util.ResourceBundle;
+
+import com.groupproject.client.utils.SceneNavigator;
+
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
-import javafx.scene.Node;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
+import javafx.fxml.Initializable;
+
 import javafx.scene.control.Label;
-import javafx.stage.Stage;
-public class AuctionController {
+public class AuctionController implements Initializable {
+    @FXML private LineChart<String,Number> linechart;
+
+    
     private Item item;
     private Timeline timeline;
     private Label productname;
@@ -37,17 +43,11 @@ public class AuctionController {
     private Label auctionproductname;
     @FXML 
     private void switchtoHome(ActionEvent event) throws IOException {
-        Parent root = FXMLLoader.load(getClass().getResource("/com/groupproject/client/FXML/mainscreen.fxml"));
-    
-        // Bước 2: Tạo một Scene (Cảnh diễn) mới từ giao diện vừa tải
-        Scene newScene = new Scene(root,1000,700);
-        newScene.getStylesheets().add(getClass().getResource("CSS/home.css").toExternalForm());
-        // Bước 3: Lấy lại Sân khấu (Stage) hiện tại từ nút bấm mà người dùng vừa click
-        Stage currentStage =  (Stage) ((Node) event.getSource()).getScene().getWindow();
-        currentStage.setTitle("Home | Auction System");
-        // Bước 4: Kéo rèm! Gắn Cảnh mới lên Sân khấu và hiển thị
-        currentStage.setScene(newScene);
-        currentStage.show();
+        SceneNavigator.goTo("/com/groupproject/client/FXML/mainscreen.fxml");
+    }
+    @Override
+    public  void initialize(URL location, ResourceBundle resources) {
+        
     }
     public void setItem(Item item, Label currentprice,Label timeleft, Label productname) {
         this.item= item;

@@ -8,7 +8,7 @@ public class AuctionUpdate implements Serializable {
     private int auctionId;
     private double newBidAmount;
     private String newHighestBidder;
-
+    // thêm thời gian người này đặt
     public AuctionUpdate(int auctionId, String newHighestBidder, double newBidAmount) {
         this.auctionId = auctionId;
         this.newHighestBidder = newHighestBidder;

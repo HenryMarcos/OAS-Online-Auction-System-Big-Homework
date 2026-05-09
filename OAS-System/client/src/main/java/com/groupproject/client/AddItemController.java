@@ -1,11 +1,13 @@
 package com.groupproject.client;
 import com.groupproject.client.Data.*;
+import com.groupproject.client.network.EventRouter;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ResourceBundle;
 import java.time.LocalDate;
 import java.util.List;
@@ -58,31 +60,21 @@ public class AddItemController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) { 
         // tạo thêm một mục là Unknown/Other để id = ? 
+        setupTime();
         generateCategory();
         createUI();
-        handleImage();
-        // kiem tra xem cac truong co duoc dien day du khong 
-        addButton.setOnMouseClicked( mouseEvent -> {
-            if (name.getText().isEmpty() || startprice.getText().isEmpty() || imagefile.getName().isEmpty() || LocalDateTime.now().isAfter(enddate.getValue().atTime(LocalTime.MAX)) ) {
-                validationLabel.setVisible(true);
-                validationLabel.setText("Please fill all fields correctly");
-                return;
-            }
-            else {
-                LocalDate date = enddate.getValue();
-                int hour= endhour.getValue();
-                int minute= endminute.getValue();
-                int second= endsecond.getValue();
-                LocalDateTime endDateTime= LocalDateTime.of(date, LocalTime.of(hour, minute, second));
-                if ( HomeController.getInstance() != null) {
-                    HomeController.getInstance().loadItems();
-                }
-                validationLabel.setVisible(true);
-                validationLabel.setStyle("-fx-text-fill:black");
-                validationLabel.setText("Auction created successfully ! Please go back to HOME ");
-            }      
-        });
+        handleImage(); 
     }   
+    @FXML
+    private void handleCreateAuction(ActionEvent event) throws IOException {
+        if(! validInput()) {
+        }
+        else {
+            setLoadingState(true);
+            // Gửi Request tạo ra một phiên đấu giá lên sever để xử lý
+
+        }
+    }
     @FXML
     private void switchtoHome(ActionEvent event) throws IOException {
       SceneNavigator.goTo("/com/groupproject/client/FXML/mainscreen.fxml");
@@ -104,11 +96,10 @@ public class AddItemController implements Initializable {
         });
     }
     // ham xu ly thoi gian 
-    private boolean handleTime() {
+    private void setupTime() {
         endhour.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0,23,0));
         endminute.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0,59,0));
         endsecond.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0,59,0));
-        return true;
     }
     // Khi category được bấm vào thì hiện ra màn hình chỉ là tên của category đó mà không phải là địa chỉ
     private void generateCategory() {
@@ -167,8 +158,72 @@ public class AddItemController implements Initializable {
             showError();
             return false;
         }
+        if (!handleTime()) {
+            showError();
+            return false;
+        }
+        if (!handlePrice()) {
+            showError();
+            return false ;
+        }
+        return true;
+        // phần xử lý hình ảnh và cả các trường mới được tạo ra khi chọn category của từng loại 
         
     }
+    private void showError() {
+        validationLabel.setVisible(true);
+        validationLabel.setText("Please fill all fields correctly");
+    }
+    // hàm xử lý thời gian giá 
+    public boolean handleTime() {
+        LocalDate selectedDate = enddate.getValue();
+        if (selectedDate == null) {
+            return false;
+        }
+        int hour= endhour.getValue();
+        int minute = endminute.getValue();
+        int second= endsecond.getValue();
+        // Kiem tra hop le cua ngay thang nam 
+        if ( hour <0 || hour > 23 || second < 0 || second  > 59 || minute <0 || minute > 59 ) {
+            return false;
+        }
+        LocalTime selectedTime = LocalTime.of(hour, minute, second);
+        LocalDateTime endDateTime = LocalDateTime.of(selectedDate, selectedTime);
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        if (endDateTime.isBefore(currentDateTime)) {
+            return false;
+        }
+        long daysbetween = ChronoUnit.DAYS.between(currentDateTime, endDateTime);
+        long minutesbetween = ChronoUnit.MINUTES.between(currentDateTime,endDateTime);
+            if (minutesbetween < 5 || daysbetween > 30 ) {
+                return false ;
+            }
+        return true;
+    }
+    // Hàm xử lý giá 
+    public boolean handlePrice() {
+        String selectedPrice= startprice.getText().trim();
+        if (selectedPrice == null) {
+            return false;
+        }
+        try {
+            double price = Double.parseDouble(selectedPrice);
+            if (price <=  0 ) {
+                return false ;
+            }
+            return true;
+        }
+        catch (NumberFormatException e) {
+            e.printStackTrace();
+            return false ;
+        }
+    }
+    private void handleRequestCreateAuction() {
+      /*
+         Tạo ra để lăng nghe kết quả trả về từ Sever
+       */
+      // EventRouter.getInstance().on()
+   }     
     
 }
 

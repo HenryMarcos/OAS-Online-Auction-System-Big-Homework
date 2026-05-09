@@ -94,7 +94,7 @@
                             </children>
                         </HBox>
                         <Label fx:id="validationLabel" maxWidth="Infinity" text="This is a validation label" textFill="RED" visible="false" />
-                        <Button fx:id="addButton" maxWidth="Infinity" prefHeight="35.0" styleClass="myButtons" text="Add Item">
+                        <Button fx:id="addButton" maxWidth="Infinity" prefHeight="35.0" styleClass="myButtons" text="Add Item" onAction="#handleCreateAuction">
                             <VBox.margin>
                                 <Insets top="10.0" />
                             </VBox.margin>

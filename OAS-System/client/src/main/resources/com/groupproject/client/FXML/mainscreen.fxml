@@ -26,7 +26,7 @@
                                 <Font size="14.0" />
                             </font>
                         </Label>
-                        <Label text="Cuong" textOverrun="CENTER_WORD_ELLIPSIS">
+                        <Label fx:id="username" text="Cuong" textOverrun="CENTER_WORD_ELLIPSIS">
                             <font>
                                 <Font name="System Bold" size="14.0" />
                             </font>

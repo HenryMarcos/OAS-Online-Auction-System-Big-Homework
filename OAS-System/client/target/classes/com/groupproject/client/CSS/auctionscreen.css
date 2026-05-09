@@ -3,6 +3,7 @@
 }
 
 .header-title {
+    -fx-text-fill:black;
     -fx-font-size: 20px;
     -fx-font-weight: bold;
 }

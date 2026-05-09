@@ -10,13 +10,12 @@ import javafx.scene.control.Label;
 // co chuc nang vo hieu hoa khi thoi gian het gio 
 public class CountDownHelper {
     private Timeline timeline;
-    private Label timeleft; // Lưu lại để hàm updateCountDown dùng được
-    private Item item;      // Lưu lại để hàm updateCountDown dùng được
+    private Item item;
+    private Label timeleft;
     // bắt đầu thời gian đém ngược
-    public void start(Item item, Label timeleft) {
-        this.item = item;
-        this.timeleft = timeleft;
-
+    public  void start(Item item, Label timeleft) {
+        this.item=item;
+        this.timeleft=timeleft;
         if (timeline != null) { 
             timeline.stop(); 
         }
@@ -31,7 +30,7 @@ public class CountDownHelper {
         updateCountDown(); // Gọi ngay để hiện số lập tức 
     }
     // hiện thị ra màn hình ngày , giờ, phút, giây (phía client, sever sẽ xử lý sau)
-    private void updateCountDown() {
+    public  void updateCountDown() {
         Duration remaining = Duration.between(LocalDateTime.now(), item.getEndDate());
         if (remaining.isNegative() || remaining.isZero()) {
             timeleft.setText("ENDED");
