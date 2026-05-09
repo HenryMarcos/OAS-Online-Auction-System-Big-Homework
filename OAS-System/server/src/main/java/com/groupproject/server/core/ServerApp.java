@@ -52,7 +52,7 @@ public class ServerApp {
 
     public static void main(String[] args) {
         // Khởi tạo database người dùng
-        DatabaseManager.initDatabse();
+        DatabaseManager.getInstance().initDatabse();
 
         // launch(args);
 

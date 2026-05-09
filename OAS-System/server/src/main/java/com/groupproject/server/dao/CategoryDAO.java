@@ -1,7 +1,6 @@
 package com.groupproject.server.dao;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -9,15 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.groupproject.server.utils.Config;
 import com.groupproject.shared.model.categories.Category;
 
 public class CategoryDAO {
-
-    // Phương thức helper để lấy kết nối kho dữ liệu (DRY principle)
-    private static Connection getConnection() throws Exception {
-        return DriverManager.getConnection(Config.DATABASE_URL);
-    }
 
     public static List<Category> getCategories() {
         // Danh sách này chỉ chứa những hạng mục chính
@@ -29,7 +22,7 @@ public class CategoryDAO {
         String categoriesSql = "SELECT id, name, parent_id FROM categories";
         String fieldsSql = "SELECT id, category_id, field_name FROM category_fields";
 
-        try (Connection conn = getConnection();
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
              PreparedStatement categoriesPstmt = conn.prepareStatement(categoriesSql);
              ResultSet categoriesRs = categoriesPstmt.executeQuery();
              PreparedStatement fieldsPstmt = conn.prepareStatement(fieldsSql);
@@ -96,7 +89,7 @@ public class CategoryDAO {
         String sql = "SELECT field_name FROM category_fields WHERE category_id = ?";
 
         // Try-with-resources automatically closes the database connection when done
-        try (Connection conn = getConnection();
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             // Replace the '?' in the SQL string with the actual categoryId

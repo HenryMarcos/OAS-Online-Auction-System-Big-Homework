@@ -9,12 +9,23 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class SceneNavigator {
+
+    private static SceneNavigator instance;
+
     // Một màn hình window duy nhất
     private static Stage mainStage;
-    // Dùng 1 lần khi mở app
-    public static void setMainStage(Stage stage) { mainStage = stage; }
 
-    public static void goTo(String fxmlPath) {
+    private SceneNavigator() {}
+
+    public static SceneNavigator getInstance() {
+        if (instance == null) { instance = new SceneNavigator(); }
+        return instance;
+    }
+
+    // Dùng 1 lần khi mở app
+    public void setMainStage(Stage stage) { mainStage = stage; }
+
+    public void goTo(String fxmlPath) {
         // Đặt trong Platform.runLater để đảm bảo an toàn khi gọi
         // Từ bất kỳ luồng nào, kể cả từ ServerListener chạy ở background
         Platform.runLater(() -> {
@@ -22,7 +33,7 @@ public class SceneNavigator {
                 FXMLLoader loader = new FXMLLoader(SceneNavigator.class.getResource(fxmlPath));
                 Parent root = loader.load();
                 
-                mainStage.setScene(new Scene(root));
+                mainStage.setScene(new Scene(root, 1080, 720));
                 mainStage.show();
                 
             } catch (IOException e) {

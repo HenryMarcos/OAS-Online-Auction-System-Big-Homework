@@ -7,11 +7,9 @@ import java.net.Socket;
 
 import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.network.ServerListener;
-import com.groupproject.shared.model.user.User;
+import com.groupproject.client.utils.SceneNavigator;
 
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
@@ -32,21 +30,14 @@ public class App extends Application {
         // Kết nối với server 1 lần duy nhất khi bắt đầu
         new Thread(() -> connectToServer()).start();
 
+        SceneNavigator.getInstance().setMainStage(stage);
         // Vào màn hình login
-        //scene = new Scene(loadFXML("login"), 640, 480);
-        scene = new Scene(loadFXML("/com/groupproject/client/FXML/login"), 1000, 700);
-        stage.setTitle("Login | Auction System");
-        stage.setScene(scene);
-        stage.show();
-    }
-
-    static void setRoot(String fxml) throws IOException {
-        scene.setRoot(loadFXML(fxml));
+        SceneNavigator.getInstance().goTo("/com/groupproject/client/FXML/login.fxml");
     }
 
     public static void connectToServer() {
         try {
-            // Use your Google Cloud IP
+            // Dùng Google Cloud IP hoặc bất kỳ IP nào phù hợp
             socket = new Socket("34.9.27.87", 8080); 
             out = new ObjectOutputStream(socket.getOutputStream()); // Gửi cho server
             out.flush();
@@ -62,44 +53,6 @@ public class App extends Application {
         } catch (Exception e) {
             System.out.println("Could not connect to server for login.");
             e.printStackTrace();
-        }
-    }
-
-    // Load file fxml
-    private static Parent loadFXML(String fxml) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource(fxml + ".fxml"));
-        return fxmlLoader.load();
-    }
-
-    // Kiểm tra xem server và user có hoạt động trơn tru với nhau không 
-    
-    static void shootUserOverTheWire() {
-        // localhost nghĩa là tìm server trong máy của chính mình
-        String serverIp = "memory-exact.gl.at.ply.gg";
-        int port = 9224;
-
-        System.out.println("Attempting to connect to server...");
-
-        // Mở kết nối đến cổng kết nỗi của máy chủ(cổng 8080)
-        try (Socket socket = new Socket(serverIp, port)) {
-            // Nếu kết nối được thì thông báo thành công
-            System.out.println("Connected to the server");
-
-            // Tạo 1 User để kiểm tra
-            User myUser = new User("Henry", "e@gmail.com", "Ninooo");
-
-            // Mở đường dẫn xử lý để gửi các đối tượng Java qua mạng
-            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-
-            // Truyền dữ liệu qua đường truyền
-            out.writeObject(myUser);
-
-            // Lệnh flush buộc dữ liệu thực sự rời khỏi máy client và di chuyển trên đường truyền
-            out.flush();
-            } catch (Exception e) {
-                // Báo lỗi nếu thất bại
-                System.err.println("Could not connect to the server: " + e.getMessage());
-                e.printStackTrace();
         }
     }
 

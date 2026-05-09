@@ -5,7 +5,6 @@ import java.io.IOException;
 import com.groupproject.client.network.EventRouter;
 import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.SessionManager;
-import com.groupproject.shared.model.user.User;
 import com.groupproject.shared.network.SignupRequest;
 import com.groupproject.shared.network.SignupResponse;
 
@@ -35,26 +34,7 @@ public class SignupController {
 
     @FXML
     public void initialize() {
-        EventRouter.getInstance().on(SignupResponse.class, response -> {
-            if (response.isSuccess() && response instanceof SignupResponse) {
-                SignupResponse signupResponse = (SignupResponse) response;
-                // Thông báo cho client rằng đã thành công
-                statusLabel.setTextFill(javafx.scene.paint.Color.GREEN);
-                statusLabel.setText("Success! Loading chat...");
-                // Lưu user
-                User user = signupResponse.getUser();
-                SessionManager.getInstance().setCurrentUser(user);
-
-                System.out.println("Signup Success! Switching screens...");
-                // TODO: đổi sang màn hình chính
-            } else {
-                // Show error message on the screen
-                System.out.println("Error: ");
-                // errorLabel.setText(response.getMessage());
-                statusLabel.setTextFill(Color.RED);
-                statusLabel.setText(response.getMessage());
-            }
-        });
+        EventRouter.getInstance().on(SignupResponse.class, this::handleSignupResponse);
     }
 
     @FXML

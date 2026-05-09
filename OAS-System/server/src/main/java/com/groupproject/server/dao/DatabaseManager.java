@@ -7,8 +7,20 @@ import java.sql.Statement;
 import com.groupproject.server.utils.Config;
 
 public class DatabaseManager {
-    public static void initDatabse() {
-        try (Connection conn = DriverManager.getConnection(Config.DATABASE_URL); 
+
+    private static DatabaseManager instance;
+
+    private DatabaseManager() {}
+
+    public static DatabaseManager getInstance() {
+        if (instance == null) {
+            instance = new DatabaseManager();
+        }
+        return instance;
+    }
+
+    public void initDatabse() {
+        try (Connection conn = getInstance().getConnection(); 
              Statement stmt = conn.createStatement()) {
 
             // Tạo bảng users nếu chưa tồn tại 
@@ -92,5 +104,10 @@ public class DatabaseManager {
         } catch (Exception e) {
             System.out.println("Database error: " + e.getMessage());
         }
+    }
+
+    // Phương thức helper để lấy kết nối kho dữ liệu (DRY principle)
+    public Connection getConnection() throws Exception {
+        return DriverManager.getConnection(Config.DATABASE_URL);
     }
 }

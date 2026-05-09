@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.groupproject.client.network.EventRouter;
 import com.groupproject.client.network.RequestSender;
+import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.network.LoginRequest;
 import com.groupproject.shared.network.LoginResponse;
@@ -120,6 +121,8 @@ public class LoginController {
         SessionManager.getInstance().setCurrentUser(response.getUser());
 
         // TODO: Chuyển sang màn hình chính
+        System.out.println("Ok");
+        SceneNavigator.getInstance().goTo("/com/groupproject/client/FXML/mainscreen.fxml");
     }
 
     private void handleFailedLogin(LoginResponse response) {

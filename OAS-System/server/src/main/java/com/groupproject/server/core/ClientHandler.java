@@ -43,9 +43,10 @@ public class ClientHandler implements Runnable {
                 // Kiểm tra xem client gửi gì
                 Object recievedData = in.readObject();
 
-
+                // Xử lý trường hợp client gửi yêu cầu
                 if (recievedData instanceof Request) {
                     Request request = (Request) recievedData;
+                    // Nhận response sau khi xử lý xong request
                     Response serverReply = dispatcher.dispatch(request);
 
                     if (serverReply != null) {
