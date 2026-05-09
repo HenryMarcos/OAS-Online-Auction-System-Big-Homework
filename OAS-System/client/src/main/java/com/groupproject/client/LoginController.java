@@ -11,23 +11,19 @@ import com.groupproject.shared.network.LoginResponse;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.paint.Color;
-import javafx.stage.Stage;
 
 public class LoginController {
     @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;
     @FXML private TextField passwordTextField;
     @FXML private ToggleButton eyeButton;
-
+    @FXML private Button loginButton;
 
     @FXML private Label statusLabel;
 
@@ -37,6 +33,8 @@ public class LoginController {
         passwordField.textProperty().bindBidirectional(passwordTextField.textProperty());
 
         EventRouter.getInstance().on(LoginResponse.class, this::handleLoginResponse);
+        // mở lại nút login dù có thành công hay thất bại 
+        loginButton.setDisable(false);
     }
 
     // Hàm này được gọi khi bấm nút con mắt (Do đã set onAction="#togglePasswordVisibility" trong FXML)
@@ -67,12 +65,15 @@ public class LoginController {
         }
 
         // Give the user some visual feedback while they wait
+        // Vô hiệu hóa nút login tránh bấm quá nhiều lần
         statusLabel.setTextFill(Color.BLUE);
         statusLabel.setText("Logging in...");
+        loginButton.setDisable(true);
 
         try {
-            // Tạo và gửi yêu cầu đăng nhập cho server
+            // Tạo và gửi yêu cầu đăng nhập cho server 
             LoginRequest loginRequest = new LoginRequest(username, password);
+
             RequestSender.send(loginRequest);
 
         } catch (Exception e) {
@@ -83,27 +84,11 @@ public class LoginController {
 
     @FXML 
     private void  switchtohome(ActionEvent event) throws IOException {
-        Parent root = FXMLLoader.load(getClass().getResource("/com/groupproject/client/FXML/mainscreen.fxml"));
-    
-        // Bước 2: Tạo một Scene (Cảnh diễn) mới từ giao diện vừa tải
-        Scene newScene = new Scene(root,1000,700);
-        // Bước 3: Lấy lại Sân khấu (Stage) hiện tại từ nút bấm mà người dùng vừa click
-        Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        currentStage.setTitle("Home | Auction System");
-        // Bước 4: Kéo rèm! Gắn Cảnh mới lên Sân khấu và hiển thị
-        currentStage.setScene(newScene);
-        currentStage.show();
+        SceneNavigator.getInstance().goTo("/com/groupproject/client/FXML/mainscreen.fxml");
     }
     @FXML
     private void switchtoSignup(ActionEvent event) throws IOException {
-        Parent root= FXMLLoader.load(getClass().getResource("/com/groupproject/client/FXML/signup.fxml"));
-        Scene newScene= new Scene(root,1000,700);
-        Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        currentStage.setTitle("Sign up | Auction System");
-        // Bước 4: Kéo rèm! Gắn Cảnh mới lên Sân khấu và hiển thị
-        currentStage.setScene(newScene);
-        currentStage.show();
-
+        SceneNavigator.getInstance().goTo("/com/groupproject/client/FXML/signup.fxml");
         //App.setRoot("signup");
     }
 
@@ -121,7 +106,6 @@ public class LoginController {
         SessionManager.getInstance().setCurrentUser(response.getUser());
 
         // TODO: Chuyển sang màn hình chính
-        System.out.println("Ok");
         SceneNavigator.getInstance().goTo("/com/groupproject/client/FXML/mainscreen.fxml");
     }
 

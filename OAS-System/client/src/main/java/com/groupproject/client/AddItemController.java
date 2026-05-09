@@ -1,5 +1,6 @@
 package com.groupproject.client;
 import com.groupproject.client.Data.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -7,13 +8,14 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ResourceBundle;
 import java.time.LocalDate;
+
+import com.groupproject.client.utils.SceneNavigator;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
+
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
+
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
@@ -23,7 +25,6 @@ import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 public class AddItemController implements Initializable {
     @FXML 
     private Spinner<Integer> endhour;
@@ -143,27 +144,11 @@ public class AddItemController implements Initializable {
     }
     @FXML
     private void switchtoHome(ActionEvent event) throws IOException {
-      Parent root = FXMLLoader.load(getClass().getResource("/com/groupproject/client/FXML/mainscreen.fxml"));
-    
-        // Bước 2: Tạo một Scene (Cảnh diễn) mới từ giao diện vừa tải
-        Scene newScene = new Scene(root,1000,700);
-        newScene.getStylesheets().add(getClass().getResource("CSS/home.css").toExternalForm());
-        // Bước 3: Lấy lại Sân khấu (Stage) hiện tại từ nút bấm mà người dùng vừa click
-        Stage currentStage =  (Stage) ((Node) event.getSource()).getScene().getWindow();
-        currentStage.setTitle("Home | Auction System");
-        // Bước 4: Kéo rèm! Gắn Cảnh mới lên Sân khấu và hiển thị
-        currentStage.setScene(newScene);
-        currentStage.show();
+      SceneNavigator.goTo("/com/groupproject/client/FXML/mainscreen.fxml");
     } 
     @FXML
     private void switchtologin(ActionEvent event) throws IOException {
-        Parent root= FXMLLoader.load(getClass().getResource("/com/groupproject/client/FXML/login.fxml"));
-        Scene newScene = new Scene(root,1000,700);
-        newScene.getStylesheets().add(getClass().getResource("CSS/login.CSS").toExternalForm());
-        Stage currentStage =  (Stage) ((Node) event.getSource()).getScene().getWindow();
-        currentStage.setTitle("Login | Auction System");
-        currentStage.setScene(newScene);
-        currentStage.show();
+       SceneNavigator.goTo("/com/groupproject/client/FXML/login.fxml");
 
     }
 

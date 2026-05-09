@@ -49,7 +49,7 @@ public class HomeController implements  Initializable {
    public void initialize(URL location, ResourceBundle resources) {
       instance = this;
       addEventHandles();
-      loadItems();
+      
    }
    public void loadItems() {
       productgrid.getChildren().clear();

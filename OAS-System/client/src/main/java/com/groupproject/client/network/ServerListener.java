@@ -30,7 +30,8 @@ public class ServerListener implements Runnable {
                 }
             }
         } catch (Exception e) {
-            // TODO: xử lý mất kết nối
+            // thông báo mất kêt nối với sever tại đây 
+            // tạo thêm một cái show Allert 
         }
     }
 }

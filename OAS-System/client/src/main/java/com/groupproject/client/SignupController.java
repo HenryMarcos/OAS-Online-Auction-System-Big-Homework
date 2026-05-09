@@ -1,6 +1,7 @@
 package com.groupproject.client;
 
 import java.io.IOException;
+import com.groupproject.client.utils.SceneNavigator;
 
 import com.groupproject.client.network.EventRouter;
 import com.groupproject.client.network.RequestSender;
@@ -10,16 +11,13 @@ import com.groupproject.shared.network.SignupResponse;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
+
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
-import javafx.stage.Stage;
+
 
 
 
@@ -70,14 +68,7 @@ public class SignupController {
     
     @FXML
     private void switchtologin(ActionEvent event) throws IOException {
-        Parent root = FXMLLoader.load(getClass().getResource("FXML/login.fxml"));
-        Scene scene = new Scene(root,1000,700);
-        Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        currentStage.setTitle("Login | Auction System");
-        // Bước 4: Kéo rèm! Gắn Cảnh mới lên Sân khấu và hiển thị
-        currentStage.setScene(scene);
-        currentStage.show();
-        //App.setRoot("login");
+        SceneNavigator.goTo("/com/groupproject/client/FXML/login.fxml");
     }
 
     // Hàm xử lý kết quả nhận về từ server
@@ -94,7 +85,8 @@ public class SignupController {
         SessionManager.getInstance().setCurrentUser(response.getUser());
 
         System.out.println("Signup Success! Switching screens...");
-        // TODO: đổi sang màn hình chính
+        // chuyển sang màn hình chính
+        SceneNavigator.goTo("/com/groupproject/client/FXML/mainscreen.fxml");
     }
 
     private void handleFailedSignup(SignupResponse response) {
