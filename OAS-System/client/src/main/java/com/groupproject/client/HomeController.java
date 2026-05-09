@@ -55,10 +55,13 @@ public class HomeController implements  Initializable {
    }
    @Override
    public void initialize(URL location, ResourceBundle resources) {
+      List<Category> savedCategories = SessionManager.getInstance().getCurrentCategories();
+
       instance = this;
       addEventHandles();
       loadItems();
    }
+   // hàm load những items có trong từng mục category
    public void loadItems() {
       /* 
       productgrid.getChildren().clear();
@@ -80,10 +83,20 @@ public class HomeController implements  Initializable {
          }
       }
          */
-      EventRouter.getInstance().on(GetCategoriesResponse.class, response -> {
-         if (response.isSuccess()) {
-            categoryBar.getChildren().clear(); // tai sao lai nen xoa 
-            for (Category category : response.categories) {
+   }
+   public static HomeController getInstance() {
+         return instance;
+   }
+
+   // tao grid san pham dua vao cho gridproducts(flowpane)
+   private void drawCategoryUI() {
+      categoryBar.getChildren().clear();
+      List<Category> savedCategories = SessionManager.getInstance().getCurrentCategories();
+      Button buttonAll= new Button("All");
+      buttonAll.getStyleClass().add("category-btn");
+      buttonAll.setOnAction(e ->loadItems());
+
+      for (Category category : savedCategories) {
                Button button = new Button(category.getName());
                button.getStyleClass().add("category-btn");
                button.setOnAction(e -> {
@@ -94,19 +107,9 @@ public class HomeController implements  Initializable {
                });
                categoryBar.getChildren().add(button);
             }
-         }
-      });
-      User currentUser = SessionManager.getInstance().getCurrentUser();
-      if ( currentUser != null) {
-         RequestSender.send(new GetCategoriesRequest(currentUser));
-      }
-   }
-   public static HomeController getInstance() {
-         return instance;
-   }
 
-   // tao grid san pham dua vao cho gridproducts(flowpane)
-   
+
+   }
    
    
 }

@@ -47,7 +47,7 @@
                                 <ComboBox fx:id="category"  maxWidth="Infinity" prefHeight="30.0" styleClass="fields"  />
                             </children>
                         </VBox>
-                        <VBox fx:id="dynamicFieldsContainer" alignment="CENTER_LEFT" maxWidth="Infinity" />
+                        <VBox fx:id="dynamicFieldsContainer" spacing="2.0" alignment="CENTER_LEFT" maxWidth="Infinity" />
                         <VBox alignment="CENTER_LEFT" spacing="2.0" maxWidth="Infinity">
                             <children>
                                 <Label mouseTransparent="true" text="Starting Price" >

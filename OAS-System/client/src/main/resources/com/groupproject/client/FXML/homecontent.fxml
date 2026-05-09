@@ -19,13 +19,7 @@
             <children>
                 <HBox fx:id="categoryBar" alignment="CENTER_LEFT" spacing="15.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <children>
-                        <Button text="All" styleClass="category-btn" />
-                        <Button text="Art" styleClass="category-btn" />
-                        <Button text="Clothes" styleClass="category-btn" />
-                        <Button text="Electronics" styleClass="category-btn" />
-                        <Button text="Jewelry" styleClass="category-btn" />
-                        <Button text="Vehicle" styleClass="category-btn" />
-                        <Button text="Other" styleClass="category-btn" />
+                        
                     </children>
                 </HBox>
 

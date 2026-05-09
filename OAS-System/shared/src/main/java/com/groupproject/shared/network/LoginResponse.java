@@ -9,7 +9,7 @@ public class LoginResponse extends Response {
     private User user;
     //List<Category> categoryTree = CategoryDAO.getCategories();
     private List<Category> categoryTree;
-
+    // thêm cả các trường điền tương ứng với các category 
     public LoginResponse(boolean success, User user, List<Category> categoryTree, String message) {
         super(success, message);
         this.user = user;
