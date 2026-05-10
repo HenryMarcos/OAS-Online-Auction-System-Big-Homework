@@ -18,9 +18,9 @@ public class AuctionItem implements Serializable {
     public int getId() { return id; }
     public void setItemName(String itemName) { this.itemName = itemName; }
     public String getItemName() {return itemName; }
-    public void setcurrentBid(Double currentBid) { this.currentBid = currentBid; }
-    public Double getcurrentBid() {return currentBid; }
-    public void sethighestBid(String highestBid) { this.highestBid = highestBid; }
-    public String gethighestBid() {return highestBid; }
+    public void setCurrentBid(Double currentBid) { this.currentBid = currentBid; }
+    public Double getCurrentBid() {return currentBid; }
+    public void setHighestBid(String highestBid) { this.highestBid = highestBid; }
+    public String getHighestBid() {return highestBid; }
     
 }

@@ -1,6 +1,6 @@
 package com.groupproject.shared.model.transaction;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.groupproject.shared.model.base.Entity;
 import com.groupproject.shared.model.enums.AuctionStatus;
@@ -12,8 +12,8 @@ public class Auction extends Entity {
     private String sellerId; // ID của người bán
     private double currentBid; // Giá hiện tại của sản phẩm trong phiên đấu giá
     private String highestBidderId; // ID của người đang có giá cao nhất
-    private LocalDate startDate; // Ngày bắt đầu của phiên đấu giá
-    private LocalDate endDate; // Ngày kết thúc của phiên đấu giá
+    private LocalDateTime startDate; // Ngày bắt đầu của phiên đấu giá
+    private LocalDateTime endDate; // Ngày kết thúc của phiên đấu giá
     private AuctionStatus status; // Trạng thái của phiên đấu giá (ví dụ: "active", "closed", "cancelled", ...)
 
     public Auction() {
@@ -65,19 +65,19 @@ public class Auction extends Entity {
         this.highestBidderId = highestBidderId;
     }
 
-    public LocalDate getStartDate() {
+    public LocalDateTime getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(LocalDate startDate) {
+    public void setStartDate(LocalDateTime startDate) {
         this.startDate = startDate;
     }
 
-    public LocalDate getEndDate() {
+    public LocalDateTime getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(LocalDate endDate) {
+    public void setEndDate(LocalDateTime endDate) {
         this.endDate = endDate;
     }
 

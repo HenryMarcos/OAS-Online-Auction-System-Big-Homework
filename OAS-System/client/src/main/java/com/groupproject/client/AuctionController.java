@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 
 import javafx.scene.control.Label;
 
+import com.groupproject.client.utils.CountDownHelper;
 import com.groupproject.client.network.EventRouter;
 import com.groupproject.client.utils.AlertUtils;
 import com.groupproject.shared.AuctionUpdate;
@@ -47,9 +48,8 @@ public class AuctionController implements Initializable {
     @FXML private TableColumn<BidRecord, Double> pricecol;
     @FXML private TableColumn<BidRecord, String> timecol;
     @FXML private TableColumn<BidRecord,Integer> idusercol;
-    private Auction currentAuction;
-    private Item item;
-    private Timeline timeline;
+    private Auction auction;
+    private CountDownHelper countDownHelper = new CountDownHelper();
     private Label productname;
     private Label timeleft;
     private Label currentprice;
@@ -85,75 +85,37 @@ public class AuctionController implements Initializable {
         setUpTableView();
         // Cài đặt linechart 
         linechart.getData().add(priceSeries);
-        // Khởi động đồng hồ đếm ngược 
-        startCountDown();
         // lắng nghe tín hiệu từ Sever 
         //listenForSeverUpdate();
-
     }
+
     // ve sau se duoc thay the bang viec lay tren databse xuong ( thay the tu dong 90 - 150)
-    public void setItem(Item item, Label currentprice,Label timeleft, Label productname) {
-        this.item= item;
+    public void setAuction(Auction auction, Label currentprice, Label timeleft, Label productname) {
+        this.auction = auction;
         this.currentprice=currentprice;
         this.timeleft= timeleft;
         this.productname=productname;
-        startprice.setText(String.format("Starting price : %.0f VND ",item.getStartingPrice()));
+        startprice.setText(String.format("Starting price : %.0f VND ", this.auction.getStartingPrice()));
         updateName();
         updatePrice();
+
+        // Khởi động đếm ngược thông qua Helper
+        countDownHelper.start(this.auction, () -> {
+            // Callback khi hết giờ: vô hiệu hóa nút đặt giá nếu cần
+            enterprice.setDisable(true);
+        }, this.timeleft, this.auctiontimeleft);
     }
+
     private void updatePrice() {
-        String priceText= String.format("Current price : %.2f VND",item.getCurrentPrice());
+        String priceText = String.format("Current price : %.2f VND", auction.getCurrentBid());
         auctioncurrentprice.setText(priceText);
-        currentprice.setText(priceText);
-
     }
+
     private void updateName() {
-        String name = "Name : " + item.getName();
+        String name = "Name : " + auction.getItemName();
         auctionproductname.setText(name);
-        productname.setText(name);
     }
-    public void startCountDown() {
-        if (timeline != null) {
-            timeline.stop();
-        }
-        else {
-            timeline= new Timeline(new KeyFrame(javafx.util.Duration.seconds(1), event -> {
-                updateCountDown();
-            }));
-            timeline.setCycleCount(Timeline.INDEFINITE);
-            timeline.play();
-            updateCountDown();
-        }
-    }
-    public void updateCountDown() {
-        if( item.getEndDate() == null ) {
-            return;
-        }
-        else {
-            Duration remaining= Duration.between(LocalDateTime.now(),item.getEndDate());
-            if (remaining.isNegative() || remaining.isZero()) {
-                timeleft.setText("ENDED");
-                auctiontimeleft.setText("ENDED");
-                timeline.stop();
-                return;
-            }
-            else {
-                LocalDateTime now = LocalDateTime.now();
-                LocalDateTime end = item.getEndDate();
-                long totalSeconds = ChronoUnit.SECONDS.between(now, end);
 
-    // Tách ra từng đơn vị bằng cách chia lấy dư
-                long days    = totalSeconds / 86400;           // 1 ngày = 86400 giây
-                long hours   = (totalSeconds % 86400) / 3600;  // Phần dư sau ngày / 3600
-                long minutes = (totalSeconds % 3600) / 60;     // Phần dư sau giờ / 60
-                long seconds = totalSeconds % 60;              // Phần dư sau phút
-
-                auctiontimeleft.setText(String.format("Ending in: %dd : %02dh : %02dm : %02ds",
-                                                days, hours, minutes, seconds));
-            }
-        }
-    }
-    // xu ly ngoai le khi co truong hop : khong ghi gi, ghi ca chu va so ,...
     @FXML
     private void handlePlaceBid() {
         String text = enterprice.getText().trim();
@@ -168,21 +130,26 @@ public class AuctionController implements Initializable {
                 return;
             }
             // Kiểm tra xem giá vừa nhập đang cao hơn giá hiện tại không ? 
-            if (price <= currentAuction.getCurrentBid() ) {
+            if (price <= auction.getCurrentBid() ) {
                 AlertUtils.showError("Lỗi logic","Giá đặt phải cao hơn giá hiện tại");
                 return;
             }
+            /* 
             // lấy những trường thông tin cần thiết để gửi BidRequest lên Sever
             String username= SessionManager.getInstance().getCurrentUser().getUsername();
-            String currentAuctionId = currentAuction.getId();
-            BidRequest request = new BidRequest(currentAuctionId,username,price);
-
+            int currentAuctionId = auction.getId();
+            BidRequest request = new BidRequest(currentAuctionId, username, price);
+            
+            // Gửi request thông qua một NetworkManager (Singleton)
+            RequestSender.send(request);
+            */
+            enterprice.clear();
         }
         catch (NumberFormatException e ) {
             AlertUtils.showError("Lỗi định dạng", "Vui lòng chỉ nhập số");
         }
-
     }
+
     private void setUpTableView() {
         idusercol.setCellValueFactory(new PropertyValueFactory<>("id"));
         usercol.setCellValueFactory(new PropertyValueFactory<>("bidder"));
@@ -204,5 +171,3 @@ public class AuctionController implements Initializable {
     */
     
 }
-
-

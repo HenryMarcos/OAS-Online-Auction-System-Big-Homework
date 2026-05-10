@@ -1,24 +1,22 @@
 package com.groupproject.client;
-import com.groupproject.client.Data.*;
 
 import javafx.scene.Parent;
 import java.io.IOException;
-import java.time.*;
-import java.time.temporal.ChronoUnit;
 
 import javafx.scene.image.ImageView;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
+import com.groupproject.shared.model.transaction.Auction;
+import com.groupproject.client.utils.CountDownHelper;
+
 public class CardController { 
-    private Item item;
-    private Timeline timeline;
+    private Auction auction;
+    private CountDownHelper countDownHelper = new CountDownHelper();
     @FXML
     private ImageView image;
     @FXML
@@ -32,7 +30,7 @@ public class CardController {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("FXML/auctionscreen.fxml"));
         Parent root = (Parent) loader.load();
         AuctionController auctioncontroller= loader.getController();
-        auctioncontroller.setItem(item,currentprice,timeleft,productname);
+        auctioncontroller.setAuction(auction, currentprice, timeleft, productname);
         Scene scene = new Scene(root,1000,700);
         scene.getStylesheets().add(getClass().getResource("/com/groupproject/client/CSS/auctionscreen.css").toExternalForm());
         Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -41,51 +39,12 @@ public class CardController {
         currentStage.setScene(scene);
         currentStage.show();
     }
-    public void setItem(Item item) {
-        this.item=item;
-        productname.setText("Name: " + item.getName());
-        currentprice.setText("Current price: " + item.getCurrentPrice());
-        startCountDown();
+    public void setAuction(Auction auction) {
+        this.auction = auction;
+        productname.setText("Name: " + auction.getItemName());
+        currentprice.setText("Current price: " + auction.getCurrentBid());
+        
+        // Sử dụng Helper để tránh viết lại logic đếm ngược
+        countDownHelper.start(auction, () -> timeleft.setText("ENDED"), timeleft);
     }
-    public void startCountDown() {
-        if (timeline != null) {
-            timeline.stop();
-        }
-        else {
-            timeline= new Timeline(new KeyFrame(javafx.util.Duration.seconds(1), event -> {
-                updateCountDown();
-            }));
-            timeline.setCycleCount(Timeline.INDEFINITE);
-            timeline.play();
-            updateCountDown();
-        }
-    }
-    public void updateCountDown() {
-        if( item.getEndDate() == null ) {
-            return;
-        }
-        else {
-            Duration remaining= Duration.between(LocalDateTime.now(),item.getEndDate());
-            if (remaining.isNegative() || remaining.isZero()) {
-                timeleft.setText("ENDED");
-                timeline.stop();
-                return;
-            }
-            else {
-                LocalDateTime now = LocalDateTime.now();
-                LocalDateTime end = item.getEndDate();
-                long totalSeconds = ChronoUnit.SECONDS.between(now, end);
-
-    // Tách ra từng đơn vị bằng cách chia lấy dư
-                long days    = totalSeconds / 86400;           // 1 ngày = 86400 giây
-                long hours   = (totalSeconds % 86400) / 3600;  // Phần dư sau ngày / 3600
-                long minutes = (totalSeconds % 3600) / 60;     // Phần dư sau giờ / 60
-                long seconds = totalSeconds % 60;              // Phần dư sau phút
-
-                timeleft.setText(String.format("Ending in: %dd : %02dh : %02dm : %02ds",
-                                                days, hours, minutes, seconds));
-            }
-        }
-    }
-    
 }

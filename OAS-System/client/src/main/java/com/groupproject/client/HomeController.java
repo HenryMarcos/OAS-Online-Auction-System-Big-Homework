@@ -8,7 +8,6 @@ import java.util.ResourceBundle;
 
 import com.groupproject.shared.network.GetCategoriesRequest;
 import com.groupproject.shared.network.GetCategoriesResponse;
-import com.groupproject.client.Data.Item;
 import com.groupproject.client.Data.ItemRespository;
 import com.groupproject.client.network.EventRouter;
 import com.groupproject.client.network.RequestSender;
