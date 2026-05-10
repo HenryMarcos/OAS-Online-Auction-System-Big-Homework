@@ -9,8 +9,12 @@ import java.time.temporal.ChronoUnit;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
 
+import javafx.scene.control.Label;
+
 import com.groupproject.client.network.EventRouter;
+import com.groupproject.client.utils.AlertUtils;
 import com.groupproject.shared.AuctionUpdate;
+
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Series;
 import javafx.scene.chart.LineChart;
@@ -18,8 +22,12 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
 import com.groupproject.client.utils.SceneNavigator;
+import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.AuctionUpdate;
+import com.groupproject.shared.model.transaction.Auction;
+import com.groupproject.shared.network.BidRequest;
 import com.groupproject.shared.network.Response;
+import com.groupproject.shared.transaction.Auction;
 
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -30,8 +38,7 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-
-import javafx.scene.control.Label;
+;
 public class AuctionController implements Initializable {
     @FXML private LineChart<String,Number> linechart;
     private Series<String, Number> priceSeries = new XYChart.Series<>() ;
@@ -40,6 +47,7 @@ public class AuctionController implements Initializable {
     @FXML private TableColumn<BidRecord, Double> pricecol;
     @FXML private TableColumn<BidRecord, String> timecol;
     @FXML private TableColumn<BidRecord,Integer> idusercol;
+    private Auction currentAuction;
     private Item item;
     private Timeline timeline;
     private Label productname;
@@ -60,12 +68,19 @@ public class AuctionController implements Initializable {
     @FXML
     private Label auctionproductname;
     @FXML 
+    private Label auctionsession;
+    @FXML 
     private void switchtoHome(ActionEvent event) throws IOException {
         SceneNavigator.goTo("/com/groupproject/client/FXML/mainscreen.fxml");
     }
 
     @Override
     public  void initialize(URL location, ResourceBundle resources) {
+        // set up name 
+        String name  = SessionManager.getInstance().getCurrentUser().getUsername();
+        participant.setText(name);
+        // set up ten phien dau gia : duoc lay tu databse 
+
         // Cài đặt bảng 
         setUpTableView();
         // Cài đặt linechart 
@@ -76,6 +91,7 @@ public class AuctionController implements Initializable {
         //listenForSeverUpdate();
 
     }
+    // ve sau se duoc thay the bang viec lay tren databse xuong ( thay the tu dong 90 - 150)
     public void setItem(Item item, Label currentprice,Label timeleft, Label productname) {
         this.item= item;
         this.currentprice=currentprice;
@@ -140,12 +156,32 @@ public class AuctionController implements Initializable {
     // xu ly ngoai le khi co truong hop : khong ghi gi, ghi ca chu va so ,...
     @FXML
     private void handlePlaceBid() {
-        double newBid= Double.parseDouble(enterprice.getText());
-        if (newBid <= item.getCurrentPrice()) {
+        String text = enterprice.getText().trim();
+        if (text.isEmpty()) {
+            AlertUtils.showError("Lỗi nhập liệu ! ","Vui lòng nhập số tiền mà bạn muốn");
             return;
         }
-        item.setCurrentPrice(newBid);
-        updatePrice();
+        try {
+            double price = Double.parseDouble(text);
+            if (price <= 0) {
+                AlertUtils.showError("Lỗi logic","Số tiền đấu giá phải lớn hơn 0");
+                return;
+            }
+            // Kiểm tra xem giá vừa nhập đang cao hơn giá hiện tại không ? 
+            if (price <= currentAuction.getCurrentBid() ) {
+                AlertUtils.showError("Lỗi logic","Giá đặt phải cao hơn giá hiện tại");
+                return;
+            }
+            // lấy những trường thông tin cần thiết để gửi BidRequest lên Sever
+            String username= SessionManager.getInstance().getCurrentUser().getUsername();
+            String currentAuctionId = currentAuction.getId();
+            BidRequest request = new BidRequest(currentAuctionId,username,price);
+
+        }
+        catch (NumberFormatException e ) {
+            AlertUtils.showError("Lỗi định dạng", "Vui lòng chỉ nhập số");
+        }
+
     }
     private void setUpTableView() {
         idusercol.setCellValueFactory(new PropertyValueFactory<>("id"));

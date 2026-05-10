@@ -18,7 +18,6 @@ public class Auction extends Entity {
 
     public Auction() {
         super();
-        this.itemId = "";
         this.sellerId = "";
         this.currentBid = 0.0;
         this.highestBidderId = "";

@@ -31,7 +31,7 @@ public class AlertUtils {
      * Hàm dùng chung để tạo và hiển thị Alert.
      * Đã được bọc trong Platform.runLater để đảm bảo an toàn khi gọi từ luồng Server trả về.
      */
-    private static void showAlert(AlertType type, String title, String message) {
+    public static void showAlert(AlertType type, String title, String message) {
         // LUÔN LUÔN đảm bảo UI cập nhật trên JavaFX Thread
         Platform.runLater(() -> {
             Alert alert = new Alert(type);

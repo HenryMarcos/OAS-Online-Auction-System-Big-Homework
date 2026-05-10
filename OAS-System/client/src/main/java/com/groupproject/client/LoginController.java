@@ -100,6 +100,7 @@ public class LoginController {
         SessionManager.getInstance().setCurrentUser(response.getUser());
 
         // TODO: Chuyển sang màn hình chính, load những category, item trong category sẵn có cho người dùng 
+        
         SessionManager.getInstance().setCurrentCategories(response.getCategoryTree());
         SceneNavigator.goTo("/com/groupproject/client/FXML/mainscreen.fxml");
     }
