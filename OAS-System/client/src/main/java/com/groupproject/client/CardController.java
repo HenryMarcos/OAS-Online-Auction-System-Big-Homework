@@ -2,12 +2,10 @@ package com.groupproject.client;
 import com.groupproject.client.Data.*;
 
 import javafx.scene.Parent;
-import javafx.scene.layout.VBox;
 import java.io.IOException;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
-import java.net.URL;
-import java.util.ResourceBundle;
+
 import javafx.scene.image.ImageView;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -16,7 +14,6 @@ import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
 public class CardController { 

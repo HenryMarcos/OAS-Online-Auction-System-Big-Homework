@@ -18,6 +18,7 @@ public class AuctionUpdate implements Serializable {
     public AuctionUpdate(BidRequest bidRequest) {
         this(bidRequest.getAuctionId(), bidRequest.getBidderUsername(), bidRequest.getBidAmount());
     }
+   
 
     public String getType() { return "AUCTION_UPDATE"; }
 }
