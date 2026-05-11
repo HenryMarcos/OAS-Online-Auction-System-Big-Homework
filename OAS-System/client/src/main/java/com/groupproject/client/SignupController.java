@@ -1,17 +1,16 @@
 package com.groupproject.client;
 
 import java.io.IOException;
-import com.groupproject.client.utils.SceneNavigator;
 
 import com.groupproject.client.network.EventRouter;
 import com.groupproject.client.network.RequestSender;
+import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.network.SignupRequest;
 import com.groupproject.shared.network.SignupResponse;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -36,7 +35,7 @@ public class SignupController {
     }
 
     @FXML
-    private void handleSignUp() {
+    private void handleSignup() {
         // Lấy string từ file fxml
         String username = usernameField.getText();
         String email = emailField.getText();
@@ -68,7 +67,7 @@ public class SignupController {
     
     @FXML
     private void switchtologin(ActionEvent event) throws IOException {
-        SceneNavigator.goTo("/com/groupproject/client/FXML/login.fxml");
+        SceneNavigator.getInstance().goTo("/com/groupproject/client/FXML/login.fxml");
     }
 
     // Hàm xử lý kết quả nhận về từ server
@@ -86,12 +85,12 @@ public class SignupController {
 
         System.out.println("Signup Success! Switching screens...");
         // chuyển sang màn hình chính
-        SceneNavigator.goTo("/com/groupproject/client/FXML/mainscreen.fxml");
+        SceneNavigator.getInstance().goTo("/com/groupproject/client/FXML/mainscreen.fxml");
     }
 
     private void handleFailedSignup(SignupResponse response) {
         // Show error message on the screen
-        System.out.println("Error: ");
+        System.out.println("Error: " + response.getMessage());
         // errorLabel.setText(response.getMessage());
         statusLabel.setTextFill(Color.RED);
         statusLabel.setText(response.getMessage());

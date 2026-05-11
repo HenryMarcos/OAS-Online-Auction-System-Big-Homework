@@ -21,9 +21,9 @@ public class CategoryDAO {
 
         String categoriesSql = "SELECT id, name, parent_id FROM categories";
         String fieldsSql = "SELECT id, category_id, field_name FROM category_fields";
+        Connection conn = DatabaseManager.getInstance().getConnection();
 
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement categoriesPstmt = conn.prepareStatement(categoriesSql);
+        try (PreparedStatement categoriesPstmt = conn.prepareStatement(categoriesSql);
              ResultSet categoriesRs = categoriesPstmt.executeQuery();
              PreparedStatement fieldsPstmt = conn.prepareStatement(fieldsSql);
              ResultSet fieldsRs = fieldsPstmt.executeQuery()) {
@@ -73,10 +73,11 @@ public class CategoryDAO {
         } catch (Exception e) {
             System.out.println("Error fetching categories: " + e.getMessage());
         }
-
+        /* 
         for (Category category : mainCategories) {
             category.print("");
         }
+        */
 
         return mainCategories;
     }
@@ -87,10 +88,10 @@ public class CategoryDAO {
         
         // The SQL query to get just the field names for this exact category
         String sql = "SELECT field_name FROM category_fields WHERE category_id = ?";
+        Connection conn = DatabaseManager.getInstance().getConnection();
 
         // Try-with-resources automatically closes the database connection when done
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             // Replace the '?' in the SQL string with the actual categoryId
             pstmt.setInt(1, categoryId);

@@ -1,21 +1,19 @@
 package com.groupproject.client;
-import com.groupproject.client.Data.*;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ResourceBundle;
-import java.time.LocalDate;
 
+import com.groupproject.client.Data.Item;
+import com.groupproject.client.Data.ItemRespository;
 import com.groupproject.client.utils.SceneNavigator;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-
 import javafx.fxml.Initializable;
-
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
@@ -144,11 +142,11 @@ public class AddItemController implements Initializable {
     }
     @FXML
     private void switchtoHome(ActionEvent event) throws IOException {
-      SceneNavigator.goTo("/com/groupproject/client/FXML/mainscreen.fxml");
+      SceneNavigator.getInstance().goTo("/com/groupproject/client/FXML/mainscreen.fxml");
     } 
     @FXML
     private void switchtologin(ActionEvent event) throws IOException {
-       SceneNavigator.goTo("/com/groupproject/client/FXML/login.fxml");
+       SceneNavigator.getInstance().goTo("/com/groupproject/client/FXML/login.fxml");
 
     }
 

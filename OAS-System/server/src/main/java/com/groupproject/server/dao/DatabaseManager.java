@@ -2,6 +2,7 @@ package com.groupproject.server.dao;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 import com.groupproject.server.utils.Config;
@@ -10,7 +11,18 @@ public class DatabaseManager {
 
     private static DatabaseManager instance;
 
-    private DatabaseManager() {}
+    private Connection connection;
+
+    private DatabaseManager() {
+        try {
+            this.connection = DriverManager.getConnection(Config.DATABASE_URL);
+            System.out.println("DatabaseManager: Successfully connected to SQLite!");
+        } catch (SQLException e) {
+            System.err.println("FATAL ERROR: Could not connect to the database.");
+            e.printStackTrace();
+            // Optional: System.exit(1); // Kill the server if DB fails
+        }
+    }
 
     public static DatabaseManager getInstance() {
         if (instance == null) {
@@ -20,8 +32,7 @@ public class DatabaseManager {
     }
 
     public void initDatabse() {
-        try (Connection conn = getInstance().getConnection(); 
-             Statement stmt = conn.createStatement()) {
+        try (Statement stmt = connection.createStatement()) {
 
             // Tạo bảng users nếu chưa tồn tại 
             String sql = "CREATE TABLE IF NOT EXISTS users (" + 
@@ -33,13 +44,17 @@ public class DatabaseManager {
             
             String auctionSql = "CREATE TABLE IF NOT EXISTS auctions (" +
                                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                                "item_name TEXT NOT NULL," +
+                                "seller_id INTEGER NOT NULL, " +
+                                "title TEXT NOT NULL," +
+                                "description TEXT NOT NULL," +
+                                "category_id INTEGER NOT NULL," +
                                 "starting_price REAL NOT NULL," +
-                                "auction_duration LONG NOT NULL," +
-                                "current_bid REAL NOT NULL," +
-                                "highest_bidder TEXT," +
-                                "end_time DATETIME NOT NULL," + 
-                                "is_active BOOLEAN DEFAULT 1)";
+                                "end_time DATETIME NOT NULL," +
+                                "current_bid DATETIME NOT NULL," + 
+                                "current_bidder, " +
+                                "status TEXT NOT NULL, " + 
+                                "FOREIGN KEY(seller_id) REFERENCES users(id), " +
+                                "FOREIGN KEY(category_id) REFERENCES categories(id))";
             stmt.execute(auctionSql);
 
             // Xóa trước khi tạo bảng để test(sau này sẽ không dùng)
@@ -107,7 +122,14 @@ public class DatabaseManager {
     }
 
     // Phương thức helper để lấy kết nối kho dữ liệu (DRY principle)
-    public Connection getConnection() throws Exception {
-        return DriverManager.getConnection(Config.DATABASE_URL);
+    public Connection getConnection() {
+        try {
+            if (connection == null || connection.isClosed()) {
+                connection = DriverManager.getConnection(Config.DATABASE_URL);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return connection;
     }
 }

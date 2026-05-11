@@ -3,6 +3,7 @@ package com.groupproject.server.handlers;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.groupproject.shared.network.CreateAuctionRequest;
 import com.groupproject.shared.network.LoginRequest;
 import com.groupproject.shared.network.Request;
 import com.groupproject.shared.network.Response;
@@ -15,6 +16,7 @@ public class RequestDispatcher {
         // Nối các request với handler
         handlers.put(LoginRequest.class, new LoginHandler());
         handlers.put(SignupRequest.class, new SignupHandler());
+        handlers.put(CreateAuctionRequest.class, new CreateAuctionHandler());
     }
 
     public Response dispatch(Request request) {

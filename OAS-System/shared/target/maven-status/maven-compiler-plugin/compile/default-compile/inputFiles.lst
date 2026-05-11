@@ -17,6 +17,7 @@ D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\shared
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\shared\src\main\java\com\groupproject\shared\model\user\User.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\shared\src\main\java\com\groupproject\shared\network\BidRequest.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\shared\src\main\java\com\groupproject\shared\network\CreateAuctionRequest.java
+D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\shared\src\main\java\com\groupproject\shared\network\CreateAuctionResponse.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\shared\src\main\java\com\groupproject\shared\network\GetCategoriesRequest.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\shared\src\main\java\com\groupproject\shared\network\GetCategoriesResponse.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\shared\src\main\java\com\groupproject\shared\network\GetCategoryFieldRequest.java

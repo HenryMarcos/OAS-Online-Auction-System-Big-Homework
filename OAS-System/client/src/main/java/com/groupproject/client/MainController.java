@@ -11,8 +11,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.layout.VBox;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 public class MainController  implements Initializable {
     @FXML
     private BorderPane mainBorderPane;
@@ -22,7 +22,7 @@ public class MainController  implements Initializable {
     private Button profilebtn;
     @FXML 
     private void switchtologin(ActionEvent event) throws IOException {
-        SceneNavigator.goTo("/com/groupproject/client/FXML/login.fxml");
+        SceneNavigator.getInstance().goTo("/com/groupproject/client/FXML/login.fxml");
       
    }
    // Khi nhan vao nut Home o man hinh chinh 

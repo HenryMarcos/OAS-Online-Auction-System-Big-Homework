@@ -6,13 +6,9 @@ import java.io.ObjectOutputStream;
 import com.groupproject.shared.network.Request;
 
 public class RequestSender {
-    private static ObjectOutputStream out;
-
-    public static void initialize(ObjectOutputStream outputStream) {
-        out = outputStream;
-    }
 
     public static void send(Request request) {
+        ObjectOutputStream out = NetworkManager.getInstance().getOut();
         // Kiểm tra xem đã kết nối chưa
         if (out == null) {
             System.err.println("CRITICAL ERROR: Trying to send data, but not connected to server!");

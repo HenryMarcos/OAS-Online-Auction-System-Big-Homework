@@ -1,6 +1,5 @@
 com\groupproject\client\Data\Item.class
 com\groupproject\client\NotificationController.class
-com\groupproject\client\PrimaryController.class
 com\groupproject\client\HomeController.class
 com\groupproject\client\App.class
 module-info.class
@@ -14,10 +13,10 @@ com\groupproject\client\SortingmenuController.class
 com\groupproject\client\MainController.class
 com\groupproject\client\utils\SceneNavigator.class
 com\groupproject\client\network\EventRouter.class
-com\groupproject\client\SecondaryController.class
 com\groupproject\client\AuctionController.class
 com\groupproject\client\AuctionScreen.class
 com\groupproject\client\CardController.class
 com\groupproject\client\Login.class
 com\groupproject\client\network\ServerListener.class
 com\groupproject\client\Data\ItemRespository.class
+com\groupproject\client\network\NetworkManager.class

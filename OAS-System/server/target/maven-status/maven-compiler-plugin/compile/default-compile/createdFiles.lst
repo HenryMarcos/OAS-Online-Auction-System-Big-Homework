@@ -12,4 +12,6 @@ com\groupproject\server\service\BidHandler.class
 com\groupproject\server\utils\Config.class
 com\groupproject\server\core\ClientHandler.class
 com\groupproject\server\dao\UserDAO.class
+com\groupproject\server\handlers\CreateAuctionHandler.class
 com\groupproject\server\dao\CategoryDAO.class
+com\groupproject\server\dao\AuctionDAO.class

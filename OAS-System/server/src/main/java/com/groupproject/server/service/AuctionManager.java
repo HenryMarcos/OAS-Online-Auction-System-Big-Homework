@@ -1,14 +1,13 @@
 package com.groupproject.server.service;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.groupproject.server.core.ServerApp;
-import com.groupproject.server.utils.Config;
+import com.groupproject.server.dao.DatabaseManager;
 import com.groupproject.shared.AuctionItem;
 import com.groupproject.shared.network.BidRequest;
 
@@ -16,8 +15,9 @@ public class AuctionManager {
     public static synchronized boolean proccessBid(int auctionId, String bidderUsername, double bidAmount) {
         String checkSql = "SELECT current_bid, is_active FROM auctions WHERE id = ?";
         String updateSql = "UPDATE auctions SET current_bid = ?, highest_bidder = ? WHERE id = ?";
+        Connection conn = DatabaseManager.getInstance().getConnection();
 
-        try (Connection conn = DriverManager.getConnection(Config.DATABASE_URL)) {
+        try {
 
             // Kiểm tra xem bid hợp lý chưa
             try (PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
@@ -61,8 +61,9 @@ public class AuctionManager {
     public static List<AuctionItem> getActiveAuctions() {
         List<AuctionItem> activeAuctions = new ArrayList<>();
         String sql = "SELECT * FROM auctions WHERE is_active = 1";
+        Connection conn = DatabaseManager.getInstance().getConnection();
 
-        try (Connection conn = DriverManager.getConnection(Config.DATABASE_URL)) {
+        try {
             PreparedStatement pstmt = conn.prepareStatement(sql);
             ResultSet rs = pstmt.executeQuery();
 

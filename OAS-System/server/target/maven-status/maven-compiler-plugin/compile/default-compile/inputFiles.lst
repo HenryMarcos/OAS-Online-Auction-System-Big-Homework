@@ -1,8 +1,10 @@
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\core\ClientHandler.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\core\ServerApp.java
+D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\dao\AuctionDAO.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\dao\CategoryDAO.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\dao\DatabaseManager.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\dao\UserDAO.java
+D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\handlers\CreateAuctionHandler.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\handlers\LoginHandler.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\handlers\RequestDispatcher.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\handlers\RequestHandler.java

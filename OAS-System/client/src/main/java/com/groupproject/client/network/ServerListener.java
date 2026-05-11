@@ -5,15 +5,10 @@ import java.io.ObjectInputStream;
 import com.groupproject.shared.network.Response;
 
 public class ServerListener implements Runnable {
-
-    private ObjectInputStream in;
-
-    public ServerListener(ObjectInputStream in) {
-        this.in = in;
-    }
     
     @Override
     public void run() {
+        ObjectInputStream in = NetworkManager.getInstance().getIn();
         System.out.println("Background listener started. Waiting for server...");
         try {
             while (true) { 
@@ -32,6 +27,7 @@ public class ServerListener implements Runnable {
         } catch (Exception e) {
             // thông báo mất kêt nối với sever tại đây 
             // tạo thêm một cái show Allert 
+            System.out.println("Lost connection to the server.");
         }
     }
 }

@@ -19,9 +19,6 @@ public class SignupResponse extends Response {
         super(success, message);
     }
 
-    @Override
-    public String getType() { return "SIGNUP_RESULT"; }
-
     public User getUser() { return user; }
     public List<Category> getCategoryTree() { return categoryTree; }
 }
