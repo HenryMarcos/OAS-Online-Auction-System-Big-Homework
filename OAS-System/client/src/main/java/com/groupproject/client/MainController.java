@@ -34,25 +34,29 @@ public class MainController extends Application  implements Initializable {
     @FXML 
     private void switchtologin(ActionEvent event) throws IOException {
         SceneNavigator.goTo("/com/groupproject/client/FXML/login.fxml");
+        // set User == null;
       
    }
    // Khi nhan vao nut Home o man hinh chinh 
    @FXML
    private void switchtoHome() throws IOException {
-      loadView("homecontent.fxml");
+       SceneNavigator.goTo("/com/groupproject/client/FXML/homecontent.fxml");
+       
    } 
    @FXML
    private void switchtoAddItem() throws IOException {
-      loadView("additem.fxml");
+      SceneNavigator.goTo("/com/groupproject/client/FXML/additem.fxml");
    }
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        SceneNavigator.goTo("/com/groupproject/client/FXML/homecontent.fxml");
         // yêu cầu nhả ra các categories đã có sẵn trong máy.
-         loadView("homecontent.fxml");
          // Thiết lập tên dựa vào username
          String name= SessionManager.getInstance().getCurrentUser().getUsername();
          username.setText(name);
+
          // lắng nghe gọi GetCategoriesResponse 
+
 
     }
     @FXML
@@ -70,21 +74,10 @@ public class MainController extends Application  implements Initializable {
         }
         
     }
-    private void loadView(String fxmlFileName) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/groupproject/client/FXML/" + fxmlFileName));
-            Node view = loader.load();
-            
-            // Lệnh này sẽ lấy phần ruột (ví dụ cái ScrollPane) đắp vào khoảng trống ở giữa!
-            mainBorderPane.setCenter(view);
-            
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
     @FXML
     private void switchtoNotification() {
-        loadView("notification.fxml");
+        SceneNavigator.goTo("/com/groupproject/client/FXML/notification.fxml");
+        // ĐĂNG KÝ NGHE ĐỂ TRẢ VỀ THÔNG BÁO 
     }
     public static void main(String[] args) {
         launch(args);

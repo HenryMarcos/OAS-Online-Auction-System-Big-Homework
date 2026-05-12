@@ -8,8 +8,9 @@ import com.groupproject.shared.model.enums.AuctionStatus;
 public class Auction extends Entity {
     private static final long serialVersionUID = 1L;
 
-    private String itemId; // ID của sản phẩm được đấu giá
-    private String sellerId; // ID của người bán
+    private Integer itemId; // ID của sản phẩm được đấu giá
+    private String itemName; // Tên của sản phẩm được đấu giá
+    private Integer sellerId; // ID của người bán
     private double currentBid; // Giá hiện tại của sản phẩm trong phiên đấu giá
     private String highestBidderId; // ID của người đang có giá cao nhất
     private LocalDateTime startDate; // Ngày bắt đầu của phiên đấu giá
@@ -18,13 +19,13 @@ public class Auction extends Entity {
 
     public Auction() {
         super();
-        this.sellerId = "";
+        itemName="";
+        this.sellerId = null;
         this.currentBid = 0.0;
         this.highestBidderId = "";
         this.status = AuctionStatus.WAITING;
     }
-
-    public Auction(String itemId, String sellerId, double currentBid, String highestBidderId) {
+    public Auction(Integer itemId,String itemName, Integer sellerId, double currentBid, String highestBidderId) {
         super();
         this.itemId = itemId;
         this.sellerId = sellerId;
@@ -33,19 +34,24 @@ public class Auction extends Entity {
         this.status = AuctionStatus.WAITING;
     }
 
-    public String getItemId() {
+    public Integer getItemId() {
         return itemId;
     }
 
-    public void setItemId(String itemId) {
+    public void setItemId(Integer itemId) {
         this.itemId = itemId;
     }
 
-    public String getSellerId() {
+    public Integer getSellerId() {
         return sellerId;
     }
-
-    public void setSellerId(String sellerId) {
+    public String getItemName() {
+        return itemName;
+    }
+    public void setItemName(String itemName) {
+        this.itemName= itemName;
+    }
+    public void setSellerId(Integer sellerId) {
         this.sellerId = sellerId;
     }
 

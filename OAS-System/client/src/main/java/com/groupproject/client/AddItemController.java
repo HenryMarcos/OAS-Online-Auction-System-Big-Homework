@@ -1,7 +1,5 @@
 package com.groupproject.client;
-import com.groupproject.client.Data.*;
 import com.groupproject.client.network.EventRouter;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -10,12 +8,15 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ResourceBundle;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import com.groupproject.client.utils.AlertUtils;
+import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.model.categories.Category;
-import com.groupproject.shared.network.GetCategoryFieldRequest;
-
+import com.groupproject.shared.network.CreateAuctionRequest;
+import com.groupproject.shared.network.Response;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 
@@ -28,7 +29,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextField;
-import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 public class AddItemController implements Initializable {
@@ -43,6 +43,7 @@ public class AddItemController implements Initializable {
     private Label validationLabel;
     @FXML
     ComboBox<Category> category;
+    @FXML private Label description;
     @FXML
     private TextField name ;
     @FXML
@@ -64,15 +65,17 @@ public class AddItemController implements Initializable {
         generateCategory();
         createUI();
         handleImage(); 
+        EventRouter.getInstance().on(Response.class, this::handleResponseCreateAuction);
     }   
     @FXML
     private void handleCreateAuction(ActionEvent event) throws IOException {
         if(! validInput()) {
+            return;
         }
         else {
             setLoadingState(true);
             // Gửi Request tạo ra một phiên đấu giá lên sever để xử lý
-
+            handleRequestCreateAuction();
         }
     }
     @FXML
@@ -107,6 +110,8 @@ public class AddItemController implements Initializable {
         category.getItems().addAll(dbCategories);
         // Giả định đặt ( chưa phải chính thức)
         category.getItems().add(new Category(0, "Other", null));
+
+        // Vẫn chỉ là giả định chưa có gì chắc chắn id của nó sẽ là thế này cả !!!!
         category.setConverter(new StringConverter<Category>() {
             @Override public String toString(Category c) {return c == null ? "": c.getName();} 
             @Override public Category fromString(String s) {return null;}
@@ -117,6 +122,7 @@ public class AddItemController implements Initializable {
         category.getSelectionModel().selectedItemProperty().addListener((obs,newval,oldval)-> {
             if (newval != null) {
                 dynamicFieldsContainer.getChildren().clear();
+                // ứng với id của other phía trên nhưng có thể sau này sẽ thay đổi nên không có gì cả . Để tạm vậy 
                 if (newval.getId()==0) {
                     System.out.println("Khong can phai load them truong moi");
                 }
@@ -146,7 +152,7 @@ public class AddItemController implements Initializable {
             validationLabel.setText("Processing... Please wait for minutes !");
         }
         else {
-
+                validationLabel.setVisible(false);
         }
     }
     private boolean validInput() {
@@ -155,6 +161,10 @@ public class AddItemController implements Initializable {
             return false;
         }
         if( category.getValue() == null) {
+            showError();
+            return false;
+        }
+        if (description.getText().isEmpty() || name.getText()==null) {
             showError();
             return false;
         }
@@ -174,7 +184,7 @@ public class AddItemController implements Initializable {
         validationLabel.setVisible(true);
         validationLabel.setText("Please fill all fields correctly");
     }
-    // hàm xử lý thời gian giá 
+    // hàm xử lý thời gian giá và cài đặt các giới hạn trong tầm kiểm soát theo nghiệp vụ ( không cho thời gian đấu giá quá lâu hoặc quá nhanh )
     public boolean handleTime() {
         LocalDate selectedDate = enddate.getValue();
         if (selectedDate == null) {
@@ -219,11 +229,43 @@ public class AddItemController implements Initializable {
         }
     }
     private void handleRequestCreateAuction() {
-      /*
-         Tạo ra để lăng nghe kết quả trả về từ Sever
-       */
-      // EventRouter.getInstance().on()
+        try {
+            int sellerId = SessionManager.getInstance().getCurrentUser().getId();
+            String title = name.getText();
+            String desc = description.getText();
+            Category selectedCategory = category.getValue();
+            double startingPrice = Double.parseDouble(startprice.getText());
+            LocalDateTime end = LocalDateTime.of(enddate.getValue(), LocalTime.of(endhour.getValue(), endminute.getValue(), endsecond.getValue()));
+            DateTimeFormatter formatter= DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String endTime = end.format(formatter);
+            CreateAuctionRequest request = new CreateAuctionRequest(sellerId, title, desc, selectedCategory, startingPrice, endTime);
+            RequestSender.send(request);
+        }
+        catch (Exception e) {
+            AlertUtils.showError("Error ! ","Can't connect to server");
+            e.printStackTrace();
+        }
+        finally {
+            setLoadingState(false);
+        }
+   }
+   private void  handleResponseCreateAuction(Response response) {
+        if (response.isSuccess()) {
+            handleSuccessCreateAuction(response);
+        }
+        else {
+            handleFailCreateAuction(response);
+        }
    }     
-    
+   private void handleSuccessCreateAuction(Response response) {
+        AlertUtils.showSuccess("Success !", "Product has been created successfully");
+        // Lưu vào đâu ? getInstance() của SessionManager().getAuction().
+        // Lưu vào sessionmanager
+        // Chuyển hướng về Home 
+        SceneNavigator.goTo("/com/groupproject/client/FXML/mainscreen.fxml");
+   }
+   private void handleFailCreateAuction(Response response) {
+        AlertUtils.showError("Error !", response.getMessage());
+   }
 }
 

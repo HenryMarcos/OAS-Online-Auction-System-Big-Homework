@@ -33,3 +33,11 @@
     -fx-font-size: 30;
     -fx-font-family: "Varela Round", sans-serif;
 }
+.subscribebutton {
+    -fx-background-radius: 10;
+    -fx-text-fill: black;
+    -fx-font-size: 15;
+    -fx-font-weight: bold;
+    -fx-padding: 10;
+    -fx-cursor:hand;
+}

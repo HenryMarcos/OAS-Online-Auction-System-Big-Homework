@@ -28,12 +28,12 @@ public class ProfileController {
     private void loadUserData() {
         // có một số cái phải được gọi xuống từ database: userid, username,emailfield và những cái này là không sửa được
         User user = SessionManager.getInstance().getCurrentUser();
-        userIdField.setText(user.getId());
+        userIdField.setText(String.valueOf(user.getId()));
         usernameField.setText(user.getUsername());
         emailField.setText(user.getEmail());
         // Ghi chú: userID, username, email đã được set editable="false" bên FXML
     }
-
+    // Xử lý sau khi có thời gian ( chưa cần thiết ngay lúc này )
     // Xử lý sự kiện khi nhấn nút Save
     @FXML
     private void handleSave() {
