@@ -1,36 +1,26 @@
 package com.groupproject.client;
-import com.groupproject.client.Data.BidRecord;
-
 import java.io.IOException;
-import java.util.function.Consumer;
 
-import javafx.scene.control.Label;
-
-import com.groupproject.client.utils.CountDownHelper;
-import com.groupproject.client.network.EventRouter;
-import com.groupproject.client.network.RequestSender;
+import com.groupproject.client.Data.BidRecord;
 import com.groupproject.client.utils.AlertUtils;
-
-import javafx.scene.chart.XYChart;
-import javafx.scene.chart.XYChart.Series;
-import javafx.scene.chart.LineChart;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-
+import com.groupproject.client.utils.CountDownHelper;
 import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.model.transaction.Auction;
-import com.groupproject.shared.network.AuctionUpdate;
 import com.groupproject.shared.network.BidRequest;
-import com.groupproject.shared.network.Response;
 
-import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.image.ImageView;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.XYChart;
+import javafx.scene.chart.XYChart.Series;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.ImageView;
 ;
 public class AuctionController  {
     @FXML private LineChart<String,Number> linechart;
@@ -109,7 +99,6 @@ public class AuctionController  {
             }
             String username= SessionManager.getInstance().getCurrentUser().getUsername();
             BidRequest request = new BidRequest(currentAuction.getId(), username, price);
-            RequestSender.send(request);
             enterprice.clear();
         }
         catch (NumberFormatException e ) {

@@ -12,7 +12,7 @@ import com.groupproject.shared.network.BidRequest;
 import com.groupproject.shared.network.NetworkRequest;
 import com.groupproject.shared.network.Request;
 import com.groupproject.shared.network.Response;
-
+// HANDLE THÊM CẢ PHẦN PHÁT CÁC THÔNG BÁO CHO CLIENT 
 // --- NỘI HÀM: CHUÕI RIÊNG CHO MỖI CLIENT ---
 public class ClientHandler implements Runnable {
     private Socket socket;

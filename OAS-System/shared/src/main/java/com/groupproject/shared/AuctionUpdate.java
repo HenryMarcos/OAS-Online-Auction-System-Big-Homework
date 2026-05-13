@@ -2,6 +2,8 @@ package com.groupproject.shared;
 
 import java.io.Serializable;
 
+import com.groupproject.shared.network.BidRequest;
+
 public class AuctionUpdate implements Serializable {
     private int auctionId;
     private double newBidAmount;

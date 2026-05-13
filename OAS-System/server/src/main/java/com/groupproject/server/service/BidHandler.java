@@ -3,7 +3,7 @@ package com.groupproject.server.service;
 import java.io.ObjectOutputStream;
 
 import com.groupproject.server.core.ServerApp;
-import com.groupproject.shared.network.AuctionUpdate;
+import com.groupproject.shared.AuctionUpdate;
 import com.groupproject.shared.network.BidRequest;
 
 public class BidHandler {

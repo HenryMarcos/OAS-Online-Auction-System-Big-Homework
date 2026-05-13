@@ -21,7 +21,7 @@
             <configuration>
               <transformers>
                 <transformer>
-                  <mainClass>com.groupproject.server.ServerApp</mainClass>
+                  <mainClass>com.groupproject.server.core.ServerApp</mainClass>
                 </transformer>
               </transformers>
             </configuration>
