@@ -8,28 +8,12 @@ public class Seller extends User {
     private String bankAccount; // Thông tin tài khoản ngân hàng của người bán, dùng để nhận tiền sau khi bán được sản phẩm
     private boolean isVerified; // Trạng thái xác minh của người bán, có thể được sử dụng để tăng độ tin cậy và uy tín của người bán trên nền
 
-    public Seller() {
-        super();
+    public Seller(int id, String username, String password, String email) {
+        super(id, username, password, email);
         this.ratingNumber = 0; 
         this.rating = 0.0f; 
         this.bankAccount = ""; 
         this.isVerified = false; 
-    }
-
-    public Seller(String username, String password, String email) {
-        super(username, password, email);
-        this.ratingNumber = 0; 
-        this.rating = 0.0f; 
-        this.bankAccount = ""; 
-        this.isVerified = false; 
-    }
-
-    public Seller(int ratingNumber, float rating, String bankAccount, boolean isVerified, String username, String password, String email) {
-        super(username, password, email);
-        this.ratingNumber = ratingNumber;
-        this.rating = rating;
-        this.bankAccount = bankAccount;
-        this.isVerified = isVerified;
     }
 
     public void setRating(float rating) {

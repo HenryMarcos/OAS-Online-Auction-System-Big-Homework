@@ -94,6 +94,7 @@ public class LoginController {
 
     // Hàm xử lý kết quả nhận về từ server
     private void handleLoginResponse(LoginResponse response) {
+        System.out.println("LOGINCONTROLLLER:RESPONSE: Got response from server.");
         if (response.isSuccess()) { handleSuccessfulLogin(response); }
         else { handleFailedLogin(response); }
     }

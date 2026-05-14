@@ -8,6 +8,7 @@ import java.util.List;
 import com.groupproject.server.dao.CategoryDAO;
 import com.groupproject.server.handlers.RequestDispatcher;
 import com.groupproject.server.service.BidHandler;
+import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.network.BidRequest;
 import com.groupproject.shared.network.NetworkRequest;
 import com.groupproject.shared.network.Request;
@@ -46,6 +47,7 @@ public class ClientHandler implements Runnable {
                 // Xử lý trường hợp client gửi yêu cầu
                 if (recievedData instanceof Request) {
                     Request request = (Request) recievedData;
+                    ServerLogger.info("User " + socket.getInetAddress() + " sent a " + request.getClass().getSimpleName());
                     // Nhận response sau khi xử lý xong request
                     Response serverReply = dispatcher.dispatch(request);
 
@@ -85,9 +87,23 @@ public class ClientHandler implements Runnable {
             }
 
 
-        } catch (Exception e) {
-            ServerApp.log("A client disconnected");
-            e.printStackTrace();
+        } catch (Throwable e) { // <-- Catch EVERYTHING
+            /* 
+            // 1. PRINT THE ERROR FIRST before doing anything else!
+            System.err.println("============== SERVER THREAD CRASHED ==============");
+            e.printStackTrace(); 
+            System.err.println("===================================================");
+            
+            // 2. Safely attempt to log it (Wrap in Platform.runLater if it touches UI)
+            try {
+                javafx.application.Platform.runLater(() -> {
+                    ServerApp.log("A client disconnected due to an error.");
+                });
+            } catch (Exception logEx) {
+                // Ignore if UI logging fails
+            }
+            */
+
         } finally {
             // CLEANUP: Khi client rời, xóa client trong danh sách đi
             if (out != null) {
@@ -95,7 +111,12 @@ public class ClientHandler implements Runnable {
                     ServerApp.clientWriters.remove(out);
                 }
             }
-            try { socket.close(); } catch (Exception e) {}
+            try { 
+                if (socket != null && !socket.isClosed()) {
+                    ServerLogger.info("User " + socket.getInetAddress() + " has disconnected");
+                    socket.close(); 
+                }
+            } catch (Exception e) {}
         }
     }
 }

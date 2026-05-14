@@ -93,11 +93,47 @@ public class UserDAO {
             // Nếu rs.next() là true, nghĩa là tìm thấy ít nhất 1 dòng khớp -> Đăng nhập thành công
             return rs.next();
         } catch (Exception e) {
+            System.out.println("UserDAO:checkUser: " + e.getMessage());
             return false;
         }
     }
 
     public static synchronized boolean checkUser(LoginRequest request) {
         return checkUser(request.getUsername(), request.getPassword());
+    }
+
+    public static synchronized User getUser(String username, String password) {
+        String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
+        Connection conn = DatabaseManager.getInstance().getConnection();
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setString(1, username);
+            pstmt.setString(2, password);
+
+            ResultSet rs = pstmt.executeQuery();
+            
+            // Nếu rs.next() là true, nghĩa là tìm thấy ít nhất 1 dòng khớp -> Đăng nhập thành công
+            if (rs.next()) {
+                // username và password đã có sẵn
+                int id = rs.getInt("id");
+                String email = rs.getString("email");
+
+                return new User(0, username, password, email);
+            }
+        } catch (Exception e) {
+            System.out.println("UserDAO:getUser: " + e.getMessage());
+            return null;
+        }
+
+        return null;
+    }
+    
+    public static synchronized User getUser(LoginRequest request) {
+        return getUser(request.getUsername(), request.getUsername());
+    }
+
+    public static synchronized User getUser(SignupRequest request) {
+        return getUser(request.getUsername(), request.getUsername());
     }
 }

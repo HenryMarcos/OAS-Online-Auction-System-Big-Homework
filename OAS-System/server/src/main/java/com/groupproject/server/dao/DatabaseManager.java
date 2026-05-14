@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import com.groupproject.server.utils.Config;
+import com.groupproject.server.utils.ServerLogger;
 
 public class DatabaseManager {
 
@@ -16,9 +17,9 @@ public class DatabaseManager {
     private DatabaseManager() {
         try {
             this.connection = DriverManager.getConnection(Config.DATABASE_URL);
-            System.out.println("DatabaseManager: Successfully connected to SQLite!");
+            ServerLogger.info("Successfully connected to SQLite!");
         } catch (SQLException e) {
-            System.err.println("FATAL ERROR: Could not connect to the database.");
+            ServerLogger.info("[FATAL ERROR] Could not connect to the database.");
             e.printStackTrace();
             // Optional: System.exit(1); // Kill the server if DB fails
         }
@@ -115,9 +116,9 @@ public class DatabaseManager {
             
             CategoryDAO.getCategories();
             
-            System.out.println("Database initialized successfully!");
+            ServerLogger.info("Database initialized successfully!");
         } catch (Exception e) {
-            System.out.println("Database error: " + e.getMessage());
+            ServerLogger.error(e.getMessage());
         }
     }
 
@@ -128,7 +129,7 @@ public class DatabaseManager {
                 connection = DriverManager.getConnection(Config.DATABASE_URL);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            ServerLogger.error(e.getMessage());
         }
         return connection;
     }

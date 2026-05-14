@@ -11,12 +11,8 @@ public class BidTransaction extends Entity {
     private String auctionId; // ID của phiên đấu giá mà người dùng đang đặt giá thầu
     private double bidAmount; // Số tiền của giá thầu
 
-    public BidTransaction() {
-        super();
-    }
-
-    public BidTransaction(String bidderId, String auctionId, double bidAmount) {
-        super();
+    public BidTransaction(int id, String bidderId, String auctionId, double bidAmount) {
+        super(id);
         this.bidderId = bidderId;
         this.auctionId = auctionId;
         this.bidAmount = bidAmount;

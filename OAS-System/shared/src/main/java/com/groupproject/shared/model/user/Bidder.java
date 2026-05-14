@@ -6,14 +6,8 @@ public class Bidder extends User {
     private double accountBalance; // Số dư tài khoản của người đấu giá
     private String shippingAddress; // Địa chỉ giao hàng của người đấu giá
 
-    public Bidder() {
-        super();
-        this.accountBalance = 0.0; 
-        this.shippingAddress = ""; 
-    }
-
-    public Bidder(double accountBalance, String shippingAddress, String username, String password, String email) {
-        super(username, password, email);
+    public Bidder(int id, String username, String password, String email, double accountBalance, String shippingAddress) {
+        super(id, username, password, email);
         this.accountBalance = accountBalance;
         this.shippingAddress = shippingAddress;
     }

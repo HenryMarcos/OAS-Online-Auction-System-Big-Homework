@@ -3,6 +3,7 @@ package com.groupproject.server.handlers;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.network.CreateAuctionRequest;
 import com.groupproject.shared.network.LoginRequest;
 import com.groupproject.shared.network.Request;
@@ -20,12 +21,14 @@ public class RequestDispatcher {
     }
 
     public Response dispatch(Request request) {
+        ServerLogger.info("Getting suitable Handler for " + request.getClass().getSimpleName());
         RequestHandler handler = handlers.get(request.getClass());
 
         if (handler != null) {
+            ServerLogger.info("Got suitable Handler: " + handler.getClass().getSimpleName());
             return handler.handle(request);
         } else {
-            System.err.println("No handler found for: " + request.getClass().getSimpleName());
+            ServerLogger.error("No handler found for: " + request.getClass().getSimpleName());
             return null; // Or return a generic ErrorResponse
         }
         

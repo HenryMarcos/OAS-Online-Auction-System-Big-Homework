@@ -1,12 +1,10 @@
 package com.groupproject.client;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
 
 import com.groupproject.client.network.NetworkManager;
 import com.groupproject.client.network.ServerListener;
+import com.groupproject.client.utils.ClientConfig;
 import com.groupproject.client.utils.SceneNavigator;
 
 import javafx.application.Application;
@@ -36,7 +34,7 @@ public class App extends Application {
     public static void connectToServer() {
         try {
             // Dùng Google Cloud IP hoặc bất kỳ IP nào phù hợp
-            NetworkManager.getInstance().connect("34.9.27.87", 8080);
+            NetworkManager.getInstance().connect(ClientConfig.getServerIp(), ClientConfig.getServerPort());
                         
             Thread listenerThread = new Thread(new ServerListener());
             listenerThread.setDaemon(true); // Đảm bảo thread sẽ chết khi tắt app

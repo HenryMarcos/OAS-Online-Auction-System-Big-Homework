@@ -3,6 +3,7 @@ package com.groupproject.server.dao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 
@@ -31,11 +32,12 @@ public class AuctionDAO {
             try (ResultSet rs = pstmt.getGeneratedKeys()) {
                 if (rs.next()) {
                     int newId = rs.getInt(1);
-                    return null;
+                    return new Auction(newId, sellerId, title, description, category, startingPrice, endTime);
                 }
             }
-        } catch (Exception e) {}
- 
+        } catch (SQLException e) {
+            System.err.println("Database error creating auction: " + e.getMessage());
+        }
         return null;
     }
 }

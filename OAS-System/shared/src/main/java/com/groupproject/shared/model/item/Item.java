@@ -20,16 +20,8 @@ public class Item extends Entity {
 
     private Map<String, String> categorySpecificFields;
 
-    public Item() {
-        super();
-        this.title = "";
-        this.description = "";
-        //this.startingPrice = 0.0;
-        //this.sellerId = "";
-    }
-
-    public Item(String title, String description, int categoryId, String categoryName) {
-        super(); 
+    public Item(int id, String title, String description, int categoryId, String categoryName) {
+        super(id); 
         this.title = title;
         this.description = description;
         this.categoryId = categoryId;

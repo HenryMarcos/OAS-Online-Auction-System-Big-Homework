@@ -6,6 +6,7 @@ module com.groupproject.shared {
     exports com.groupproject.shared.model.item;
     exports com.groupproject.shared.model.transaction;
     exports com.groupproject.shared.model.categories;
+    exports com.groupproject.shared.model.enums;
     exports com.groupproject.shared.network;
 
     // 2. Export các nhóm Factory
