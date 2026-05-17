@@ -15,7 +15,7 @@ public class BidTransaction extends Entity {
         super();
     }
 
-    public BidTransaction(int bidderId, int auctionId, double bidAmount) {
+    public BidTransaction(Integer bidderId, Integer auctionId, double bidAmount) {
         super();
         this.bidderId = bidderId;
         this.auctionId = auctionId;
@@ -26,18 +26,16 @@ public class BidTransaction extends Entity {
         return bidderId;
     }
 
-    public void setBidderId(int bidderId) {
+    public void setBidderId(Integer bidderId) {
         this.bidderId = bidderId;
     }
 
     public Integer getAuctionId() {
         return auctionId;
     }
-
-    public void setAuctionId(int auctionId) {
+    public void setAuctionId(Integer auctionId) {
         this.auctionId = auctionId;
     }
-
     public double getBidAmount() {
         return bidAmount;
     }

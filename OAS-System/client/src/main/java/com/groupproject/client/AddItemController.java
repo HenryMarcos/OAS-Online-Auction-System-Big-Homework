@@ -1,26 +1,28 @@
 package com.groupproject.client;
 import com.groupproject.client.network.EventRouter;
+
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ResourceBundle;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import com.groupproject.client.utils.AlertUtils;
 import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.model.categories.Category;
+import com.groupproject.shared.model.user.User;
 import com.groupproject.shared.network.CreateAuctionRequest;
+import com.groupproject.shared.network.CreateAuctionResponse;
 import com.groupproject.shared.network.Response;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 
-import javafx.fxml.Initializable;
 import javafx.scene.layout.VBox;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -31,7 +33,7 @@ import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
-public class AddItemController implements Initializable {
+public class AddItemController  {
     @FXML private VBox dynamicFieldsContainer;
     @FXML 
     private Spinner<Integer> endhour;
@@ -58,14 +60,14 @@ public class AddItemController implements Initializable {
     private File imagefile;
     @FXML 
     private Button addButton;
-    @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) { 
+    @FXML
+    public void initialize() { 
         // tạo thêm một mục là Unknown/Other để id = ? 
         setupTime();
         generateCategory();
         createUI();
         handleImage(); 
-        EventRouter.getInstance().on(Response.class, this::handleResponseCreateAuction);
+        EventRouter.getInstance().on(CreateAuctionResponse.class, this::handleResponseCreateAuction);
     }   
     @FXML
     private void handleCreateAuction(ActionEvent event) throws IOException {
@@ -230,7 +232,7 @@ public class AddItemController implements Initializable {
     }
     private void handleRequestCreateAuction() {
         try {
-            int sellerId = SessionManager.getInstance().getCurrentUser().getId();
+            Integer sellerId = SessionManager.getInstance().getCurrentUser().getId();
             String title = name.getText();
             String desc = description.getText();
             Category selectedCategory = category.getValue();
@@ -249,7 +251,7 @@ public class AddItemController implements Initializable {
             setLoadingState(false);
         }
    }
-   private void  handleResponseCreateAuction(Response response) {
+   private void  handleResponseCreateAuction(CreateAuctionResponse response) {
         if (response.isSuccess()) {
             handleSuccessCreateAuction(response);
         }
@@ -257,14 +259,13 @@ public class AddItemController implements Initializable {
             handleFailCreateAuction(response);
         }
    }     
-   private void handleSuccessCreateAuction(Response response) {
+   private void handleSuccessCreateAuction(CreateAuctionResponse response) {
         AlertUtils.showSuccess("Success !", "Product has been created successfully");
-        // Lưu vào đâu ? getInstance() của SessionManager().getAuction().
-        // Lưu vào sessionmanager
+        // Lưu vào đâu  getInstance() của SessionManager().geAllAuctions().
         // Chuyển hướng về Home 
         SceneNavigator.goTo("/com/groupproject/client/FXML/mainscreen.fxml");
    }
-   private void handleFailCreateAuction(Response response) {
+   private void handleFailCreateAuction(CreateAuctionResponse response) {
         AlertUtils.showError("Error !", response.getMessage());
    }
 }

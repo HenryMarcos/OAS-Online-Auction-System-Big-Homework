@@ -75,7 +75,6 @@
     <bottom>
         <TableView fx:id="bottomtable" prefHeight="160.0" >
             <columns>
-                <TableColumn fx:id="idusercol" text="Id" prefWidth="200.0" />
                 <TableColumn fx:id="usercol" text="Bidder" prefWidth="200.0"/>
                 <TableColumn fx:id="pricecol" text="Price" prefWidth="200.0" />
                 <TableColumn fx:id="timecol" text="Time" prefWidth="200.0" />

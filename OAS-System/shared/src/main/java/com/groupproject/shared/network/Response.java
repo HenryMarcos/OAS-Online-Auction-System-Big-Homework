@@ -2,7 +2,7 @@ package com.groupproject.shared.network;
 
 import java.io.Serializable;
 
-public abstract class Response implements Serializable{
+public abstract class Response implements Serializable,NetworkMessage {
 
     private static final long serialVersionUID = 1L;
 

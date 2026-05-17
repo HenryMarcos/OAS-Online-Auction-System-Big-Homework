@@ -9,7 +9,8 @@ import java.util.List;
 
 import com.groupproject.server.core.ServerApp;
 import com.groupproject.server.utils.Config;
-import com.groupproject.shared.AuctionItem;
+import com.groupproject.shared.model.transaction.AuctionItem;
+
 import com.groupproject.shared.network.BidRequest;
 
 public class AuctionManager {
@@ -65,7 +66,7 @@ public class AuctionManager {
         try (Connection conn = DriverManager.getConnection(Config.DATABASE_URL)) {
             PreparedStatement pstmt = conn.prepareStatement(sql);
             ResultSet rs = pstmt.executeQuery();
-
+            /*  Nên sửa lại chỗ này đầy đủ những thông tin cân thiết hơn
             while (rs.next()) {
                 AuctionItem item = new AuctionItem(
                     rs.getInt("id"),
@@ -76,6 +77,7 @@ public class AuctionManager {
 
                 activeAuctions.add(item);
             }
+            */ 
         } catch (Exception e) {
             ServerApp.log("Error fetching auctions: " + e.getMessage());
         }

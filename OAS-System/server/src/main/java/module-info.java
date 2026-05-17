@@ -2,10 +2,9 @@ module com.groupproject.server {
     requires javafx.controls;
     requires javafx.fxml;
     requires javafx.graphics;
-
     // Thông báo Java rằng cần mô-đun từ shared
     requires com.groupproject.shared;
-
+    //requires org.slf4j;
     // Cấp quyền truy cập vào thư viện Database
     requires java.sql;
 

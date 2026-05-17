@@ -9,4 +9,8 @@ public class AuctionCancelledEvent extends AuctionEvent {
     public String getReason() {
         return reason;
     }
+    @Override 
+    public void accept(AuctionListener listener) {
+        listener.onAuctionCancelled(this);
+    }
 }

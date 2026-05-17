@@ -17,7 +17,7 @@
                 <Image url="@../Image/sample.png" />
             </image>
         </ImageView>
-        <ToggleButton fx:id="buttonSubscribe" styleClass="subscribebutton" onAction="#handleSubscribe" text="Follow now !" focusTraversable="false" maxWidth="Infinity"/>
+        <!--ToggleButton fx:id="buttonSubscribe" styleClass="subscribebutton" onAction="#handleSubscribe" text="Follow now !" focusTraversable="false" maxWidth="Infinity"/>
     </VBox>
 
     <!-- Phần thông tin bên dưới ảnh -->
@@ -47,6 +47,6 @@
             </font>
         </Label>
 
-        <Button onAction="#handleBid" text="Bid Now" styleClass="bidbutton" maxWidth="Infinity" prefHeight="30" />
+        <Button  onAction="#handleBid" text="Bid Now" styleClass="bidbutton" maxWidth="Infinity" prefHeight="30" />
     </VBox>
 </HBox>

@@ -1,12 +1,17 @@
 package com.groupproject.client;
 import java.io.IOException;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 
 import com.groupproject.client.Data.BidRecord;
+import com.groupproject.client.network.AuctionIntegrationService;
+import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.AlertUtils;
 import com.groupproject.client.utils.CountDownHelper;
 import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.model.transaction.Auction;
+import com.groupproject.shared.network.AuctionEvent.*;
 import com.groupproject.shared.network.BidRequest;
 
 import javafx.application.Platform;
@@ -21,8 +26,9 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
-;
-public class AuctionController  {
+public class AuctionController implements AuctionListener  {
+    private Auction currentAuction = SessionManager.getInstance().getCurrentAuction();
+    private AuctionIntegrationService integrationService;
     @FXML private LineChart<String,Number> linechart;
     private Series<String, Number> priceSeries = new XYChart.Series<>() ;
     @FXML private TableView<BidRecord> bottomtable;
@@ -30,7 +36,6 @@ public class AuctionController  {
     @FXML private TableColumn<BidRecord, Double> pricecol;
     @FXML private TableColumn<BidRecord, String> timecol;
     @FXML private TableColumn<BidRecord,Integer> idusercol;
-    private Auction currentAuction = SessionManager.getInstance().getCurrentAuction();
     @FXML private TextField enterprice;
     @FXML private Label startprice;
     @FXML private ImageView productImageView;
@@ -42,19 +47,33 @@ public class AuctionController  {
     @FXML 
     private void switchtoHome(ActionEvent event) throws IOException {
         SceneNavigator.goTo("/com/groupproject/client/FXML/mainscreen.fxml");
+        if (integrationService != null) {
+            integrationService.stopListening();
+        }
     }
-
     @FXML
     public  void initialize() {
+        int id = currentAuction.getId().intValue();
+        this.integrationService = new AuctionIntegrationService(id, this);
+        this.integrationService.startListening();
         setAuction(currentAuction);
         // Cài đặt bảng 
         setUpTableView();
         // Cài đặt linechart 
         linechart.getData().add(priceSeries);
         // lắng nghe tín hiệu từ Sever 
-        //listenForSeverUpdate();
     }
-
+    @Override 
+    public void onBidUpdated(BidUpdatedEvent event) {
+        Platform.runLater(() -> {
+            String priceText = String.format("Current price : %.2f VND", event.getBidAmount());
+            currentAuction.setCurrentBid(event.getBidAmount());
+            currentAuction.setHighestBidderId( event.getHighestBidderId());
+            auctioncurrentprice.setText(priceText);
+            String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+            //updateAuctionUI( ,event.getBidAmount(), time);
+        });
+    }
     // ve sau se duoc thay the bang viec lay tren databse xuong ( thay the tu dong 90 - 150)
     public void setAuction(Auction auction) {
         Platform.runLater(() -> {
@@ -63,7 +82,6 @@ public class AuctionController  {
             updateTime();
         });
     }
-
     private void updatePrice() {
         String priceText = String.format("Current price : %.2f VND", currentAuction.getCurrentBid());
         auctioncurrentprice.setText(priceText);
@@ -99,6 +117,7 @@ public class AuctionController  {
             }
             String username= SessionManager.getInstance().getCurrentUser().getUsername();
             BidRequest request = new BidRequest(currentAuction.getId(), username, price);
+            RequestSender.send(request);
             enterprice.clear();
         }
         catch (NumberFormatException e ) {
@@ -107,23 +126,13 @@ public class AuctionController  {
     }
 
     private void setUpTableView() {
-        idusercol.setCellValueFactory(new PropertyValueFactory<>("id"));
         usercol.setCellValueFactory(new PropertyValueFactory<>("bidder"));
         pricecol.setCellValueFactory(new PropertyValueFactory<>("price"));
         timecol.setCellValueFactory(new PropertyValueFactory<>("time"));
     }
     /* 
-    private void listenForSeverUpdate() {
-        EventRouter.getInstance().on(AuctionUpdate.class, update-> {
-                Platform.runLater(()-> {
-                    String currentTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-                    updateAuctionUI(update.getBidderid(),update.getBidderUsername(),update.getCurrentBid(),currentTime);
-                });
-        });
-    }
     private void updateAuctionUI(int id, String name, double currentbid, String time ) {
-
+        draw UI 
     }
     */
-    
 }

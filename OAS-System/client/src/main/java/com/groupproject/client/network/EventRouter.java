@@ -6,6 +6,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
+import com.groupproject.shared.network.AuctionEvent.AuctionEvent;
+import com.groupproject.shared.network.NetworkMessage;
 import com.groupproject.shared.network.Response;
 
 import javafx.application.Platform;
@@ -15,7 +17,7 @@ public class EventRouter {
     private static EventRouter instance;
 
     
-    private final Map< Class<? extends Response>, List<Consumer<Response>> > listeners;
+    private final Map< Class<? extends NetworkMessage>, List<Consumer<NetworkMessage>> > listeners;
 
     private EventRouter() {
         // ConcurrentHashmap đảm bảo an toàn đa luồng
@@ -33,7 +35,7 @@ public class EventRouter {
     // Thêm người nghe
     // Gắn 1 hàm controller cho 1 Lớp response nhất định từ server
     @SuppressWarnings("unchecked")
-    public <T extends Response> void on(Class<T> responseClass, Consumer<T> callback) {
+    public <T extends NetworkMessage> void on(Class<T> responseClass, Consumer<T> callback) {
 
         // Nếu đây là lần đầu tiên nghe event này thì tạo 1 list mới (an toàn đa luồng)
         listeners.computeIfAbsent(responseClass, k -> new CopyOnWriteArrayList<>());
@@ -43,13 +45,18 @@ public class EventRouter {
     }
 
     // Thông báo Response sắp tới cho tất cả những controller đã đăng ký Response cụ thể ấy
-    public void dispatch(Response response) {
-        List<Consumer<Response>> callbacks = listeners.get(response.getClass());
+    public void dispatch(NetworkMessage response) {
+
+        if (response instanceof AuctionEvent ) {
+            AuctionEvent event  = (AuctionEvent) response;
+            AuctionEventBus.getInstance().publish(event);
+        }
+        List<Consumer<NetworkMessage>> callbacks = listeners.get(response.getClass());
 
         if (callbacks != null && !callbacks.isEmpty()) {
             Platform.runLater(() -> {
                 // Chạy qua tất cả controller đang nghe response này và kích hoạt hàm của chúng
-                for (Consumer<Response> callback : callbacks) {
+                for (Consumer<NetworkMessage> callback : callbacks) {
                     callback.accept(response);
                 }
             });

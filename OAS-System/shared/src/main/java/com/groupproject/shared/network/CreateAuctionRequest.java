@@ -3,7 +3,7 @@ package com.groupproject.shared.network;
 import com.groupproject.shared.model.categories.Category;
 
 public class CreateAuctionRequest extends Request {
-    private int sellerId;
+    private Integer sellerId;
     private String title;
     private String description;
     private Category category;
@@ -20,7 +20,7 @@ public class CreateAuctionRequest extends Request {
         this.endTime = endTime;
     }
 
-    public int getSelletId() { return sellerId; }
+    public int getSellerId() { return sellerId; }
     public String getTitle() { return title; }
     public String getDescription() { return description; }
     public Category getCategory() { return category; }

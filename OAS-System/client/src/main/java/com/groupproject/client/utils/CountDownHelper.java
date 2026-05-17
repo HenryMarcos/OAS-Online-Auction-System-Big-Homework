@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.scene.control.Label;
+
+import com.groupproject.shared.model.transaction.AuctionItem;
 import com.groupproject.shared.model.transaction.Auction;
 import java.util.Arrays;
 import java.util.List;
@@ -14,12 +16,32 @@ import java.util.List;
 public class CountDownHelper {
     private Timeline timeline;
     private Auction auction;
+    private AuctionItem auctionItem;
     private List<Label> labels;
     private Runnable onFinished;
 
     // bắt đầu thời gian đém ngược
     public void start(Auction auction, Runnable onFinished, Label... labelsToUpdate) {
         this.auction = auction;
+        this.labels = Arrays.asList(labelsToUpdate);
+        this.onFinished = onFinished;
+
+        if (timeline != null) { 
+            timeline.stop(); 
+        }
+
+        timeline = new Timeline(new KeyFrame(javafx.util.Duration.seconds(1), event -> {
+            updateCountDown();
+        }));
+        
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+        
+        updateCountDown(); // Gọi ngay để hiện số lập tức 
+    }
+
+    public void start(AuctionItem auctionItem, Runnable onFinished, Label... labelsToUpdate) {
+        this.auctionItem = auctionItem;
         this.labels = Arrays.asList(labelsToUpdate);
         this.onFinished = onFinished;
 

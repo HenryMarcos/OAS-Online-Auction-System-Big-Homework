@@ -1,5 +1,5 @@
 package com.groupproject.shared.network;
-
+// KHÔNG DÙNG ĐẾN
 public class NetworkResponse extends Response {
     private String action;
     public Object payload;

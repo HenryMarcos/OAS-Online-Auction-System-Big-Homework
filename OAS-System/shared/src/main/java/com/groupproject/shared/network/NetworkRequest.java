@@ -1,5 +1,5 @@
 package com.groupproject.shared.network;
-
+// KHONG DUNG DEN
 public class NetworkRequest extends Request {
     private String action;
     private Object payload;

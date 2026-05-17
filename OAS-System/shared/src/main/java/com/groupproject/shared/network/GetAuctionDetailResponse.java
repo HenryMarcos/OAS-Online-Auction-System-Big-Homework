@@ -13,6 +13,6 @@ public class GetAuctionDetailResponse extends Response  {
     // Về sau thì thêm vào ;
     @Override
     public String getType() {
-        return "";
+        return "GET_AUCTION_RESULT";
     }
 }

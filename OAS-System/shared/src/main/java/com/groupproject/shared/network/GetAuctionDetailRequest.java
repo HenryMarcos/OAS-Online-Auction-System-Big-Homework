@@ -5,4 +5,7 @@ public class GetAuctionDetailRequest extends Request  {
     public GetAuctionDetailRequest(int auction_id) {
         this.auctionId = auction_id;
     }
+    public int getAuctionId() {
+        return auctionId;
+    }
 }
