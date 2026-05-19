@@ -31,13 +31,13 @@ public class CountDownHelper {
         }
 
         timeline = new Timeline(new KeyFrame(javafx.util.Duration.seconds(1), event -> {
-            updateCountDown();
+            updateCountDown(auction.getAuctionItem().getEndDate());
         }));
         
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
         
-        updateCountDown(); // Gọi ngay để hiện số lập tức 
+        updateCountDown(auction.getAuctionItem().getEndDate()); // Gọi ngay để hiện số lập tức 
     }
 
     public void start(AuctionItem auctionItem, Runnable onFinished, Label... labelsToUpdate) {
@@ -50,13 +50,13 @@ public class CountDownHelper {
         }
 
         timeline = new Timeline(new KeyFrame(javafx.util.Duration.seconds(1), event -> {
-            updateCountDown();
+            updateCountDown(auctionItem.getEndDate());
         }));
         
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
         
-        updateCountDown(); // Gọi ngay để hiện số lập tức 
+        updateCountDown(auctionItem.getEndDate()); // Gọi ngay để hiện số lập tức 
     }
 
     public void stop() {
@@ -64,10 +64,10 @@ public class CountDownHelper {
     }
 
     // hiện thị ra màn hình ngày , giờ, phút, giây (phía client, sever sẽ xử lý sau)
-    private void updateCountDown() {
-        if (auction == null || auction.getEndDate() == null) return;
+    private void updateCountDown(LocalDateTime endDate) {
+        if (auction == null || endDate  == null) return;
 
-        String timeText = formatRemainingTime(auction.getEndDate());
+        String timeText = formatRemainingTime(endDate);
         labels.forEach(label -> label.setText(timeText));
 
         if (timeText.equals("ENDED")) {

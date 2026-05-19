@@ -8,7 +8,7 @@ public class Bidder extends User {
 
     public Bidder() {
         super();
-        this.accountBalance = 0.0; 
+        this.accountBalance = 10000.0; // default
         this.shippingAddress = ""; 
     }
 

@@ -1,22 +1,10 @@
 package com.groupproject.client;
-
-import java.io.IOException;
-import java.util.List;
-
-import com.groupproject.client.network.EventRouter;
+import com.groupproject.shared.model.user.User;
 import com.groupproject.client.network.RequestSender;
-import com.groupproject.client.utils.AlertUtils;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.model.transaction.AuctionItem;
-import com.groupproject.shared.model.enums.AuctionStatus;
-import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.network.GetAuctionItemRequest;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-
 public class YourAuctionsController extends BaseAuctionViewController {
     @FXML
    public void initialize() {
@@ -24,16 +12,18 @@ public class YourAuctionsController extends BaseAuctionViewController {
       addEventHandles();
       setupGlobalEventListeners();
       fetchInitialData();
-      setupReacticeUI();
+      setupReactiveUI();
    }
    // hàm load những items có trong từng mục category
    @Override
    public boolean shouldInclude(AuctionItem newItem) {
-      return newItem.getSellerId()==;
+      return newItem.getSellerId()==SessionManager.getInstance().getCurrentUser().getId().intValue();
    }
    @Override
    public void fetchInitialData() {
-      GetAuctionItemRequest request = GetAuctionItemRequest.getMyAuctionItems();
+      User user = SessionManager.getInstance().getCurrentUser();
+      int idUser = user.getId().intValue();
+      GetAuctionItemRequest request = GetAuctionItemRequest.getMyAuctionItems(idUser);
       RequestSender.send(request);
    }
     

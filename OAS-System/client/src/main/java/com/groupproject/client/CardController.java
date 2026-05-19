@@ -65,7 +65,7 @@ public class CardController implements AuctionListener {
         });
         
     }
-    // Hàm xử lý khi có người muốn theo dõi phiên đấu giá này 
+    // Hàm xử lý khi có người muốn theo dõi phiên đấu giá này (bỏ vì quá phức tạp)
     /* 
     @FXML
     private void handleSubscribe() {

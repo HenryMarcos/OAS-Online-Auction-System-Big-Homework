@@ -4,7 +4,7 @@ public class BidRequest extends Request {
     private int auctionId;
     private String bidderUsername;
     private double bidAmount;
-
+    
     public BidRequest(int auctionId, String bidderUsername, double bidAmount) {
         this.auctionId = auctionId;
         this.bidderUsername = bidderUsername;

@@ -13,7 +13,7 @@ public class ActiveAuctionsController extends BaseAuctionViewController {
       // Gửi thông báo 
       setupGlobalEventListeners();
       fetchInitialData();
-      setupReacticeUI();
+      setupReactiveUI();
    }
    // hàm load những items có trong từng mục category
    @Override

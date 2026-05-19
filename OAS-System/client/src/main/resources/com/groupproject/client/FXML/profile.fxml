@@ -24,7 +24,7 @@
                 <Image url="@../Image/avatar.png" />
             </image>
          </ImageView>
-         <Label fx:id="money" text="Wallet : " />
+         <Label fx:id="wallet" />
          <!--Button mnemonicParsing="false" text="Thay đổi ảnh" -->
       </children>
    </VBox>
@@ -52,7 +52,7 @@
 
               <Label text="Email:" GridPane.rowIndex="2" />
               <TextField fx:id="emailField" editable="false" style="-fx-background-color: #f0f0f0; -fx-text-fill: #666666;" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-
+               <!--Nên bỏ đi đoạn này chỉ lấy những thông tin quan trọng nhất của : BankAccount thì chưa cần thiết-->
               <Label text="Bank Account:" GridPane.rowIndex="3" />
               <TextField fx:id="bankAccountField" promptText="Nhập số tài khoản ngân hàng..." GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
@@ -69,7 +69,7 @@
          </GridPane>
          
          <Region VBox.vgrow="ALWAYS" />
-         
+         <!--Bỏ luôn cả đoạn này-->
          <HBox alignment="BOTTOM_RIGHT">
             <children>
                <Button fx:id="saveButton" mnemonicParsing="false" onAction="#handleSave" style="-fx-background-color: #ffaa00; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 25; -fx-background-radius: 5;" text="Save" />

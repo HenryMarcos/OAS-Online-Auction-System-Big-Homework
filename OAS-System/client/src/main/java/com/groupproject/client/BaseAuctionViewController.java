@@ -65,7 +65,7 @@ public abstract class BaseAuctionViewController implements AuctionListener {
          categoryBar.getChildren().add(button);
       }
    }
-   public void setupReacticeUI() {
+   public void setupReactiveUI() {
       uiList.addListener((ListChangeListener<AuctionItem>) change -> {
          while (change.next()) {
             if (change.wasAdded()) {

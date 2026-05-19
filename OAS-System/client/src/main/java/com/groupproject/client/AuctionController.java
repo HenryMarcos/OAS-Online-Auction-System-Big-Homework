@@ -20,6 +20,8 @@ import javafx.fxml.FXML;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Series;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -36,6 +38,7 @@ public class AuctionController implements AuctionListener  {
     @FXML private TableColumn<BidRecord, Double> pricecol;
     @FXML private TableColumn<BidRecord, String> timecol;
     @FXML private TableColumn<BidRecord,Integer> idusercol;
+    @FXML private Button bidButton;
     @FXML private TextField enterprice;
     @FXML private Label startprice;
     @FXML private ImageView productImageView;
@@ -67,11 +70,12 @@ public class AuctionController implements AuctionListener  {
     public void onBidUpdated(BidUpdatedEvent event) {
         Platform.runLater(() -> {
             String priceText = String.format("Current price : %.2f VND", event.getBidAmount());
-            currentAuction.setCurrentBid(event.getBidAmount());
-            currentAuction.setHighestBidderId( event.getHighestBidderId());
             auctioncurrentprice.setText(priceText);
             String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
             //updateAuctionUI( ,event.getBidAmount(), time);
+            AlertUtils.showSuccess("Success", "Someone places bid successfully");
+            bidButton.setDisable(true);
+            bidButton.setText("PLACE BID");
         });
     }
     // ve sau se duoc thay the bang viec lay tren databse xuong ( thay the tu dong 90 - 150)
@@ -83,12 +87,12 @@ public class AuctionController implements AuctionListener  {
         });
     }
     private void updatePrice() {
-        String priceText = String.format("Current price : %.2f VND", currentAuction.getCurrentBid());
+        String priceText = String.format("Current price : %.2f VND", currentAuction.getAuctionItem().getCurrentBid());
         auctioncurrentprice.setText(priceText);
     }
 
     private void updateName() {
-        String name = "Name : " + currentAuction.getItemName();
+        String name = "Name : " + currentAuction.getAuctionItem().getItemName();
         auctionproductname.setText(name);
         participant.setText(SessionManager.getInstance().getCurrentUser().getUsername());
     }
@@ -111,7 +115,7 @@ public class AuctionController implements AuctionListener  {
                 return;
             }
             // Kiểm tra xem giá vừa nhập đang cao hơn giá hiện tại không ? 
-            if (price <= currentAuction.getCurrentBid() ) {
+            if (price <= currentAuction.getAuctionItem().getCurrentBid() ) {
                 AlertUtils.showError("Lỗi logic","Giá đặt phải cao hơn giá hiện tại");
                 return;
             }
@@ -119,6 +123,9 @@ public class AuctionController implements AuctionListener  {
             BidRequest request = new BidRequest(currentAuction.getId(), username, price);
             RequestSender.send(request);
             enterprice.clear();
+            bidButton.setDisable(false);
+            bidButton.setText("Loading...");
+            
         }
         catch (NumberFormatException e ) {
             AlertUtils.showError("Lỗi định dạng", "Vui lòng chỉ nhập số");
@@ -135,4 +142,36 @@ public class AuctionController implements AuctionListener  {
         draw UI 
     }
     */
+    @Override 
+    public void onAuctionCancelled(AuctionCancelledEvent event) {
+        Platform.runLater(() -> {
+            AlertUtils.showAlert(Alert.AlertType.INFORMATION, "THÔNG BÁO", event.getReason());
+            bidButton.setDisable(false);
+
+        });
+        
+    }
+    @Override
+    public void onAuctionFinished(AuctionFinisedEvent event) {
+        Platform.runLater(() -> {
+            AlertUtils.showAlert(Alert.AlertType.INFORMATION, "THÔNG BÁO", "PHIÊN ĐẤU GIÁ ĐÃ ĐƯỢC HOÀN THÀNH");
+            bidButton.setDisable(false);
+
+        });
+    }
+    @Override 
+    public void onAuctionStarted(AuctionStartedEvent event) {
+        Platform.runLater(() -> {
+            AlertUtils.showAlert(Alert.AlertType.INFORMATION,"THÔNG BÁO"," PHIÊN ĐẤU GIÁ BẮT ĐẦU ");
+            bidButton.setDisable(true);
+        });
+    }
+    @Override 
+    public void onAuctionEnded(AuctionEndedEvent event) {
+        Platform.runLater(() -> {
+            AlertUtils.showAlert(Alert.AlertType.INFORMATION,"THÔNG BÁO"," PHIÊN ĐẤU GIÁ KẾT THÚC ! CHỜ THANH TOÁN ");
+            bidButton.setDisable(false);
+        });
+    }
+
 }

@@ -9,20 +9,15 @@ import java.time.temporal.ChronoUnit;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Objects;
 import com.groupproject.client.utils.AlertUtils;
 import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.model.categories.Category;
-import com.groupproject.shared.model.user.User;
 import com.groupproject.shared.network.CreateAuctionRequest;
 import com.groupproject.shared.network.CreateAuctionResponse;
-import com.groupproject.shared.network.Response;
-
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-
 import javafx.scene.layout.VBox;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;

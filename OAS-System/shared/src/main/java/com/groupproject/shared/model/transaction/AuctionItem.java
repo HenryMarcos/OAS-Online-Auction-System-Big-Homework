@@ -3,7 +3,8 @@ import java.time.LocalDateTime;
 
 import com.groupproject.shared.model.base.Entity;
 import com.groupproject.shared.model.enums.AuctionStatus;
-
+// xem lai nen dieu chinh moi quan he is-a hay has-a
+// Nên để những thứ mà ban đầu xin được tạo Auction : id, name,
 public class AuctionItem extends Entity {
      private static final long serialVersionUID = 1L;
     private Integer id; // id của phiên đấu giá 
@@ -25,7 +26,6 @@ public class AuctionItem extends Entity {
     }
     public AuctionItem(String itemName, int sellerId, double currentBid, String highestBidderName,Integer highestBidderId,LocalDateTime endDate) {
         super();
-        //this.itemId = itemId;
         this.sellerId = sellerId;
         this.currentBid = currentBid;
         this.highestBidderName= this.highestBidderName;

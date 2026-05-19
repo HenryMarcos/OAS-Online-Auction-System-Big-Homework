@@ -32,7 +32,7 @@ public class SessionManager {
 
     public void logout() {
         currentUser = null;
-        
+        currentAuction = null;
         System.out.println("Session cleared: User logged out.");
     }
 

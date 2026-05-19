@@ -23,7 +23,7 @@ public class HomeController extends BaseAuctionViewController  {
       // ĐƯỢC OVERRIDE NGAY TẠI HÀM CON
       setupGlobalEventListeners();
       fetchInitialData();
-      setupReacticeUI();
+      setupReactiveUI();
    }
    // hàm load những items có trong từng mục category
    @Override

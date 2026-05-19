@@ -67,7 +67,7 @@
                 <Label fx:id="auctiontimeleft" styleClass="time-left" />
                 <Label text="Enter your price" />
                 <TextField fx:id="enterprice"  />
-                <Button fx:id="placebid" text="Place bid" maxWidth="Infinity" styleClass="bid-button" onAction="#handlePlaceBid" /> 
+                <Button fx:id="bidButton" text="PLACE BID" maxWidth="Infinity" disable="false" styleClass="bid-button" onAction="#handlePlaceBid" /> 
             </children>
         </VBox>
     </right>
