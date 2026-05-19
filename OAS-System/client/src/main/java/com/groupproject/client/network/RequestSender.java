@@ -3,6 +3,7 @@ package com.groupproject.client.network;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 
+import com.groupproject.client.utils.ClientLogger;
 import com.groupproject.shared.network.Request;
 
 public class RequestSender {
@@ -11,7 +12,7 @@ public class RequestSender {
         ObjectOutputStream out = NetworkManager.getInstance().getOut();
         // Kiểm tra xem đã kết nối chưa
         if (out == null) {
-            System.err.println("CRITICAL ERROR: Trying to send data, but not connected to server!");
+            ClientLogger.error("CRITICAL ERROR: Trying to send data, but not connected to server!");
             return;
         }
 
@@ -22,11 +23,11 @@ public class RequestSender {
             out.reset(); // Dọn bộ nhớ
 
             // Thông báo đã gửi yêu cầu
-            System.out.println("-> Sent request: " + request.getClass().getSimpleName());
+            ClientLogger.info("-> Sent request: " + request.getClass().getSimpleName());
 
         } catch (IOException e) {
-            System.err.println("Failed to send request: " + request.getClass().getSimpleName());
-            e.printStackTrace();
+            ClientLogger.error("Failed to send request: " + request.getClass().getSimpleName());
+            ClientLogger.error(e.getMessage());
         }
     }
 }

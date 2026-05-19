@@ -5,6 +5,7 @@ import java.io.IOException;
 import com.groupproject.client.network.NetworkManager;
 import com.groupproject.client.network.ServerListener;
 import com.groupproject.client.utils.ClientConfig;
+import com.groupproject.client.utils.ClientLogger;
 import com.groupproject.client.utils.SceneNavigator;
 
 import javafx.application.Application;
@@ -40,12 +41,13 @@ public class App extends Application {
             listenerThread.setDaemon(true); // Đảm bảo thread sẽ chết khi tắt app
             listenerThread.start();
 
-            System.out.println("Connected to server for login");
+            ClientLogger.info("Connected to server for login");
         } catch (Exception e) {
-            System.out.println("Could not connect to server for login.");
-            e.printStackTrace();
+            ClientLogger.error("Could not connect to server for login.");
+            ClientLogger.error(e.getMessage());
         }
     }
+
 
     public static void main(String[] args) {
         launch();

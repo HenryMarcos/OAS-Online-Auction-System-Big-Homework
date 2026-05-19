@@ -1,5 +1,8 @@
 package com.groupproject.shared.network;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.groupproject.shared.model.categories.Category;
 
 public class CreateAuctionRequest extends Request {
@@ -7,6 +10,7 @@ public class CreateAuctionRequest extends Request {
     private String title;
     private String description;
     private Category category;
+    Map<Integer, Map<String, String>> categoryGroupedSpecs = new HashMap<>();
     private double startingPrice;
     private String endTime;
 

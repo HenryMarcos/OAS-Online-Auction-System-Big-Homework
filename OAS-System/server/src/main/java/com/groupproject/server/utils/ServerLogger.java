@@ -12,6 +12,11 @@ public class ServerLogger {
         printLog("INFO", message, "\u001B[34m"); // Màu xanh dương cho INFO
     }
 
+    // In thông báo cảnh báo
+    public static void warning(String message) {
+        printLog("WARN", message, "\u001B[33m"); 
+    }
+
     // In thông báo lỗi
     public static void error(String message) {
         printLog("ERROR", message, "\u001B[31m"); // Màu đỏ cho ERROR

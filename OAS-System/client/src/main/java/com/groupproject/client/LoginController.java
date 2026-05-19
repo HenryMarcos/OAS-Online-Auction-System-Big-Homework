@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.groupproject.client.network.EventRouter;
 import com.groupproject.client.network.RequestSender;
+import com.groupproject.client.utils.ClientLogger;
 import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.network.LoginRequest;
@@ -94,7 +95,7 @@ public class LoginController {
 
     // Hàm xử lý kết quả nhận về từ server
     private void handleLoginResponse(LoginResponse response) {
-        System.out.println("LOGINCONTROLLLER:RESPONSE: Got response from server.");
+        ClientLogger.info("Got response from server");
         if (response.isSuccess()) { handleSuccessfulLogin(response); }
         else { handleFailedLogin(response); }
     }
@@ -105,6 +106,7 @@ public class LoginController {
         statusLabel.setText("Success! Loading chat...");
         // Lưu user
         SessionManager.getInstance().setCurrentUser(response.getUser());
+        SessionManager.getInstance().setCurrentCategories(response.getCategoryTree());
 
         // TODO: Chuyển sang màn hình chính
         SceneNavigator.getInstance().goTo("/com/groupproject/client/FXML/mainscreen.fxml");
@@ -112,7 +114,7 @@ public class LoginController {
 
     private void handleFailedLogin(LoginResponse response) {
         // Show error message on the screen
-        System.out.println("Error: ");
+        ClientLogger.error(response.getMessage());
         // errorLabel.setText(response.getMessage());
         statusLabel.setTextFill(Color.RED);
         statusLabel.setText(response.getMessage());

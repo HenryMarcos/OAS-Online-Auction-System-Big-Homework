@@ -51,8 +51,8 @@ public class DatabaseManager {
                                 "category_id INTEGER NOT NULL," +
                                 "starting_price REAL NOT NULL," +
                                 "end_time DATETIME NOT NULL," +
-                                "current_bid DATETIME NOT NULL," + 
-                                "current_bidder, " +
+                                "current_bid REAL NOT NULL," + 
+                                "current_bidder_id INTEGER, " +
                                 "status TEXT NOT NULL, " + 
                                 "FOREIGN KEY(seller_id) REFERENCES users(id), " +
                                 "FOREIGN KEY(category_id) REFERENCES categories(id))";
@@ -78,6 +78,16 @@ public class DatabaseManager {
                                "FOREIGN KEY(category_id) REFERENCES categories(id))";
             stmt.execute(fieldsSql);
 
+            String specificationSql = "CREATE TABLE IF NOT EXISTS auction_specifications (" +
+                                      "id INTEGER PRIMARY KEY AUTOINCREMENT, " + 
+                                      "auction_id INTEGER NOT NULL, " +
+                                      "category_id INTEGER NOT NULL, " +
+                                      "field_name TEXT NOT NULL, " +
+                                      "field_value TEXT NOT NULL, " +
+                                      "FOREIGN KEY(auction_id) REFERENCES auctions(id) ON DELETE CASCADE, " +
+                                      "FOREIGN KEY(category_id) REFERENCES categories_(id))";
+            stmt.execute(specificationSql);
+
             String itemsSql = "CREATE TABLE IF NOT EXISTS items ( " + 
                                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " + 
                                 "title TEXT, " + 
@@ -94,22 +104,86 @@ public class DatabaseManager {
                                 "FOREIGN KEY(auction_id) REFERENCES items(id))";
             stmt.execute(itemAttributesSql);
 
+            // =====================================================================
+            // 1. ELECTRONICS CATEGORY TREE
+            // =====================================================================
+
+            // --- Electronics (Parent) + Required Fields ---
             stmt.execute("INSERT OR IGNORE INTO categories (id, name, parent_id) VALUES (1, 'Electronics', NULL);");
-            stmt.execute("INSERT OR IGNORE INTO categories (id, name, parent_id) VALUES (11, 'Laptops', 1);");
-            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (11, 'Brand');");
-            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (11, 'Model');");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (1, 'Condition');");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (1, 'Brand');");
+
+            // --- Laptops & Computers (Subcategory) + Required Fields ---
+            stmt.execute("INSERT OR IGNORE INTO categories (id, name, parent_id) VALUES (11, 'Laptops & Computers', 1);");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (11, 'Processor');");
             stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (11, 'RAM (GB)');");
-            stmt.execute("INSERT OR IGNORE INTO categories (id, name, parent_id) VALUES (12, 'Smartphones', 1);");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (11, 'Storage Capacity');");
 
-            stmt.execute("INSERT OR IGNORE INTO categories (id, name, parent_id) VALUES (2, 'Clothing', NULL);");
-            stmt.execute("INSERT OR IGNORE INTO categories (id, name, parent_id) VALUES (21, 'Mens Shoes', 2);");
-            stmt.execute("INSERT OR IGNORE INTO categories (id, name, parent_id) VALUES (22, 'Womens Shirts', 2);");
-            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (22, 'Size');");
-            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (22, 'Color');");
+            // --- Cell Phones & Smartphones (Subcategory) + Required Fields ---
+            stmt.execute("INSERT OR IGNORE INTO categories (id, name, parent_id) VALUES (12, 'Cell Phones & Smartphones', 1);");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (12, 'Model');");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (12, 'Color');");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (12, 'Network / Carrier');");
 
 
-            stmt.execute("INSERT OR IGNORE INTO categories (id, name, parent_id) VALUES (3, 'Home & Garden', NULL);");
-            stmt.execute("INSERT OR IGNORE INTO categories (id, name, parent_id) VALUES (31, 'Furniture', 3);");
+            // =====================================================================
+            // 2. MOTORS & VEHICLES CATEGORY TREE
+            // =====================================================================
+
+            // --- Motors (Parent) + Required Fields ---
+            stmt.execute("INSERT OR IGNORE INTO categories (id, name, parent_id) VALUES (2, 'Motors', NULL);");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (2, 'Make');");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (2, 'Year');");
+
+            // --- Cars & Trucks (Subcategory) + Required Fields ---
+            stmt.execute("INSERT OR IGNORE INTO categories (id, name, parent_id) VALUES (21, 'Cars & Trucks', 2);");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (21, 'Model');");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (21, 'Mileage');");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (21, 'Transmission');");
+
+            // --- Motorcycles (Subcategory) + Required Fields ---
+            stmt.execute("INSERT OR IGNORE INTO categories (id, name, parent_id) VALUES (22, 'Motorcycles', 2);");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (22, 'Engine Size (cc)');");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (22, 'Type (Sport/Cruiser)');");
+
+
+            // =====================================================================
+            // 3. FASHION & CLOTHING CATEGORY TREE (3 Levels Deep)
+            // =====================================================================
+
+            // --- Clothing & Accessories (Parent) + Required Fields ---
+            stmt.execute("INSERT OR IGNORE INTO categories (id, name, parent_id) VALUES (3, 'Clothing & Accessories', NULL);");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (3, 'Condition');");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (3, 'Brand');");
+
+            // --- Men's Clothing (Subcategory Level 1) + Required Fields ---
+            stmt.execute("INSERT OR IGNORE INTO categories (id, name, parent_id) VALUES (31, 'Mens Clothing', 3);");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (31, 'Size Type (Regular/Tall)');");
+
+            // --- Men's Shoes (Subcategory Level 2) + Required Fields ---
+            stmt.execute("INSERT OR IGNORE INTO categories (id, name, parent_id) VALUES (311, 'Mens Shoes', 31);");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (311, 'US Shoe Size');");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (311, 'Color');");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (311, 'Style');");
+
+            // --- Women's Clothing (Subcategory Level 1) + Required Fields ---
+            stmt.execute("INSERT OR IGNORE INTO categories (id, name, parent_id) VALUES (32, 'Womens Clothing', 3);");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (32, 'Size Type (Regular/Petite)');");
+
+
+            // =====================================================================
+            // 4. COLLECTIBLES & ART CATEGORY TREE
+            // =====================================================================
+
+            // --- Collectibles (Parent) + Required Fields ---
+            stmt.execute("INSERT OR IGNORE INTO categories (id, name, parent_id) VALUES (4, 'Collectibles', NULL);");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (4, 'Original / Reproduction');");
+
+            // --- Sports Trading Cards (Subcategory) + Required Fields ---
+            stmt.execute("INSERT OR IGNORE INTO categories (id, name, parent_id) VALUES (41, 'Sports Trading Cards', 4);");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (41, 'Sport');");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (41, 'Player / Athlete');");
+            stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (41, 'Graded (Yes/No)');");
 
             
 

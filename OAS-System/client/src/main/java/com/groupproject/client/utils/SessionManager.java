@@ -22,7 +22,7 @@ public class SessionManager {
 
     public void setCurrentUser(User user) {
         currentUser = user;
-        System.out.println("Session updated: User " + (user != null?user.getUsername(): "Unkown") + " is now logged in.");
+        ClientLogger.info("Session updated: User " + (user != null?user.getUsername(): "Unkown") + " is now logged in.");
     }
 
     public User getCurrentUser() { return currentUser; }
@@ -31,12 +31,12 @@ public class SessionManager {
 
     public void logout() {
         currentUser = null;
-        System.out.println("Session cleared: User logged out.");
+        ClientLogger.info("Session cleared: User logged out.");
     }
 
     public void setCurrentCategories(List<Category> categories) {
         currentCategories = categories;
-        System.out.println("Session updated: Categories is just updated.");
+        ClientLogger.info("Session updated: Categories is just updated.");
     }
 
     public List<Category> getCurrentCategories() { return currentCategories; }
