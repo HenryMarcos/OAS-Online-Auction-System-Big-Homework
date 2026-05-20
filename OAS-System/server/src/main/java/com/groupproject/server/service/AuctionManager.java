@@ -3,15 +3,93 @@ package com.groupproject.server.service;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import com.groupproject.server.core.ServerApp;
+import com.groupproject.server.dao.AuctionDAO;
 import com.groupproject.server.dao.DatabaseManager;
+import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.AuctionItem;
+import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.network.BidRequest;
 
 public class AuctionManager {
+    private static AuctionManager instance;
+
+    // Tìm nhanh các phiên đấu giá còn đang hoạt động
+    private final ConcurrentHashMap<Integer, Auction> activeAuctions = new ConcurrentHashMap<>();
+
+    // Xử lý tất cả phần thời gian đấu giá của các phiên đấu giá
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
+
+    private AuctionManager() {
+
+    }
+
+    public static synchronized AuctionManager getInstance() {
+        if (instance == null) { instance = new AuctionManager(); }
+        return instance;
+    }
+
+    private void loadActiveAuctionsFromDatabase() {
+        // Sử dụng DAO để lấy thông tin các phiên đấu giá và đăng ký những phiên chưa kết thúc.
+        for (Auction auction : AuctionDAO.getAuctions()) {
+            if (auction.getEndTime().isAfter(LocalDateTime.now())) {
+                registerAuction(auction);
+            }
+        }
+    }
+
+    public void registerAuction(Auction auction) {
+        activeAuctions.put(auction.getId(), auction);
+
+        // Tính khoảng delay trước khi phiên đấu giá kết thúc
+        long delayInSeconds = Duration.between(LocalDateTime.now(), auction.getEndTime()).toSeconds();
+        if (delayInSeconds < 0) { delayInSeconds = 0; }
+
+        // Lên lịch cho nhiệm vụ đóng phiên đấu giá
+        scheduler.schedule(() -> {
+            endAuction(auction.getId());
+        }, delayInSeconds, TimeUnit.SECONDS);
+
+    }
+
+    public synchronized boolean placeBid(int auctionId, int bidderId, double bidAmount) {
+        Auction auction = activeAuctions.get(auctionId);
+
+        if (auction == null) {
+            ServerLogger.warning("Bid rejected: Auction " + auctionId + " is not active or already closed.");
+            return false;
+        }
+
+        // Kiểm tra bid
+        if (bidAmount <= auction.getCurrentBid() || bidAmount < auction.getStartingPrice()) {
+            return false;
+        }
+
+        // Update trạng thái trong bộ nhớ
+
+        // TODO: Thông báo cho người dùng có trạng thái cao nhất trước
+
+        auction.setCurrentBid(bidAmount);
+        auction.setHighestBidderId(bidderId);
+
+        // TODO: Update trạng thái trong database
+
+        return true;
+    }
+
+    public synchronized boolean placeBid(BidRequest request) {
+        return placeBid(request.getAuctionId(), )
+    }
+
     public static synchronized boolean proccessBid(int auctionId, String bidderUsername, double bidAmount) {
         String checkSql = "SELECT current_bid, is_active FROM auctions WHERE id = ?";
         String updateSql = "UPDATE auctions SET current_bid = ?, highest_bidder = ? WHERE id = ?";

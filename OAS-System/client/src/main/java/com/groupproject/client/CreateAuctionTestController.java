@@ -8,10 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import com.groupproject.client.network.EventRouter;
+import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.ClientLogger;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.model.categories.Category;
 import com.groupproject.shared.network.CreateAuctionRequest;
+import com.groupproject.shared.network.CreateAuctionResponse;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -40,6 +43,9 @@ public class CreateAuctionTestController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // Nối response với hàm tương ứng
+        EventRouter.getInstance().on(CreateAuctionResponse.class, this::handleCreateAuctionResponse);
+
         // Thêm lựa chọn giờ(từ 0 đến 23, 24 tính là 1 ngày nên không cần thêm)
         for (int i = 0; i < 24; i++) hoursComboBox.getItems().add(i);
         hoursComboBox.setValue(12); // Tạm đặt mặc định là 12h
@@ -251,8 +257,24 @@ public class CreateAuctionTestController implements Initializable {
         // AuctionRequest req = new AuctionRequest(currentUserId, title, description, categoryId, startingPrice, endTime, capturedSpecifications);
         // RequestSender.send(req);
 
-        CreateAuctionRequest request = new CreateAuctionRequest(currentUserId, title, description, selectedCategory, startingPrice, priceText);
+        CreateAuctionRequest request = new CreateAuctionRequest(currentUserId, title, description, selectedCategory, categoryGroupedSpecs, startingPrice, endTime.toString());
+        RequestSender.send(request);
 
         ClientLogger.info("Finish handling submit auction");
     }
+
+    private void handleCreateAuctionResponse(CreateAuctionResponse response) {
+        if (response.isSuccess()) { handleSuccessfulCreateAuction(response); }
+        else { handleFailedCreateAuction(response); }
+    }
+
+    private void handleSuccessfulCreateAuction(CreateAuctionResponse response) {
+        ClientLogger.info("Successfully created new auction");
+    }
+
+    private void handleFailedCreateAuction(CreateAuctionResponse response) {
+        ClientLogger.error("failed to create new auction");
+    }
 }
+
+

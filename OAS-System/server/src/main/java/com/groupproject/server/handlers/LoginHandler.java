@@ -1,5 +1,6 @@
 package com.groupproject.server.handlers;
 
+import com.groupproject.server.dao.AuctionDAO;
 import com.groupproject.server.dao.CategoryDAO;
 import com.groupproject.server.dao.UserDAO;
 import com.groupproject.server.utils.ServerLogger;
@@ -21,7 +22,7 @@ public class LoginHandler implements RequestHandler {
 
         if (success) { 
             ServerLogger.info("Successfully handle " + request.getClass().getSimpleName());
-            return new LoginResponse(true, UserDAO.getUser((LoginRequest) request), CategoryDAO.getCategories(), "Welcome back!"); 
+            return new LoginResponse(true, UserDAO.getUser((LoginRequest) request), CategoryDAO.getMainCategories(), AuctionDAO.getAuctions(), "Welcome back!"); 
         }
         else { 
             ServerLogger.error("Failed to handle" + request.getClass().getSimpleName());

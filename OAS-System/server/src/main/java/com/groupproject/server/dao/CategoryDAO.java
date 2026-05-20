@@ -13,10 +13,8 @@ import com.groupproject.shared.model.categories.Category;
 
 public class CategoryDAO {
 
-    public static List<Category> getCategories() {
-        ServerLogger.info("An user asked for categories");
-        // Danh sách này chỉ chứa những hạng mục chính
-        List<Category> mainCategories = new ArrayList<>();
+    public static Map<Integer, Category> getCategories() {
+         ServerLogger.info("An user asked for categories");
 
         // Tìm tất cả hạng mục bằng id
         Map<Integer, Category> categoryMap = new HashMap<>();
@@ -58,27 +56,38 @@ public class CategoryDAO {
                     category.addRequiredField(field_name);
                 }
             }
-
-            ServerLogger.info("Linking category child with it parent");
-            // Link child với parent
-            for (Category category : categoryMap.values()) {
-                if (category.getParentId() == null) {
-                    // Nêu không có parent thì là một hạng mục chính
-                    mainCategories.add(category);
-                } else {
-                    // Nếu có parent thì tìm parent và thêm vào hạng mục con
-                    Category parent = categoryMap.get(category.getParentId());
-                    if (parent != null) {
-                        parent.addSubCategory(category);
-                    }
-                }
-            }
-
         } catch (Exception e) {
             ServerLogger.error("Error fetching categories: " + e.getMessage());
         }
 
-        ServerLogger.info("Getting categories finished, displaying the result:");
+        ServerLogger.info("Finish getting categories");
+
+        return categoryMap;
+    }
+
+    public static List<Category> getMainCategories() {
+        ServerLogger.info("An user asked for main categories");
+        // Danh sách này chỉ chứa những hạng mục chính
+        List<Category> mainCategories = new ArrayList<>();
+
+        Map<Integer, Category> categoryMap = getCategories();
+
+        ServerLogger.info("Linking category child with it parent");
+        // Link child với parent
+        for (Category category : categoryMap.values()) {
+            if (category.getParentId() == null) {
+                // Nêu không có parent thì là một hạng mục chính
+                mainCategories.add(category);
+            } else {
+                // Nếu có parent thì tìm parent và thêm vào hạng mục con
+                Category parent = categoryMap.get(category.getParentId());
+                if (parent != null) {
+                    parent.addSubCategory(category);
+                }
+            }
+        }
+
+        ServerLogger.info("Getting main categories finished, displaying the result:");
 
         for (Category category : mainCategories) {
             category.print("");

@@ -107,6 +107,7 @@ public class LoginController {
         // Lưu user
         SessionManager.getInstance().setCurrentUser(response.getUser());
         SessionManager.getInstance().setCurrentCategories(response.getCategoryTree());
+        SessionManager.getInstance().setCurrentAuctionList(response.getAuctionList());
 
         // TODO: Chuyển sang màn hình chính
         SceneNavigator.getInstance().goTo("/com/groupproject/client/FXML/mainscreen.fxml");

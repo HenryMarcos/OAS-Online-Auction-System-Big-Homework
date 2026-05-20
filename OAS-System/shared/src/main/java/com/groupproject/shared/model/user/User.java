@@ -1,5 +1,8 @@
 package com.groupproject.shared.model.user;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import com.groupproject.shared.model.base.Entity;
 
 public class User extends Entity {
@@ -8,8 +11,8 @@ public class User extends Entity {
     private String password; // Mật khẩu sẽ được mã hóa trước khi lưu trữ hoặc truyền qua mạng
     private String email;
 
-    public User(int id, String username, String password, String email) {
-        super(id); 
+    public User(int id, String username, String password, String email, LocalDateTime createdAt) {
+        super(id, createdAt); 
         this.username = username;
         this.password = password;
         this.email = email;

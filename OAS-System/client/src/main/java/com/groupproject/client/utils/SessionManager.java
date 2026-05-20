@@ -3,6 +3,7 @@ package com.groupproject.client.utils;
 import java.util.List;
 
 import com.groupproject.shared.model.categories.Category;
+import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.model.user.User;
 
 public class SessionManager {
@@ -10,6 +11,7 @@ public class SessionManager {
 
     private static User currentUser = null;
     private static List<Category> currentCategories;
+    private static List<Auction> currentAuctionList;
 
     private SessionManager() {}
 
@@ -40,4 +42,11 @@ public class SessionManager {
     }
 
     public List<Category> getCurrentCategories() { return currentCategories; }
+
+    public void setCurrentAuctionList(List<Auction> auctionList) {
+        currentAuctionList = currentAuctionList;
+        ClientLogger.info("Session updated: Auction list is just updated");
+    }
+
+    public List<Auction> getCurrentAuctionList() { return currentAuctionList; }
 }

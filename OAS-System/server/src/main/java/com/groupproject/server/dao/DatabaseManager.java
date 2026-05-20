@@ -40,7 +40,8 @@ public class DatabaseManager {
                          "id INTEGER PRIMARY KEY AUTOINCREMENT," + 
                          "username TEXT UNIQUE NOT NULL," + 
                          "email TEXT UNIQUE NOT NULL," +
-                         "password TEXT NOT NULL)";
+                         "password TEXT NOT NULL," +
+                         "created_at DATETIME NOT NULL)";
             stmt.execute(sql);
             
             String auctionSql = "CREATE TABLE IF NOT EXISTS auctions (" +
@@ -51,7 +52,7 @@ public class DatabaseManager {
                                 "category_id INTEGER NOT NULL," +
                                 "starting_price REAL NOT NULL," +
                                 "end_time DATETIME NOT NULL," +
-                                "current_bid REAL NOT NULL," + 
+                                "current_bid REAL," + 
                                 "current_bidder_id INTEGER, " +
                                 "status TEXT NOT NULL, " + 
                                 "FOREIGN KEY(seller_id) REFERENCES users(id), " +
@@ -85,7 +86,7 @@ public class DatabaseManager {
                                       "field_name TEXT NOT NULL, " +
                                       "field_value TEXT NOT NULL, " +
                                       "FOREIGN KEY(auction_id) REFERENCES auctions(id) ON DELETE CASCADE, " +
-                                      "FOREIGN KEY(category_id) REFERENCES categories_(id))";
+                                      "FOREIGN KEY(category_id) REFERENCES categories(id))";
             stmt.execute(specificationSql);
 
             String itemsSql = "CREATE TABLE IF NOT EXISTS items ( " + 
@@ -188,7 +189,7 @@ public class DatabaseManager {
             
 
             
-            CategoryDAO.getCategories();
+            CategoryDAO.getMainCategories();
             
             ServerLogger.info("Database initialized successfully!");
         } catch (Exception e) {

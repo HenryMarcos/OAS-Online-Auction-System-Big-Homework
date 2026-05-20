@@ -104,6 +104,8 @@ public class ClientHandler implements Runnable {
             }
             */
 
+            ServerLogger.error(e.getMessage());
+
         } finally {
             // CLEANUP: Khi client rời, xóa client trong danh sách đi
             if (out != null) {

@@ -1,20 +1,18 @@
 package com.groupproject.shared.network;
 
-import java.io.Serializable;
-
-public class BidRequest implements Serializable {
+public class BidRequest extends Request {
     private int auctionId;
-    private String bidderUsername;
+    private int bidderId;
     private double bidAmount;
 
-    public BidRequest(int auctionId, String bidderUsername, double bidAmount) {
+    public BidRequest(int auctionId, int bidderId, double bidAmount) {
         this.auctionId = auctionId;
-        this.bidderUsername = bidderUsername;
+        this.bidderId = bidderId;
         this.bidAmount = bidAmount;
     }
 
     public int getAuctionId() { return auctionId; }
-    public String getBidderUsername() { return bidderUsername; }
+    public int getBidderId() { return bidderId; }
     public double getBidAmount() { return bidAmount; }
 
     public String getType() { return "BID"; }

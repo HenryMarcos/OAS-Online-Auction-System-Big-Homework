@@ -1,13 +1,15 @@
 package com.groupproject.shared.model.user;
 
+import java.time.LocalDateTime;
+
 public class Bidder extends User {
     private static final long serialVersionUID = 1L;
 
     private double accountBalance; // Số dư tài khoản của người đấu giá
     private String shippingAddress; // Địa chỉ giao hàng của người đấu giá
 
-    public Bidder(int id, String username, String password, String email, double accountBalance, String shippingAddress) {
-        super(id, username, password, email);
+    public Bidder(int id, String username, String password, String email, double accountBalance, String shippingAddress, LocalDateTime createdAt) {
+        super(id, username, password, email, createdAt);
         this.accountBalance = accountBalance;
         this.shippingAddress = shippingAddress;
     }

@@ -4,6 +4,7 @@ import com.groupproject.server.dao.AuctionDAO;
 import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.network.CreateAuctionRequest;
+import com.groupproject.shared.network.CreateAuctionResponse;
 import com.groupproject.shared.network.Request;
 import com.groupproject.shared.network.Response;
 
@@ -23,11 +24,11 @@ public class CreateAuctionHandler implements RequestHandler {
 
         if (success) {
             ServerLogger.info("Create auction success");
+            return new CreateAuctionResponse(true, newlyCreatedAuction, null);
         }
-        else {}
-
-
-
-        return null;
+        else {
+            ServerLogger.error("Failed to create auction");
+            return new CreateAuctionResponse(false, "Failed to create auction");
+        }
     }
 }
