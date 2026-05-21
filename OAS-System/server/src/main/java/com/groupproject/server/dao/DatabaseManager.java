@@ -51,8 +51,8 @@ public class DatabaseManager {
                                 "category_id INTEGER NOT NULL," +
                                 "starting_price REAL NOT NULL," +
                                 "end_time DATETIME NOT NULL," +
-                                "current_bid DATETIME NOT NULL," + 
-                                "current_bidder, " +
+                                "current_bid REAL NOT NULL," + 
+                                "current_bidder INTEGER, " +
                                 "status TEXT NOT NULL, " + 
                                 "FOREIGN KEY(seller_id) REFERENCES users(id), " +
                                 "FOREIGN KEY(category_id) REFERENCES categories(id))";
