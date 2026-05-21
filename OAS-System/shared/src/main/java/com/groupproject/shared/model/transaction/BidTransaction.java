@@ -15,7 +15,7 @@ public class BidTransaction extends Entity {
         super();
     }
 
-    public BidTransaction(Integer bidderId, Integer auctionId, double bidAmount) {
+    public BidTransaction(int bidderId, int auctionId, double bidAmount) {
         super();
         this.bidderId = bidderId;
         this.auctionId = auctionId;

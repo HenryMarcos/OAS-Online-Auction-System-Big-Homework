@@ -2,12 +2,8 @@ package com.groupproject.client;
 // giao dien, logic cua trang chu
 
 import com.groupproject.client.network.RequestSender;
-
-import com.groupproject.shared.model.transaction.AuctionItem;
-
-
-import com.groupproject.shared.network.GetAuctionItemRequest;
-
+import com.groupproject.shared.model.transaction.Auction;
+import com.groupproject.shared.network.GetAuctionRequest;
 import javafx.fxml.FXML;
 
 
@@ -27,12 +23,12 @@ public class HomeController extends BaseAuctionViewController  {
    }
    // hàm load những items có trong từng mục category
    @Override
-   public boolean shouldInclude(AuctionItem newItem) {
+   public boolean shouldInclude(Auction newItem) {
       return true;
    }
    @Override
    public void fetchInitialData() {
-      GetAuctionItemRequest request = GetAuctionItemRequest.getAllAuctionItems();
+      GetAuctionRequest request = GetAuctionRequest.getAllAuctions();
       RequestSender.send(request);
    }
 }

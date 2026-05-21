@@ -8,12 +8,14 @@ public class User extends Entity {
     private String username;
     private String password; // Mật khẩu sẽ được mã hóa trước khi lưu trữ hoặc truyền qua mạng
     private String email;
+    //private double accountBalance;
 
     public User() {
         super();
         this.username = "";
         this.password = "";
         this.email = "";
+        
     }
 
     public User(String username, String password, String email) {

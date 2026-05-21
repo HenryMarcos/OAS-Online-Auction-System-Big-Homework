@@ -80,7 +80,7 @@ public class LoginController {
         }
     }
     @FXML
-    private void switchtoSignup(ActionEvent event) throws IOException {
+    private void handleSignup(ActionEvent event) throws IOException {
         SceneNavigator.goTo("/com/groupproject/client/FXML/signup.fxml");
         //App.setRoot("signup");
     }

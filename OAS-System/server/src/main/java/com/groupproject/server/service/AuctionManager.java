@@ -9,7 +9,7 @@ import java.util.List;
 
 import com.groupproject.server.core.ServerApp;
 import com.groupproject.server.utils.Config;
-import com.groupproject.shared.model.transaction.AuctionItem;
+import com.groupproject.shared.model.transaction.Auction;
 
 import com.groupproject.shared.network.BidRequest;
 
@@ -59,8 +59,8 @@ public class AuctionManager {
         return proccessBid(bidRequest.getAuctionId(), bidRequest.getBidderUsername(), bidRequest.getBidAmount());
     }
 
-    public static List<AuctionItem> getActiveAuctions() {
-        List<AuctionItem> activeAuctions = new ArrayList<>();
+    public static List<Auction> getActiveAuctions() {
+        List<Auction> activeAuctions = new ArrayList<>();
         String sql = "SELECT * FROM auctions WHERE is_active = 1";
 
         try (Connection conn = DriverManager.getConnection(Config.DATABASE_URL)) {

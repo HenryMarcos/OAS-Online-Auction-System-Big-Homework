@@ -2,7 +2,6 @@ package com.groupproject.shared.model.base;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 // Cần có Serializable để có thể truyền thông tin qua mạng lưới
 public abstract class Entity implements Serializable {

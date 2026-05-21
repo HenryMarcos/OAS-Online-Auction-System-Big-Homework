@@ -6,7 +6,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.scene.control.Label;
 
-import com.groupproject.shared.model.transaction.AuctionItem;
+import com.groupproject.shared.model.transaction.AuctionDetail;
 import com.groupproject.shared.model.transaction.Auction;
 import java.util.Arrays;
 import java.util.List;
@@ -16,7 +16,7 @@ import java.util.List;
 public class CountDownHelper {
     private Timeline timeline;
     private Auction auction;
-    private AuctionItem auctionItem;
+    private AuctionDetail auctionDetail;
     private List<Label> labels;
     private Runnable onFinished;
 
@@ -31,17 +31,17 @@ public class CountDownHelper {
         }
 
         timeline = new Timeline(new KeyFrame(javafx.util.Duration.seconds(1), event -> {
-            updateCountDown(auction.getAuctionItem().getEndDate());
+            updateCountDown(auction.getEndTime());
         }));
         
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
         
-        updateCountDown(auction.getAuctionItem().getEndDate()); // Gọi ngay để hiện số lập tức 
+        updateCountDown(auction.getEndTime()); // Gọi ngay để hiện số lập tức 
     }
 
-    public void start(AuctionItem auctionItem, Runnable onFinished, Label... labelsToUpdate) {
-        this.auctionItem = auctionItem;
+    public void start(AuctionDetail auctionDetail, Runnable onFinished, Label... labelsToUpdate) {
+        this.auctionDetail = auctionDetail;
         this.labels = Arrays.asList(labelsToUpdate);
         this.onFinished = onFinished;
 
@@ -50,13 +50,13 @@ public class CountDownHelper {
         }
 
         timeline = new Timeline(new KeyFrame(javafx.util.Duration.seconds(1), event -> {
-            updateCountDown(auctionItem.getEndDate());
+            updateCountDown(auctionDetail.getAuction().getEndTime());
         }));
         
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
         
-        updateCountDown(auctionItem.getEndDate()); // Gọi ngay để hiện số lập tức 
+        updateCountDown(auctionDetail.getAuction().getEndTime()); // Gọi ngay để hiện số lập tức 
     }
 
     public void stop() {

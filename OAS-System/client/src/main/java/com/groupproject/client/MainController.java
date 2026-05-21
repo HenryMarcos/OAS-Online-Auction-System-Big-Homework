@@ -57,8 +57,8 @@ public class MainController extends Application  implements Initializable {
        
    } 
    @FXML
-   private void switchtoAddItem() throws IOException {
-      loadViewIntoCenter("/com/groupproject/client/FXML/additem.fxml");
+   private void switchtoCreateAuction() throws IOException {
+      loadViewIntoCenter("/com/groupproject/client/FXML/createauction.fxml");
    }
     @Override
     public void initialize(URL location, ResourceBundle resources) {

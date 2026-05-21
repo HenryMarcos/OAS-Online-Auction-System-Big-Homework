@@ -1,8 +1,8 @@
 package com.groupproject.client;
 import com.groupproject.client.network.RequestSender;
-import com.groupproject.shared.model.transaction.AuctionItem;
+import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.model.enums.AuctionStatus;
-import com.groupproject.shared.network.GetAuctionItemRequest;
+import com.groupproject.shared.network.GetAuctionRequest;
 import javafx.fxml.FXML;
 public class ActiveAuctionsController extends BaseAuctionViewController {
     @FXML
@@ -17,12 +17,12 @@ public class ActiveAuctionsController extends BaseAuctionViewController {
    }
    // hàm load những items có trong từng mục category
    @Override
-   public boolean shouldInclude(AuctionItem newItem) {
-      return newItem.getAuctionStatus()==AuctionStatus.ACTIVED;
+   public boolean shouldInclude(Auction newItem) {
+      return newItem.getStatus()==AuctionStatus.ACTIVED;
    }
    @Override
    public void fetchInitialData() {
-      GetAuctionItemRequest request = GetAuctionItemRequest.getActivedAuctionItems();
+      GetAuctionRequest request = GetAuctionRequest.getActivedAuctions();
       RequestSender.send(request);
    }
    

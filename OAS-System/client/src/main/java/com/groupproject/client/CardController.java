@@ -16,7 +16,7 @@ import com.groupproject.client.utils.SessionManager;
 import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.client.utils.CountDownHelper;
-import com.groupproject.shared.model.transaction.AuctionItem;
+import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.network.AuctionEvent.AuctionCancelledEvent;
 import com.groupproject.shared.network.AuctionEvent.AuctionEndedEvent;
 import com.groupproject.shared.network.AuctionEvent.AuctionFinisedEvent;
@@ -30,7 +30,7 @@ import javafx.application.Platform;
 
 
 public class CardController implements AuctionListener { 
-    private AuctionItem currentAuctionItem;
+    private Auction currentAuction;
     private CountDownHelper countDownHelper = new CountDownHelper();
     @FXML
     private ImageView image;
@@ -51,37 +51,24 @@ public class CardController implements AuctionListener {
     @FXML 
     private void handleBid(ActionEvent event) throws IOException {
         // Chỉ lưu ID vào session, AuctionController sẽ tự fetch từ Server khi initialize
-        GetAuctionDetailRequest request = new GetAuctionDetailRequest(currentAuctionItem.getId());
+        GetAuctionDetailRequest request = new GetAuctionDetailRequest(currentAuction.getId());
         RequestSender.send(request);
         
     }
-    public void populateUI(AuctionItem auctionItem) {
+    public void populateUI(Auction auction) {
         Platform.runLater(() -> {
-            this.currentAuctionItem = auctionItem;
-            productname.setText(auctionItem.getItemName());
-            currentprice.setText(String.valueOf(auctionItem.getCurrentBid()));
-            applyAuctionStatus(auctionItem.getAuctionStatus());
+            this.currentAuction = auction;
+            productname.setText(auction.getTitle());
+            currentprice.setText(String.valueOf(auction.getCurrentBid()));
+            applyAuctionStatus(auction.getStatus());
 
         });
         
     }
-    // Hàm xử lý khi có người muốn theo dõi phiên đấu giá này (bỏ vì quá phức tạp)
-    /* 
-    @FXML
-    private void handleSubscribe() {
-        if( buttonSubscribe.isSelected()) {
-            buttonSubscribe.setText("Following");
-            // Gọi code gửi lên sever yêu cầu đưa khách hàng này vào danh sách nhận thông báo 
-        }
-        else {
-            buttonSubscribe.setText("Follow now !");
-        }
-    }
-    */
     private void handleGetDetailAuction(GetAuctionDetailResponse response) {
         if (response.isSuccess()) {
             Platform.runLater(() ->{
-                SessionManager.getInstance().setCurrentAuction(response.getAuction());
+                SessionManager.getInstance().setCurrentAuctionDetail(response.getAuctionDetail());
                 SceneNavigator.goTo("/com/groupproject/client/FXML/auctionscreen.fxml");
             });
         }

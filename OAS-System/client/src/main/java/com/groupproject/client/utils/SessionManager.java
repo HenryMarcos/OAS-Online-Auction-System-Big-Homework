@@ -3,7 +3,7 @@ package com.groupproject.client.utils;
 import java.util.List;
 
 import com.groupproject.shared.model.categories.Category;
-import com.groupproject.shared.model.transaction.Auction;
+import com.groupproject.shared.model.transaction.AuctionDetail;
 import com.groupproject.shared.model.user.User;
 
 public class SessionManager {
@@ -11,7 +11,7 @@ public class SessionManager {
 
     private static User currentUser = null;
     private static List<Category> currentCategories;
-    private static Auction currentAuction;
+    private static AuctionDetail currentAuctionDetail;
     private SessionManager() {}
 
     public static SessionManager getInstance() {
@@ -32,7 +32,7 @@ public class SessionManager {
 
     public void logout() {
         currentUser = null;
-        currentAuction = null;
+        currentAuctionDetail = null;
         System.out.println("Session cleared: User logged out.");
     }
 
@@ -44,11 +44,11 @@ public class SessionManager {
     public List<Category> getCurrentCategories() { return currentCategories; }
 
     // SETTER AND GETTER
-    public void setCurrentAuction(Auction currentAuction) {
-        this.currentAuction= currentAuction;
+    public void setCurrentAuctionDetail(AuctionDetail currentAuctionDetail) {
+        this.currentAuctionDetail= currentAuctionDetail;
     }
-    public Auction getCurrentAuction() {
-        return currentAuction;
+    public AuctionDetail getCurrentAuctionDetail() {
+        return currentAuctionDetail;
     }
     
 }

@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.groupproject.client.network.EventRouter;
 import com.groupproject.client.utils.SessionManager;
-import com.groupproject.shared.model.transaction.AuctionItem;
+import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.model.categories.Category;
 import com.groupproject.shared.network.CreateAuctionResponse;
 import com.groupproject.shared.network.AuctionEvent.AuctionListener;
@@ -30,7 +30,7 @@ public abstract class BaseAuctionViewController implements AuctionListener {
     @FXML
     protected  Button sortbutton;
     @FXML protected  HBox categoryBar;
-   protected ObservableList<AuctionItem> uiList = FXCollections.observableArrayList();
+   protected ObservableList<Auction> uiList = FXCollections.observableArrayList();
    // man hinh moi khi an vao nut sortby
    public void addEventHandles()  {
       sortbutton.setOnMouseClicked(mouseEvent -> {
@@ -66,10 +66,10 @@ public abstract class BaseAuctionViewController implements AuctionListener {
       }
    }
    public void setupReactiveUI() {
-      uiList.addListener((ListChangeListener<AuctionItem>) change -> {
+      uiList.addListener((ListChangeListener<Auction>) change -> {
          while (change.next()) {
             if (change.wasAdded()) {
-               for (AuctionItem item : change.getAddedSubList()) {
+               for (Auction item : change.getAddedSubList()) {
                   Node cardNode= createCardNode(item);
                   Platform.runLater(() -> productgrid.getChildren().add(0,cardNode));
                }
@@ -77,12 +77,12 @@ public abstract class BaseAuctionViewController implements AuctionListener {
          }
       });
    }
-   public Node createCardNode(AuctionItem item) {
+   public Node createCardNode(Auction auction) {
       try {
          FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/groupproject/client/FXML/card.fxml"));
          Node node = loader.load();
          CardController cardController = loader.getController();
-         cardController.populateUI(item);
+         cardController.populateUI(auction);
          return node;
       } catch (IOException e) {
          e.printStackTrace();
@@ -92,14 +92,14 @@ public abstract class BaseAuctionViewController implements AuctionListener {
    public void setupGlobalEventListeners() {
       EventRouter.getInstance().on(CreateAuctionResponse.class, response -> {
             if (response.isSuccess()) {
-               AuctionItem newItem= response.getAuctionItem();
-               if (shouldInclude(newItem)) {
-                  Platform.runLater(() ->uiList.add(0,newItem));
+               Auction newAuction= response.getAuction();
+               if (shouldInclude(newAuction)) {
+                  Platform.runLater(() ->uiList.add(0,newAuction));
                }
             }
       });
    }
-   abstract  boolean shouldInclude(AuctionItem item);
+   abstract  boolean shouldInclude(Auction item);
    abstract void fetchInitialData();
 
 }

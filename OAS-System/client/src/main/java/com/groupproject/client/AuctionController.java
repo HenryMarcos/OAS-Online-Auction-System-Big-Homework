@@ -11,6 +11,7 @@ import com.groupproject.client.utils.CountDownHelper;
 import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.model.transaction.Auction;
+import com.groupproject.shared.model.transaction.AuctionDetail;
 import com.groupproject.shared.network.AuctionEvent.*;
 import com.groupproject.shared.network.BidRequest;
 
@@ -29,7 +30,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
 public class AuctionController implements AuctionListener  {
-    private Auction currentAuction = SessionManager.getInstance().getCurrentAuction();
+    private AuctionDetail currentAuctionDetail = SessionManager.getInstance().getCurrentAuctionDetail();
     private AuctionIntegrationService integrationService;
     @FXML private LineChart<String,Number> linechart;
     private Series<String, Number> priceSeries = new XYChart.Series<>() ;
@@ -56,10 +57,10 @@ public class AuctionController implements AuctionListener  {
     }
     @FXML
     public  void initialize() {
-        int id = currentAuction.getId().intValue();
+        int id = currentAuctionDetail.getAuction().getId().intValue();
         this.integrationService = new AuctionIntegrationService(id, this);
         this.integrationService.startListening();
-        setAuction(currentAuction);
+        setAuction(currentAuctionDetail.getAuction());
         // Cài đặt bảng 
         setUpTableView();
         // Cài đặt linechart 
@@ -87,18 +88,18 @@ public class AuctionController implements AuctionListener  {
         });
     }
     private void updatePrice() {
-        String priceText = String.format("Current price : %.2f VND", currentAuction.getAuctionItem().getCurrentBid());
+        String priceText = String.format("Current price : %.2f VND",currentAuctionDetail.getAuction().getCurrentBid());
         auctioncurrentprice.setText(priceText);
     }
 
     private void updateName() {
-        String name = "Name : " + currentAuction.getAuctionItem().getItemName();
+        String name = "Name : " + currentAuctionDetail.getAuction().getTitle();
         auctionproductname.setText(name);
         participant.setText(SessionManager.getInstance().getCurrentUser().getUsername());
     }
     private void updateTime() {
         CountDownHelper countDownHelper = new CountDownHelper();
-        countDownHelper.start(currentAuction, () -> auctiontimeleft.setText("ENDED"), auctiontimeleft);
+        countDownHelper.start(currentAuctionDetail, () -> auctiontimeleft.setText("ENDED"), auctiontimeleft);
     }
 
     @FXML
@@ -115,12 +116,12 @@ public class AuctionController implements AuctionListener  {
                 return;
             }
             // Kiểm tra xem giá vừa nhập đang cao hơn giá hiện tại không ? 
-            if (price <= currentAuction.getAuctionItem().getCurrentBid() ) {
+            if (price <= currentAuctionDetail.getAuction().getCurrentBid() ) {
                 AlertUtils.showError("Lỗi logic","Giá đặt phải cao hơn giá hiện tại");
                 return;
             }
             String username= SessionManager.getInstance().getCurrentUser().getUsername();
-            BidRequest request = new BidRequest(currentAuction.getId(), username, price);
+            BidRequest request = new BidRequest(currentAuctionDetail.getAuction().getId().intValue(), username, price);
             RequestSender.send(request);
             enterprice.clear();
             bidButton.setDisable(false);
