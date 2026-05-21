@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="15.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.CreateAuctionTestController">
+   <padding>
+      <Insets top="20" right="20" bottom="20" left="20"/>
+   </padding>
+
+   <children>
+      <Label text="Create New Auction" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+      
+      <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-control-inner-background: #f9f9f9; -fx-border-color: transparent;">
+         <content>
+            <VBox spacing="15.0">
+               <padding>
+                  <Insets right="15" /> </padding>
+
+               <GridPane hgap="10" vgap="10">
+                  <columnConstraints>
+                     <ColumnConstraints minWidth="100" prefWidth="120" />
+                     <ColumnConstraints hgrow="ALWAYS" />
+                  </columnConstraints>
+                  <children>
+                     <Label text="Auction Title:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                     <TextField fx:id="titleField" promptText="Enter item title..." GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                     <Label text="Description:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                     <TextArea fx:id="descriptionArea" prefHeight="80" promptText="Describe your item..." GridPane.rowIndex="1" GridPane.columnIndex="1" wrapText="true"/>
+
+                     <Label text="Category:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                     <ComboBox fx:id="categoryComboBox" promptText="Select a category" prefWidth="300" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                     <Label text="Starting Price ($):" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                     <TextField fx:id="startingPriceField" promptText="0.00" prefWidth="150" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                     <Label text="End Date:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                     <HBox spacing="10" GridPane.rowIndex="4" GridPane.columnIndex="1">
+                        <children>
+                           <DatePicker fx:id="endDatePicker" promptText="Pick a date"/>
+                           <Label text="Hours:"/>
+                           <ComboBox fx:id="hoursComboBox" prefWidth="70"/>
+                        </children>
+                     </HBox>
+                  </children>
+               </GridPane>
+
+               <Separator />
+
+               <Label text="Category Specifications" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #555;"/>
+               
+               <VBox fx:id="dynamicFieldsContainer" spacing="10" />
+
+            </VBox>
+         </content>
+      </ScrollPane>
+      <Separator />
+
+      <HBox spacing="15" alignment="CENTER_RIGHT">
+         <children>
+            <Label fx:id="statusLabel" textFill="RED" />
+            <Button text="Cancel" style="-fx-background-color: #e0e0e0;" />
+            <Button fx:id="submitButton" text="Start Auction" onAction="#handleSubmitAuction" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold;" />
+         </children>
+      </HBox>
+   </children>
+</VBox>
+
+
+
+

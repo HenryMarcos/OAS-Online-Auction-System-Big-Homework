@@ -12,7 +12,7 @@
 <?import javafx.geometry.Insets?>
 <BorderPane stylesheets="@../CSS/home.css" fx:id="mainBorderPane" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.MainController">
     <top>
-        <AnchorPane prefHeight="86.0" BorderPane.alignment="CENTER">
+        <AnchorPane prefHeight="80.0" BorderPane.alignment="CENTER">
             <children>
                 <Label alignment="CENTER" text="Auction System" textAlignment="JUSTIFY" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <font>
@@ -56,6 +56,7 @@
                         <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Your Products"/>
                         <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Notification" onAction="#switchtoNotification" />
                     </VBox>
+                    <Button fx:id="testCreateAuction" alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Create Auction(test)" onAction="#switchToCreateAuction" />
                 </VBox>
                 <Region prefHeight="1.0" prefWidth="190.0" styleClass="region" />
                 <Region VBox.vgrow="ALWAYS" />

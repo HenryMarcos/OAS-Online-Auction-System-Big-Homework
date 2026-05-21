@@ -9,6 +9,10 @@ public class CreateAuctionResponse extends Response {
         super(success, message);
         this.newlyCreatedAuction = newlyCreatedAuction;
     }
+
+    public  CreateAuctionResponse(boolean success, String message) {
+        super(success, message);
+    }
     
     public Auction getAuction() { return newlyCreatedAuction; }
 

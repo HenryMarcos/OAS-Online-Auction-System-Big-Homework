@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
+import com.groupproject.client.utils.ClientLogger;
 import com.groupproject.shared.network.Response;
 
 import javafx.application.Platform;
@@ -54,7 +55,7 @@ public class EventRouter {
                 }
             });
         } else {
-            System.out.println("Warning: Dropped Response. Nobody is listening for -> " + response.getClass().getSimpleName());
+            ClientLogger.warning("Warning: Dropped Response. Nobody is listening for -> " + response.getClass().getSimpleName());
         }
     }
 

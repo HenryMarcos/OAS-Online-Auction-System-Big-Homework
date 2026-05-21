@@ -9,11 +9,12 @@ D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\network\NetworkManager.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\AddItemController.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\MainController.java
-D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\Login.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\module-info.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\Data\Item.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\AuctionController.java
+D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\utils\ClientLogger.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\SignupController.java
+D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\CreateAuctionTestController.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\Data\ItemRespository.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\utils\SceneNavigator.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\utils\ClientConfig.java

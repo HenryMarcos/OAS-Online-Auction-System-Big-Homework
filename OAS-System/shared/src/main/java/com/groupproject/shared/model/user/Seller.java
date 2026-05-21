@@ -1,5 +1,7 @@
 package com.groupproject.shared.model.user;
 
+import java.time.LocalDateTime;
+
 public class Seller extends User {
     private static final long serialVersionUID = 1L;
 
@@ -8,8 +10,8 @@ public class Seller extends User {
     private String bankAccount; // Thông tin tài khoản ngân hàng của người bán, dùng để nhận tiền sau khi bán được sản phẩm
     private boolean isVerified; // Trạng thái xác minh của người bán, có thể được sử dụng để tăng độ tin cậy và uy tín của người bán trên nền
 
-    public Seller(int id, String username, String password, String email) {
-        super(id, username, password, email);
+    public Seller(int id, String username, String password, String email, LocalDateTime createdAt) {
+        super(id, username, password, email, createdAt);
         this.ratingNumber = 0; 
         this.rating = 0.0f; 
         this.bankAccount = ""; 

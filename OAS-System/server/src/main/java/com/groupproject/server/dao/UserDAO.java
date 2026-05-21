@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 
+import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.model.user.User;
 import com.groupproject.shared.network.LoginRequest;
 import com.groupproject.shared.network.SignupRequest;
@@ -52,19 +54,21 @@ public class UserDAO {
 
     public static synchronized User registerUser(String username, String email, String password) {
         // Câu lệnh sql để chèn user mới
-        String sql = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO users (username, email, password, created_at) VALUES (?, ?, ?, ?)";
         Connection conn = DatabaseManager.getInstance().getConnection();
         try (PreparedStatement pstmt = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
             
             pstmt.setString(1, username);
             pstmt.setString(2, email);
             pstmt.setString(3, password);
+            LocalDateTime noww = LocalDateTime.now();
+            pstmt.setObject(4, noww);
             pstmt.executeUpdate(); // Chạy câu lệnh
 
             ResultSet rs = pstmt.getGeneratedKeys();
             if (rs.next()) {
                 int newId = rs.getInt(1); // 1 thay vì "id", vì rs không lấy tên cột
-                return new User(newId, username, password, email); // Đăng ký thành công
+                return new User(newId, username, password, email, noww); // Đăng ký thành công
             } else {
                 System.err.println("Error: Can't get user's id for some reason");
             }
@@ -103,6 +107,7 @@ public class UserDAO {
     }
 
     public static synchronized User getUser(String username, String password) {
+        ServerLogger.info(String.format("Getting user by username: %s and password: %s", username, password));
         String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
         Connection conn = DatabaseManager.getInstance().getConnection();
         
@@ -115,11 +120,14 @@ public class UserDAO {
             
             // Nếu rs.next() là true, nghĩa là tìm thấy ít nhất 1 dòng khớp -> Đăng nhập thành công
             if (rs.next()) {
+                ServerLogger.info("Found user with the same detail");
                 // username và password đã có sẵn
                 int id = rs.getInt("id");
                 String email = rs.getString("email");
+                LocalDateTime createdAt = rs.getObject("created_at", LocalDateTime.class);
+                ServerLogger.info(String.format("User's id: %s, email: %s, created at: %s", id, email, createdAt));
 
-                return new User(0, username, password, email);
+                return new User(0, username, password, email, createdAt);
             }
         } catch (Exception e) {
             System.out.println("UserDAO:getUser: " + e.getMessage());
@@ -130,10 +138,10 @@ public class UserDAO {
     }
     
     public static synchronized User getUser(LoginRequest request) {
-        return getUser(request.getUsername(), request.getUsername());
+        return getUser(request.getUsername(), request.getPassword());
     }
 
     public static synchronized User getUser(SignupRequest request) {
-        return getUser(request.getUsername(), request.getUsername());
+        return getUser(request.getUsername(), request.getPassword());
     }
 }

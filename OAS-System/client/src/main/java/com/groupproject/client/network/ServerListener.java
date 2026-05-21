@@ -2,6 +2,7 @@ package com.groupproject.client.network;
 
 import java.io.ObjectInputStream;
 
+import com.groupproject.client.utils.ClientLogger;
 import com.groupproject.shared.network.Response;
 
 public class ServerListener implements Runnable {
@@ -9,7 +10,7 @@ public class ServerListener implements Runnable {
     @Override
     public void run() {
         ObjectInputStream in = NetworkManager.getInstance().getIn();
-        System.out.println("Background listener started. Waiting for server...");
+        ClientLogger.info("Background listener started. Waiting for server...");
         try {
             while (true) { 
                 // 1. This line WAITS until the server sends something
@@ -21,13 +22,13 @@ public class ServerListener implements Runnable {
 
                     EventRouter.getInstance().dispatch(response);
                 } else {
-                    System.out.println("Received unknown object from server.");
+                    ClientLogger.warning("Received unknown object from server.");
                 }
             }
         } catch (Exception e) {
             // thông báo mất kêt nối với sever tại đây 
             // tạo thêm một cái show Allert 
-            System.out.println("Lost connection to the server.");
+            ClientLogger.error("Lost connection to the server.");
         }
     }
 }

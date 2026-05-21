@@ -82,6 +82,8 @@ public class SignupController {
         statusLabel.setText("Success! Loading chat...");
         // Lưu user
         SessionManager.getInstance().setCurrentUser(response.getUser());
+        SessionManager.getInstance().setCurrentCategories(response.getCategoryTree());
+        SessionManager.getInstance().setCurrentAuctionList(response.getAuctionList());
 
         System.out.println("Signup Success! Switching screens...");
         // chuyển sang màn hình chính

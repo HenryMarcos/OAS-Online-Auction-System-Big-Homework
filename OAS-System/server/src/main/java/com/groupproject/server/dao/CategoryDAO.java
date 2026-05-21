@@ -8,13 +8,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.model.categories.Category;
 
 public class CategoryDAO {
 
-    public static List<Category> getCategories() {
-        // Danh sách này chỉ chứa những hạng mục chính
-        List<Category> mainCategories = new ArrayList<>();
+    public static Map<Integer, Category> getCategories() {
+         ServerLogger.info("An user asked for categories");
 
         // Tìm tất cả hạng mục bằng id
         Map<Integer, Category> categoryMap = new HashMap<>();
@@ -28,6 +28,7 @@ public class CategoryDAO {
              PreparedStatement fieldsPstmt = conn.prepareStatement(fieldsSql);
              ResultSet fieldsRs = fieldsPstmt.executeQuery()) {
             
+            ServerLogger.info("Getting all the category");
             // Lấy tất cả các hàm và đưa chúng vào map
             while (categoriesRs.next()) {
                 int id = categoriesRs.getInt("id");
@@ -43,20 +44,7 @@ public class CategoryDAO {
                 categoryMap.put(id, category);
             }
 
-            // Link child với parent
-            for (Category category : categoryMap.values()) {
-                if (category.getParentId() == null) {
-                    // Nêu không có parent thì là một hạng mục chính
-                    mainCategories.add(category);
-                } else {
-                    // Nếu có parent thì tìm parent và thêm vào hạng mục con
-                    Category parent = categoryMap.get(category.getParentId());
-                    if (parent != null) {
-                        parent.addSubCategory(category);
-                    }
-                }
-            }
-
+            ServerLogger.info("Assigning fields to the categories");
             // Thêm các field vào category
             while (fieldsRs.next()) {
                 int id = fieldsRs.getInt("id");
@@ -67,17 +55,43 @@ public class CategoryDAO {
                 if (category != null) {
                     category.addRequiredField(field_name);
                 }
-
             }
-
         } catch (Exception e) {
-            System.out.println("Error fetching categories: " + e.getMessage());
+            ServerLogger.error("Error fetching categories: " + e.getMessage());
         }
-        /* 
+
+        ServerLogger.info("Finish getting categories");
+
+        return categoryMap;
+    }
+
+    public static List<Category> getMainCategories() {
+        ServerLogger.info("An user asked for main categories");
+        // Danh sách này chỉ chứa những hạng mục chính
+        List<Category> mainCategories = new ArrayList<>();
+
+        Map<Integer, Category> categoryMap = getCategories();
+
+        ServerLogger.info("Linking category child with it parent");
+        // Link child với parent
+        for (Category category : categoryMap.values()) {
+            if (category.getParentId() == null) {
+                // Nêu không có parent thì là một hạng mục chính
+                mainCategories.add(category);
+            } else {
+                // Nếu có parent thì tìm parent và thêm vào hạng mục con
+                Category parent = categoryMap.get(category.getParentId());
+                if (parent != null) {
+                    parent.addSubCategory(category);
+                }
+            }
+        }
+
+        ServerLogger.info("Getting main categories finished, displaying the result:");
+
         for (Category category : mainCategories) {
             category.print("");
         }
-        */
 
         return mainCategories;
     }
@@ -105,7 +119,7 @@ public class CategoryDAO {
             }
             
         } catch (Exception e) {
-            System.out.println("Error fetching category fields: " + e.getMessage());
+            ServerLogger.error("Error fetching category fields: " + e.getMessage());
         }
         
         return fields; // Returns something like ["Brand", "RAM (GB)"] or an empty list

@@ -5,6 +5,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+import com.groupproject.client.utils.ClientLogger;
+
 public class NetworkManager {
     private static NetworkManager instance;
 
@@ -20,7 +22,7 @@ public class NetworkManager {
     }
 
     public void connect(String host, int port) throws IOException {
-        System.out.println("Connecting to server at " + host + ":" + port + "...");
+        ClientLogger.info("Connecting to server at " + host + ":" + port + "...");
         socket = new Socket(host, port);
         
         // out trước in
@@ -28,7 +30,7 @@ public class NetworkManager {
         out.flush();
         in = new ObjectInputStream(socket.getInputStream()); // Nhận từ server
 
-        System.out.println("Successfully connected to the server!");
+        ClientLogger.info("Successfully connected to the server!");
     }
 
     public void disconnect() {
@@ -36,9 +38,9 @@ public class NetworkManager {
             if (in != null) { in.close(); }
             if (out != null) { out.close(); }
             if (socket != null && !socket.isClosed()) socket.close();
-            System.out.println("Disconnected from server.");
+            ClientLogger.info("Disconnected from server.");
         } catch (IOException e) {
-            System.err.println("Error while disconnecting: " + e.getMessage());
+            ClientLogger.error("Error while disconnecting: " + e.getMessage());
         }
     }
 

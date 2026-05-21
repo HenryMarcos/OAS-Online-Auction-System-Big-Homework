@@ -1,5 +1,6 @@
 package com.groupproject.server.handlers;
 
+import com.groupproject.server.dao.AuctionDAO;
 import com.groupproject.server.dao.CategoryDAO;
 import com.groupproject.server.dao.UserDAO;
 import com.groupproject.shared.model.user.User;
@@ -23,7 +24,7 @@ public class SignupHandler implements RequestHandler {
         User newlyCreatedUser = UserDAO.registerUser(signupReq);
 
         if (newlyCreatedUser != null) {
-            return new SignupResponse(true, newlyCreatedUser, CategoryDAO.getCategories(), "Account successfully created!");
+            return new SignupResponse(true, newlyCreatedUser, CategoryDAO.getMainCategories(), AuctionDAO.getAuctions(), "Account successfully created!");
         } else {
             return new SignupResponse(false, "Failed to create account. Please try again later.");
         }

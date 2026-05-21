@@ -1,17 +1,40 @@
 package com.groupproject.client.utils;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class ClientLogger {
     private static final DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm:ss");
     private static final String LOG_FILE = "client_debug.log";
+    private static PrintWriter fileWriter;
 
     // TODO: Thêm tính năng viết log vào file .txt nếu cần
+
+    // Static block để khởi tạo File Writer 1 lần duy nhất khi app bật
+    static {
+        try {
+            // "true" có nghĩa là Append Mode: ghi tiếp vào file cũ thay vì xóa đi tạo lại
+            fileWriter = new PrintWriter(new FileWriter(LOG_FILE, true));
+            fileWriter.println("\n=======================================================");
+            fileWriter.println("APP STARTED AT " + LocalDateTime.now().format(timeFormat));
+            fileWriter.println("=======================================================");
+            fileWriter.flush();
+        } catch (IOException e) {
+            System.err.println("CRITICAL: Could not create log file!");
+        }
+    }
 
     // In thông báo bình thường
     public static void info(String message) {
         printLog("INFO", message, "\u001B[34m"); // Màu xanh dương cho INFO
+    }
+
+    // In thông báo cảnh báo (Màu vàng)
+    public static void warning(String message) {
+        printLog("WARN", message, "\u001B[33m"); 
     }
 
     // In thông báo lỗi
@@ -37,11 +60,22 @@ public class ClientLogger {
         // Lấy thời gian hiện tại
         String timestamp = LocalDateTime.now().format(timeFormat);
 
+        // TẠO CHUỖI GỐC (KHÔNG MÀU) DÀNH CHO FILE
+        String cleanFileLine = String.format("[%s] [%s] [%s::%s] %s", 
+            timestamp, level, simpleClassName, methodName, message);
+
         // Định dạng màu sắc (Reset color ở cuối)
         String resetColor = "\u001B[0m";
 
+        // BỌC MÀU VÀO CHUỖI ĐỂ DÀNH CHO CONSOLE
+        String coloredConsoleLine = colorCode + cleanFileLine + resetColor;        
+
+        System.out.printf(coloredConsoleLine + "\n");
+
         // VD: [14:30:05] [INFO] [ClientHandler::run] Client connected.
-        System.out.printf("%s[%s] [%s] [%s::%s] %s%n", 
-            colorCode, timestamp, level, simpleClassName, methodName, message + resetColor);
+        if (fileWriter != null) {
+            fileWriter.println(cleanFileLine);
+            fileWriter.flush(); // QUAN TRỌNG: Bắt buộc lưu ngay lập tức xuống ổ cứng
+        }
     }
 }

@@ -73,4 +73,9 @@ public class MainController  implements Initializable {
         loadView("notification.fxml");
     }
 
+    @FXML
+    private void switchToCreateAuction() {
+        loadView("createAuctionTest.fxml");
+    }
+
 }
