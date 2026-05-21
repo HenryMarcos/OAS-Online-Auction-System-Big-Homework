@@ -229,6 +229,7 @@ public class CreateAuctionTestController implements Initializable {
         Map<Integer, Map<String, String>> categoryGroupedSpecs = new HashMap<>();
 
         // 2. COLLECT DATA FROM DYNAMIC FIELDS!
+        // entry lưu trữ theo format "categoryId:fieldName" -> TextField
         for (Map.Entry<String, TextField> entry : dynamicTextFieldsMap.entrySet()) {
             String compoundKey = entry.getKey();
             String specValue = entry.getValue().getText().trim();

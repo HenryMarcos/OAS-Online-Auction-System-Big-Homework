@@ -23,6 +23,8 @@ public class CreateAuctionRequest extends Request {
         this.startingPrice = startingPrice;
         this.endTime = endTime;
     }
+    // Electronics: {condition: New, brand: Dell}
+    // Laptop: {cpu: Intel Core i7, ram: 16GB, storage: 512GB SSD}
 
     public int getSellerId() { return sellerId; }
     public String getTitle() { return title; }

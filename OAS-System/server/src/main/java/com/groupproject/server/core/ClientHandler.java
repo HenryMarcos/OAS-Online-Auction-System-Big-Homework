@@ -45,6 +45,7 @@ public class ClientHandler implements Runnable {
                 Object recievedData = in.readObject();
 
                 // Xử lý trường hợp client gửi yêu cầu
+                // Có 3 yêu cầu: CreateAuctionRequest, LoginRequest, SignupRequest
                 if (recievedData instanceof Request) {
                     Request request = (Request) recievedData;
                     ServerLogger.info("User " + socket.getInetAddress() + " sent a " + request.getClass().getSimpleName());
@@ -57,6 +58,7 @@ public class ClientHandler implements Runnable {
                         out.reset();
                     }
                 }
+                // Xử lý trường hợp client yêu cầu lấy danh sách trường cần thiết cho 1 category nào đó (để hiển thị form tạo đấu giá)
                 else if (recievedData instanceof NetworkRequest) {
                     NetworkRequest networkRequest = (NetworkRequest) recievedData;
 
@@ -71,11 +73,13 @@ public class ClientHandler implements Runnable {
                         System.out.println("Sent " + requiredFields.size() + " fields to the client.");
                     }
                 }
+                // Xử lý trường hợp client gửi yêu cầu đặt giá thầu (chưa hoàn thành)
                 else if (recievedData instanceof BidRequest) {
                     BidRequest bidRequest = (BidRequest) recievedData;
 
                     new BidHandler().handle(bidRequest, out);
                 }
+                // Xử lý trường hợp client gửi 1 tin nhắn broadcast (cần kiểm tra user có quyền hay không, nhưng tạm thời chưa làm)
                 else if (recievedData instanceof String) {
                     String message = (String) recievedData;
             

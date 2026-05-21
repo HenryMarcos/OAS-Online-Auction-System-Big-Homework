@@ -29,21 +29,27 @@ public class AuctionManager {
     // Xử lý tất cả phần thời gian đấu giá của các phiên đấu giá
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
 
+    // 1. Constructor private để ngăn chặn việc khởi tạo từ bên ngoài
     private AuctionManager() {
-
+        // Khi khởi tạo, load tất cả các phiên đấu giá đang hoạt động từ database vào bộ nhớ
+        loadActiveAuctionsFromDatabase();
     }
 
-    public static synchronized AuctionManager getInstance() {
-        if (instance == null) { instance = new AuctionManager(); }
-        return instance;
+    // 2. Static inner class chứa instance duy nhất (The Bill Pugh concept)
+    private static class AuctionManagerHelper {
+        // Biến INSTANCE được khởi tạo và gán là final
+        private static final AuctionManager INSTANCE = new AuctionManager();
+    }
+
+    // 3. Phương thức lấy instance hoàn toàn không cần 'synchronized'
+    public static AuctionManager getInstance() {
+        return AuctionManagerHelper.INSTANCE;
     }
 
     private void loadActiveAuctionsFromDatabase() {
-        // Sử dụng DAO để lấy thông tin các phiên đấu giá và đăng ký những phiên chưa kết thúc.
-        for (Auction auction : AuctionDAO.getAuctions()) {
-            if (auction.getEndTime().isAfter(LocalDateTime.now())) {
-                registerAuction(auction);
-            }
+        // Chỉ lấy những cái thực sự cần thiết từ Database
+        for (Auction auction : AuctionDAO.getActiveAuctions()) {
+            registerAuction(auction);
         }
     }
 

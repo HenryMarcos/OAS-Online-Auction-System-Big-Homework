@@ -1,6 +1,7 @@
 package com.groupproject.server.handlers;
 
 import com.groupproject.server.dao.AuctionDAO;
+import com.groupproject.server.service.AuctionManager;
 import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.network.CreateAuctionRequest;
@@ -24,6 +25,8 @@ public class CreateAuctionHandler implements RequestHandler {
 
         if (success) {
             ServerLogger.info("Create auction success");
+            // Đăng ký phiên đấu giá mới vào AuctionManager để quản lý
+            AuctionManager.getInstance().registerAuction(newlyCreatedAuction);
             return new CreateAuctionResponse(true, newlyCreatedAuction, null);
         }
         else {
