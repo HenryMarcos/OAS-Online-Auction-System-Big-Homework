@@ -41,6 +41,10 @@
                            <DatePicker fx:id="endDatePicker" promptText="Pick a date"/>
                            <Label text="Hours:"/>
                            <ComboBox fx:id="hoursComboBox" prefWidth="70"/>
+                           <Label text="Minutes:"/>
+                           <ComboBox fx:id="minutesComboBox" prefWidth="70"/>
+                           <Label text="Seconds:"/>
+                           <ComboBox fx:id="secondsComboBox" prefWidth="70"/>
                         </children>
                      </HBox>
                   </children>

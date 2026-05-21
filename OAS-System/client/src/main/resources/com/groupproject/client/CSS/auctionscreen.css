@@ -20,7 +20,7 @@
 }
 
 .current-price {
-    -fx-text-fill: #22c55e;
+    -fx-text-fill: black;
     -fx-font-size: 12px;
     -fx-font-weight: bold;
 }

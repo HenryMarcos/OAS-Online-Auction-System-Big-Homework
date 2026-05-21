@@ -34,6 +34,8 @@ public class CreateAuctionController implements Initializable {
     @FXML private TextField startingPriceField;
     @FXML private DatePicker endDatePicker;
     @FXML private ComboBox<Integer> hoursComboBox;
+    @FXML private ComboBox<Integer> minutesComboBox;
+    @FXML private ComboBox<Integer> secondsComboBox;
     @FXML private VBox dynamicFieldsContainer;
     @FXML private Label statusLabel;
 
@@ -49,7 +51,14 @@ public class CreateAuctionController implements Initializable {
         // Thêm lựa chọn giờ(từ 0 đến 23, 24 tính là 1 ngày nên không cần thêm)
         for (int i = 0; i < 24; i++) hoursComboBox.getItems().add(i);
         hoursComboBox.setValue(12); // Tạm đặt mặc định là 12h
-
+        for (int i=0 ; i< 60 ; i++) {
+            minutesComboBox.getItems().add(i);
+        }
+        minutesComboBox.setValue(0);
+        for (int i=0 ; i<60; i++) {
+             secondsComboBox.getItems().add(i);
+        }
+        secondsComboBox.setValue(0);
         // Setup cách categories hiển thị trong ComboBox
         setupCategoryComboBoxFormatting();
 
@@ -223,7 +232,9 @@ public class CreateAuctionController implements Initializable {
 
         // Compute local timestamp
         int hours = hoursComboBox.getValue();
-        LocalDateTime endTime = LocalDateTime.of(date, LocalTime.of(hours, 0));
+        int minutes = minutesComboBox.getValue();
+        int seconds= secondsComboBox.getValue();
+        LocalDateTime endTime = LocalDateTime.of(date, LocalTime.of(hours, minutes, seconds));
 
         // Lưu các field của từng category theo category id
         Map<Integer, Map<String, String>> categoryGroupedSpecs = new HashMap<>();

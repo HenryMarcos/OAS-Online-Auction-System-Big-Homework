@@ -3,7 +3,6 @@ import java.io.IOException;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
-import com.groupproject.client.Data.BidRecord;
 import com.groupproject.client.network.AuctionIntegrationService;
 import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.AlertUtils;
@@ -12,10 +11,12 @@ import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.model.transaction.AuctionDetail;
+import com.groupproject.shared.model.transaction.BidTransaction;
 import com.groupproject.shared.network.AuctionEvent.*;
 import com.groupproject.shared.network.BidRequest;
-
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.chart.LineChart;
@@ -31,14 +32,14 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
 public class AuctionController implements AuctionListener  {
     private AuctionDetail currentAuctionDetail = SessionManager.getInstance().getCurrentAuctionDetail();
+    private final ObservableList<BidTransaction> bidDataList= FXCollections.observableArrayList();
     private AuctionIntegrationService integrationService;
     @FXML private LineChart<String,Number> linechart;
     private Series<String, Number> priceSeries = new XYChart.Series<>() ;
-    @FXML private TableView<BidRecord> bottomtable;
-    @FXML private TableColumn<BidRecord, String> usercol;
-    @FXML private TableColumn<BidRecord, Double> pricecol;
-    @FXML private TableColumn<BidRecord, String> timecol;
-    @FXML private TableColumn<BidRecord,Integer> idusercol;
+    @FXML private TableView<BidTransaction> bottomtable;
+    @FXML private TableColumn<BidTransaction, Double> pricecol;
+    @FXML private TableColumn<BidTransaction, String> timecol;
+    @FXML private TableColumn<BidTransaction,Integer> userIdcol;
     @FXML private Button bidButton;
     @FXML private TextField enterprice;
     @FXML private Label startprice;
@@ -73,7 +74,6 @@ public class AuctionController implements AuctionListener  {
             String priceText = String.format("Current price : %.2f VND", event.getBidAmount());
             auctioncurrentprice.setText(priceText);
             String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-            //updateAuctionUI( ,event.getBidAmount(), time);
             AlertUtils.showSuccess("Success", "Someone places bid successfully");
             bidButton.setDisable(true);
             bidButton.setText("PLACE BID");
@@ -134,15 +134,56 @@ public class AuctionController implements AuctionListener  {
     }
 
     private void setUpTableView() {
-        usercol.setCellValueFactory(new PropertyValueFactory<>("bidder"));
+        userIdcol.setCellValueFactory(new PropertyValueFactory<>("bidderId"));
         pricecol.setCellValueFactory(new PropertyValueFactory<>("price"));
         timecol.setCellValueFactory(new PropertyValueFactory<>("time"));
+        bottomtable.setItems(bidDataList);
     }
     /* 
-    private void updateAuctionUI(int id, String name, double currentbid, String time ) {
-        draw UI 
+    private void updateAuctionUI() {
+        // CHÚ Ý: Vì gói tin mạng chạy ở luồng ngầm (Background Thread),
+        // bắt buộc phải dùng Platform.runLater để can thiệp vào giao diện (UI Thread) nhằm tránh crash.
+        Platform.runLater(() -> {
+            
+            // 1. Thêm lượt đặt giá mới vào ĐẦU danh sách (vị trí số 0) 
+            // Điều này giúp lượt đặt giá mới nhất luôn nhảy lên dòng ĐẦU TIÊN của bảng để dễ nhìn.
+            bidDataList.add(0,new BidTransaction(id, currentbid,time));
+
+            // 2. GIẢI QUYẾT YÊU CẦU CỦA BẠN: Kiểm tra và xóa bớt phần tử thừa để tránh lãng phí bộ nhớ
+            // Sử dụng vòng lặp while để đảm bảo danh sách không bao giờ vượt quá ngưỡng quy định.
+            while (bidDataList.size() > MAX_BIDS_TO_DISPLAY) {
+                
+                // Vì ta thêm phần tử mới vào đầu (vị trí 0), nên phần tử CŨ NHẤT 
+                // sẽ luôn bị đẩy về vị trí CUỐI CÙNG (index bằng size - 1).
+                int oldestItemIndex = bidDataList.size() - 1;
+                
+                // Xóa bỏ nó khỏi danh sách
+                bidDataList.remove(oldestItemIndex);
+            }
+            
+            // 3. Tự động cuộn bảng lên trên cùng để xem dòng mới nhất vừa nhảy vào
+            bottomtable.scrollTo(0);
+        });
+        thêm vào khi có một lượt đặt giá mới 
+        duyệt ngay từ đầu khi vào một phiên đấu giá 
+        public void loadInitialBidHistory(List<BidTransaction> serverHistory) {
+        if (serverHistory == null) return;
+
+        bidDataList.clear();
+
+        // Kiểm tra tối ưu ngay từ lúc nạp dữ liệu ban đầu
+        if (serverHistory.size() > MAX_BIDS_TO_DISPLAY) {
+            // Nếu Server trả về quá nhiều (ví dụ 1000 dòng), ta chỉ cắt lấy 30 dòng mới nhất đưa vào UI
+            List<BidTransaction> truncatedList = serverHistory.subList(0, MAX_BIDS_TO_DISPLAY);
+            bidDataList.addAll(truncatedList);
+            ClientLogger.info("Đã cắt bớt lịch sử đấu giá ban đầu để tối ưu RAM.");
+        } else {
+            bidDataList.addAll(serverHistory);
+        }
     }
+
     */
+
     @Override 
     public void onAuctionCancelled(AuctionCancelledEvent event) {
         Platform.runLater(() -> {

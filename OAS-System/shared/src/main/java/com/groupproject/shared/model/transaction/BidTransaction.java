@@ -10,7 +10,6 @@ public class BidTransaction extends Entity {
     // Nếu cần có thể sửa lại để biến bidderId thành một đối tượng User, nhưng cần đảm bảo rằng khi truyền qua mạng lưới thì chỉ truyền ID của người đặt giá thầu thay vì toàn bộ thông tin của đối tượng User để tối ưu hóa hiệu suất và bảo mật thông tin
     private Integer auctionId; // ID của phiên đấu giá mà người dùng đang đặt giá thầu
     private double bidAmount; // Số tiền của giá thầu
-
     public BidTransaction() {
         super();
     }

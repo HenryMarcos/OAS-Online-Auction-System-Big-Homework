@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<BorderPane prefHeight="720.0" prefWidth="1080.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.AdminDashboardController">
+
+    <left>
+        <VBox prefWidth="250.0" style="-fx-background-color: #2c3e50;" spacing="15" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="30" right="15" bottom="30" left="15"/>
+            </padding>
+            <Label text="ADMIN PANEL" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+
+            <Button fx:id="btnAll" text="Tất cả phiên" onAction="#filterAll" styleClass="sidebar-btn" maxWidth="Infinity"/>
+            <Button fx:id="btnWaiting" text="Chờ duyệt (WAITING)" onAction="#filterWaiting" styleClass="sidebar-btn" maxWidth="Infinity"/>
+            <Button fx:id="btnActived" text="Đang diễn ra (ACTIVATING)" onAction="#filterActive" styleClass="sidebar-btn" maxWidth="Infinity"/>
+            <Button fx:id="btnEnded" text="Đã kết thúc (ENDED)" onAction="#filterEnded" styleClass="sidebar-btn" maxWidth="Infinity"/>
+            <Button fx:id="btnCancelled" text="Đã hủy (CANCELLED)" onAction="#filterCancelled" styleClass="sidebar-btn" maxWidth="Infinity"/>
+            <Button fx:id="btnFinshed" text="Đã hoàn thành (FINISHED)" onAction="filterFinished" styleClass="sidebar-btn" maxWidth="Infinity" />
+            <Region VBox.vgrow="ALWAYS" /> <Button text="Đăng xuất" onAction="#logout" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" maxWidth="Infinity"/>
+        </VBox>
+    </left>
+
+    <center>
+        <VBox spacing="20.0" style="-fx-background-color: #f4f6f9;" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="30" right="30" bottom="30" left="30"/>
+            </padding>
+
+            <Label fx:id="lblPageTitle" text="Tất cả phiên đấu giá" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #333333;"/>
+
+            <TableView fx:id="adminTableView" VBox.vgrow="ALWAYS" style="-fx-font-size: 14px;">
+                <columns>
+                    <TableColumn fx:id="colTitle" text="Tên sản phẩm" prefWidth="250" />
+                    <TableColumn fx:id="colseller" text="Người bán" prefWidth="120" />
+                    <TableColumn fx:id="colPrice" text="Giá hiện  tại" prefWidth="120" />
+                    <TableColumn fx:id="colStatus" text="Trạng thái" prefWidth="120" />
+                    <TableColumn fx:id="colAction" text="Hành động" prefWidth="180" />
+                </columns>
+            </TableView>
+        </VBox>
+    </center>
+</BorderPane>
