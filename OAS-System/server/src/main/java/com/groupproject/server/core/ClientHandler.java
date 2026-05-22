@@ -3,14 +3,9 @@ package com.groupproject.server.core;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.List;
 
-import com.groupproject.server.dao.CategoryDAO;
 import com.groupproject.server.handlers.RequestDispatcher;
-import com.groupproject.server.service.BidHandler;
 import com.groupproject.server.utils.ServerLogger;
-import com.groupproject.shared.network.BidRequest;
-import com.groupproject.shared.network.NetworkRequest;
 import com.groupproject.shared.network.Request;
 import com.groupproject.shared.network.Response;
 
@@ -33,9 +28,7 @@ public class ClientHandler implements Runnable {
             in = new ObjectInputStream(socket.getInputStream()); // Từ client đến server
 
             // Thêm client vào danh sách báo tin chính 1 cách an toàn 
-            synchronized (ServerApp.clientWriters) {
-                ServerApp.clientWriters.add(out);
-            }
+            ClientManager.getInstance().addClient(out);
 
             RequestDispatcher dispatcher = new RequestDispatcher();
 
@@ -56,30 +49,9 @@ public class ClientHandler implements Runnable {
                         out.flush();
                         out.reset();
                     }
-                }
-                else if (recievedData instanceof NetworkRequest) {
-                    NetworkRequest networkRequest = (NetworkRequest) recievedData;
-
-                    if (networkRequest.getAction().equals("GET_CATEGORY_FIELDS")) {
-
-                        int categoryId = (int) networkRequest.getPayload();
-
-                        List<String> requiredFields = CategoryDAO.getRequiredFieldsForCategory(categoryId);
-                        out.writeObject(requiredFields);
-                        out.flush();
-                        
-                        System.out.println("Sent " + requiredFields.size() + " fields to the client.");
-                    }
-                }
-                else if (recievedData instanceof BidRequest) {
-                    BidRequest bidRequest = (BidRequest) recievedData;
-
-                    new BidHandler().handle(bidRequest, out);
-                }
-                else if (recievedData instanceof String) {
+                } else if (recievedData instanceof String) {
                     String message = (String) recievedData;
-            
-                    ServerApp.log("Broadcast Request: " + message);
+                    ServerLogger.info("Broadcast Request: " + message);
 
                     // Gửi thông báo cho tất cả mọi người
                     ServerApp.broadcast(message, out);
@@ -104,21 +76,21 @@ public class ClientHandler implements Runnable {
             }
             */
 
-            ServerLogger.error(e.getMessage());
+            ServerLogger.error("Client disconnected or error occurred: " + e.getMessage());
 
         } finally {
             // CLEANUP: Khi client rời, xóa client trong danh sách đi
             if (out != null) {
-                synchronized (ServerApp.clientWriters) {
-                    ServerApp.clientWriters.remove(out);
-                }
+                ClientManager.getInstance().removeClient(out);
             }
             try { 
                 if (socket != null && !socket.isClosed()) {
-                    ServerLogger.info("User " + socket.getInetAddress() + " has disconnected");
+                    ServerLogger.info("Cleaning up connection for " + socket.getInetAddress());
                     socket.close(); 
                 }
-            } catch (Exception e) {}
+            } catch (Exception e) {
+                ServerLogger.error("Error closing socket: " + e.getMessage());
+            }
         }
     }
 }

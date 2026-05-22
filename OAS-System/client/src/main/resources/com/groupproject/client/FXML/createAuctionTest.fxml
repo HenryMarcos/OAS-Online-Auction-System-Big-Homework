@@ -60,6 +60,7 @@
       <HBox spacing="15" alignment="CENTER_RIGHT">
          <children>
             <Label fx:id="statusLabel" textFill="RED" />
+            <CheckBox fx:id="startNowCheckBox" text="Start Now"/>
             <Button text="Cancel" style="-fx-background-color: #e0e0e0;" />
             <Button fx:id="submitButton" text="Start Auction" onAction="#handleSubmitAuction" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold;" />
          </children>

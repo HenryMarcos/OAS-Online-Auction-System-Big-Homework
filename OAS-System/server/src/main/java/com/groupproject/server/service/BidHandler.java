@@ -2,7 +2,7 @@ package com.groupproject.server.service;
 
 import java.io.ObjectOutputStream;
 
-import com.groupproject.server.core.ServerApp;
+import com.groupproject.server.core.ClientManager;
 import com.groupproject.shared.AuctionUpdate;
 import com.groupproject.shared.network.BidRequest;
 
@@ -16,8 +16,8 @@ public class BidHandler {
             AuctionUpdate update = new AuctionUpdate(bidRequest);
 
             // Thông báo cho các user
-            synchronized (ServerApp.clientWriters) {
-                for (ObjectOutputStream clientOut: ServerApp.clientWriters) {
+            synchronized (ClientManager.getInstance().getClients()) {
+                for (ObjectOutputStream clientOut: ClientManager.getInstance().getClients()) {
                     clientOut.writeObject(update);
                     clientOut.flush();
                 }

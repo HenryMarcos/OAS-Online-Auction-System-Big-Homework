@@ -1,24 +1,39 @@
 package com.groupproject.server.dao;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 import com.groupproject.server.utils.Config;
 import com.groupproject.server.utils.ServerLogger;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 public class DatabaseManager {
 
     private static DatabaseManager instance;
-
-    private Connection connection;
+    private HikariDataSource dataSource;
 
     private DatabaseManager() {
         try {
-            this.connection = DriverManager.getConnection(Config.DATABASE_URL);
-            ServerLogger.info("Successfully connected to SQLite!");
-        } catch (SQLException e) {
+            // Config nhóm kết nối
+            HikariConfig hikariConfig = new HikariConfig();
+            hikariConfig.setJdbcUrl(Config.DATABASE_URL);
+
+            // Setting của pool
+            hikariConfig.setMaximumPoolSize(10); // Hỗ trợ tối đa 10 kết nối đồng thời
+            hikariConfig.setMinimumIdle(2); // Luôn giữ ít nhất 2 kết nối đang mở và chờ 
+            hikariConfig.setConnectionTimeout(30000); // Chờ khoảng 30s trước khi bỏ cuộc vì pool bị đầy
+
+            // Các setting cụ thể để giúp SQLite hoạt động tốt với xử lý đồng thời
+            hikariConfig.addDataSourceProperty("journal_mode", "WAL"); // Ghi log trước khi ghi để cải thiện khả năng xử lý đồng thời
+            hikariConfig.addDataSourceProperty("busy_timeout", "5000");
+
+            // Khởi tạo pool
+            this.dataSource = new HikariDataSource(hikariConfig);
+
+            ServerLogger.info("HikariCP Connection Pool successfully initialized!");
+        } catch (Exception e) {
             ServerLogger.info("[FATAL ERROR] Could not connect to the database.");
             e.printStackTrace();
             // Optional: System.exit(1); // Kill the server if DB fails
@@ -33,7 +48,7 @@ public class DatabaseManager {
     }
 
     public void initDatabse() {
-        try (Statement stmt = connection.createStatement()) {
+        try (Statement stmt = getConnection().createStatement()) {
 
             // Tạo bảng users nếu chưa tồn tại 
             String sql = "CREATE TABLE IF NOT EXISTS users (" + 
@@ -44,6 +59,7 @@ public class DatabaseManager {
                          "created_at DATETIME NOT NULL)";
             stmt.execute(sql);
             
+            // Tạo bảng chứa các phiên đấu giá
             String auctionSql = "CREATE TABLE IF NOT EXISTS auctions (" +
                                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                                 "seller_id INTEGER NOT NULL, " +
@@ -79,6 +95,7 @@ public class DatabaseManager {
                                "FOREIGN KEY(category_id) REFERENCES categories(id))";
             stmt.execute(fieldsSql);
 
+            // Tạo bảng chứa các thông tin cần thiết của các danh mục hàng
             String specificationSql = "CREATE TABLE IF NOT EXISTS auction_specifications (" +
                                       "id INTEGER PRIMARY KEY AUTOINCREMENT, " + 
                                       "auction_id INTEGER NOT NULL, " +
@@ -89,21 +106,16 @@ public class DatabaseManager {
                                       "FOREIGN KEY(category_id) REFERENCES categories(id))";
             stmt.execute(specificationSql);
 
-            String itemsSql = "CREATE TABLE IF NOT EXISTS items ( " + 
-                                "id INTEGER PRIMARY KEY AUTOINCREMENT, " + 
-                                "title TEXT, " + 
-                                "description TEXT, " + 
-                                "starting_price REAL, " + 
-                                "category_id INTEGER " + 
-                                ");";
-            stmt.execute(itemsSql);
-
-            String itemAttributesSql = "CREATE TABLE IF NOT EXISTS item_attributes (" +
-                                "auction_id INTEGER NOT NULL, " +
-                                "field_name TEXT NOT NULL, " +
-                                "field_value TEXT NOT NULL, " + // e.g., "Apple", "XL", "Red"
-                                "FOREIGN KEY(auction_id) REFERENCES items(id))";
-            stmt.execute(itemAttributesSql);
+            // Tạo bảng chứa lịch sử các bid của các phiên đấu giá
+            String bidsSql = "CREATE TABLE IF NOT EXISTS bids (" +
+                             "id INTEGER PRIMARY KEY AUTOINCREMENT, " + 
+                             "auction_id INTEGER NOT NULL, " +
+                             "bidder_id INTEGER NOT NULL, " +
+                             "amount REAL NOT NULL, " +
+                             "bid_time DATETIME NOT NULL, " +
+                             "FOREIGN KEY(auction_id) REFERENCES auctions(id) ON DELETE CASCADE, " +
+                             "FOREIGN KEY(bidder_id) REFERENCES users(id))";
+            stmt.execute(bidsSql);
 
             // =====================================================================
             // 1. ELECTRONICS CATEGORY TREE
@@ -200,12 +212,16 @@ public class DatabaseManager {
     // Phương thức helper để lấy kết nối kho dữ liệu (DRY principle)
     public Connection getConnection() {
         try {
-            if (connection == null || connection.isClosed()) {
-                connection = DriverManager.getConnection(Config.DATABASE_URL);
-            }
+            return dataSource.getConnection();
         } catch (SQLException e) {
-            ServerLogger.error(e.getMessage());
+            ServerLogger.error("Failed to get connection from Hikari pool: " + e.getMessage());
+            return null;
         }
-        return connection;
+    }
+
+    public void shutdown() {
+        if (dataSource != null && !dataSource.isClosed()) {
+            dataSource.close();
+        }
     }
 }

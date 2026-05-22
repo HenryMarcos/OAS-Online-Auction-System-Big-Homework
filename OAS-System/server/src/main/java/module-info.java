@@ -5,9 +5,11 @@ module com.groupproject.server {
 
     // Thông báo Java rằng cần mô-đun từ shared
     requires com.groupproject.shared;
-
     // Cấp quyền truy cập vào thư viện Database
     requires java.sql;
+
+    requires com.zaxxer.hikari;
+    requires org.slf4j;
 
     opens com.groupproject.server to javafx.fxml, javafx.graphics;
     exports com.groupproject.server;

@@ -8,16 +8,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import com.groupproject.client.network.EventRouter;
+import com.groupproject.client.network.ClientMessageRouter;
 import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.ClientLogger;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.model.categories.Category;
+import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.shared.network.CreateAuctionRequest;
 import com.groupproject.shared.network.CreateAuctionResponse;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
@@ -37,6 +39,8 @@ public class CreateAuctionTestController implements Initializable {
     @FXML private VBox dynamicFieldsContainer;
     @FXML private Label statusLabel;
 
+    @FXML private CheckBox startNowCheckBox;
+
     private final Map<Integer, Category> allCategoriesMap = new HashMap<>();
 
     private final Map<String, TextField> dynamicTextFieldsMap = new HashMap<>();
@@ -44,7 +48,7 @@ public class CreateAuctionTestController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Nối response với hàm tương ứng
-        EventRouter.getInstance().on(CreateAuctionResponse.class, this::handleCreateAuctionResponse);
+        ClientMessageRouter.getInstance().onResponse(CreateAuctionResponse.class, this::handleCreateAuctionResponse);
 
         // Thêm lựa chọn giờ(từ 0 đến 23, 24 tính là 1 ngày nên không cần thêm)
         for (int i = 0; i < 24; i++) hoursComboBox.getItems().add(i);
@@ -253,11 +257,14 @@ public class CreateAuctionTestController implements Initializable {
 
         ClientLogger.info("Form validation successful. Transmitting new auction layout details...");
 
-        // TODO: Assemble your AuctionRequest payload object and forward it:
-        // AuctionRequest req = new AuctionRequest(currentUserId, title, description, categoryId, startingPrice, endTime, capturedSpecifications);
-        // RequestSender.send(req);
+        AuctionStatus initialStatus = (startNowCheckBox != null && startNowCheckBox.isSelected())? 
+                                       AuctionStatus.ACTIVATED : AuctionStatus.WAITING;
 
-        CreateAuctionRequest request = new CreateAuctionRequest(currentUserId, title, description, selectedCategory, categoryGroupedSpecs, startingPrice, endTime.toString());
+        if (initialStatus == AuctionStatus.WAITING) {
+            ClientLogger.info("Created auction with WAITING status");
+        } else { ClientLogger.info("Created auction with ACTIVATED status"); }
+
+        CreateAuctionRequest request = new CreateAuctionRequest(currentUserId, title, description, selectedCategory, categoryGroupedSpecs, startingPrice, endTime.toString(), initialStatus);
         RequestSender.send(request);
 
         ClientLogger.info("Finish handling submit auction");

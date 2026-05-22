@@ -19,43 +19,33 @@ public class CategoryDAO {
         // Tìm tất cả hạng mục bằng id
         Map<Integer, Category> categoryMap = new HashMap<>();
 
-        String categoriesSql = "SELECT id, name, parent_id FROM categories";
-        String fieldsSql = "SELECT id, category_id, field_name FROM category_fields";
-        Connection conn = DatabaseManager.getInstance().getConnection();
+        String sql = "SELECT c.id, c.name, c.parent_id, cf.field_name FROM categories c " +
+                     "LEFT JOIN category_fields cf ON c.id = cf.category_id";
 
-        try (PreparedStatement categoriesPstmt = conn.prepareStatement(categoriesSql);
-             ResultSet categoriesRs = categoriesPstmt.executeQuery();
-             PreparedStatement fieldsPstmt = conn.prepareStatement(fieldsSql);
-             ResultSet fieldsRs = fieldsPstmt.executeQuery()) {
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
             
             ServerLogger.info("Getting all the category");
             // Lấy tất cả các hàm và đưa chúng vào map
-            while (categoriesRs.next()) {
-                int id = categoriesRs.getInt("id");
-                String name = categoriesRs.getString("name");
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                String name = rs.getString("name");
 
                 // Xử lý giá trị SQL NULL của parent_id
-                Integer parentId = null;
-                if (categoriesRs.getObject("parent_id") != null) {
-                    parentId = categoriesRs.getInt("parent_id");
-                }
+                Integer parentId = (rs.getObject("parent_id") != null)? 
+                                    rs.getInt("parent_id") : null;
 
-                Category category = new Category(id, name, parentId);
-                categoryMap.put(id, category);
+                Category category = categoryMap.computeIfAbsent(id, k -> new Category(id, name, parentId));
+
+                // Thêm field vào category nếu nó chưa tồn tại
+                String fieldName = rs.getString("field_name");
+                if (fieldName != null) {
+                    category.addRequiredField(fieldName);
+                }
             }
 
             ServerLogger.info("Assigning fields to the categories");
-            // Thêm các field vào category
-            while (fieldsRs.next()) {
-                int id = fieldsRs.getInt("id");
-                int category_id = fieldsRs.getInt("category_id");
-                String field_name = fieldsRs.getString("field_name");
-
-                Category category = categoryMap.get(category_id);
-                if (category != null) {
-                    category.addRequiredField(field_name);
-                }
-            }
         } catch (Exception e) {
             ServerLogger.error("Error fetching categories: " + e.getMessage());
         }
@@ -69,7 +59,6 @@ public class CategoryDAO {
         ServerLogger.info("An user asked for main categories");
         // Danh sách này chỉ chứa những hạng mục chính
         List<Category> mainCategories = new ArrayList<>();
-
         Map<Integer, Category> categoryMap = getCategories();
 
         ServerLogger.info("Linking category child with it parent");
@@ -87,41 +76,33 @@ public class CategoryDAO {
             }
         }
 
-        ServerLogger.info("Getting main categories finished, displaying the result:");
-
-        for (Category category : mainCategories) {
-            category.print("");
-        }
+        ServerLogger.info("Successfully loaded and linked " + mainCategories.size() + " main categories.");
 
         return mainCategories;
     }
 
-    // The method to fetch the required fields for a specific category
-    public static List<String> getRequiredFieldsForCategory(int categoryId) {
-        List<String> fields = new ArrayList<>();
-        
-        // The SQL query to get just the field names for this exact category
-        String sql = "SELECT field_name FROM category_fields WHERE category_id = ?";
-        Connection conn = DatabaseManager.getInstance().getConnection();
+    public static List<Category> getMainCategories(Map<Integer, Category> categories) {
+        ServerLogger.info("An user asked for main categories");
+        // Danh sách này chỉ chứa những hạng mục chính
+        List<Category> mainCategories = new ArrayList<>();
 
-        // Try-with-resources automatically closes the database connection when done
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            // Replace the '?' in the SQL string with the actual categoryId
-            pstmt.setInt(1, categoryId);
-            
-            // Execute the query
-            ResultSet rs = pstmt.executeQuery();
-            
-            // Loop through the results and add them to our list
-            while (rs.next()) {
-                fields.add(rs.getString("field_name"));
+        ServerLogger.info("Linking category child with it parent");
+        // Link child với parent
+        for (Category category : categories.values()) {
+            if (category.getParentId() == null) {
+                // Nêu không có parent thì là một hạng mục chính
+                mainCategories.add(category);
+            } else {
+                // Nếu có parent thì tìm parent và thêm vào hạng mục con
+                Category parent = categories.get(category.getParentId());
+                if (parent != null) {
+                    parent.addSubCategory(category);
+                }
             }
-            
-        } catch (Exception e) {
-            ServerLogger.error("Error fetching category fields: " + e.getMessage());
         }
-        
-        return fields; // Returns something like ["Brand", "RAM (GB)"] or an empty list
+
+        ServerLogger.info("Successfully loaded and linked " + mainCategories.size() + " main categories.");
+
+        return mainCategories;
     }
 }

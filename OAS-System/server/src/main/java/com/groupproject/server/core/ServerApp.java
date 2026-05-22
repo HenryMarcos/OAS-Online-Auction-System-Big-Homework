@@ -7,27 +7,25 @@ package com.groupproject.server.core;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.groupproject.server.dao.DatabaseManager;
+import com.groupproject.server.service.AuctionManager;
 import com.groupproject.server.utils.Config;
 import com.groupproject.server.utils.ServerLogger;
 
 public class ServerApp {
 
-    // Danh sách tổng hợp tất cả các đường dẫn output của các máy client được kết nối
-    public static final List<ObjectOutputStream> clientWriters = new ArrayList<>();
-
-    public static void log(String message) {
-        System.out.println(message);
-    }
+    private static int MAX_CONCURRENT_USER = 50;
+    private static final ExecutorService clientThreadPool = Executors.newFixedThreadPool(MAX_CONCURRENT_USER);
 
     public static void main(String[] args) {
         // Khởi tạo database người dùng
         DatabaseManager.getInstance().initDatabse();
+        AuctionManager.getInstance();
 
-        // launch(args);
+         
 
         // ServerSocket chính là thứ lắng nghe lưu lượng truy cập internet
         try (ServerSocket serverSocket = new ServerSocket(Config.SERVER_PORT)) {
@@ -43,18 +41,23 @@ public class ServerApp {
 
                 // Đưa client đến một luồng mới để server không bị đơ
                 ClientHandler handler = new ClientHandler(clientSocket);
-                new Thread(handler).start();
+                clientThreadPool.execute(handler);
             }
         } catch (Exception e) {
             // Dừng vòng lặp lại tại đây
             ServerLogger.error(e.getMessage());
+        } finally {
+            // Dọn dẹp pool nếu server shutdown
+            if (clientThreadPool != null) {
+                clientThreadPool.shutdown();
+            }
         }
     }
     // --- HÀM BÁO TIN/THÔNG BÁO ---
     // Gửi 1 tin nhắn cho mỗi client trong danh sách
     public static void broadcast(String message, ObjectOutputStream senderOut) {
-        synchronized (clientWriters) {
-            for (ObjectOutputStream writer : clientWriters) {
+        synchronized (ClientManager.getInstance().getClients()) {
+            for (ObjectOutputStream writer : ClientManager.getInstance().getClients()) {
                 if (writer != senderOut) {
                     try {
                         writer.writeObject(message);
@@ -68,7 +71,5 @@ public class ServerApp {
             }
         }
     }
-
-    
 
 }

@@ -2,6 +2,8 @@ package com.groupproject.shared;
 
 import java.io.Serializable;
 
+import com.groupproject.shared.network.BidRequest;
+
 public class AuctionUpdate implements Serializable {
     private int auctionId;
     private double newBidAmount;
@@ -13,11 +15,9 @@ public class AuctionUpdate implements Serializable {
         this.newBidAmount = newBidAmount;
     }
 
-    /* 
     public AuctionUpdate(BidRequest bidRequest) {
-        this(bidRequest.getAuctionId(), bidRequest.getBidderUsername(), bidRequest.getBidAmount());
+        this(bidRequest.getAuctionId(), bidRequest.getBidderId(), bidRequest.getBidAmount());
     }
-    */
 
     public String getType() { return "AUCTION_UPDATE"; }
 }

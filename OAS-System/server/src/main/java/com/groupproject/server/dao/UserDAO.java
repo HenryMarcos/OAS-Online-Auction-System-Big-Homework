@@ -15,9 +15,10 @@ public class UserDAO {
 
     public static synchronized String checkDuplicates(String username, String email) {
         String sql = "SELECT username, email FROM users WHERE username = ? OR email = ?";
-        Connection conn = DatabaseManager.getInstance().getConnection();
+        
 
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, username);
             pstmt.setString(2, email);
@@ -55,8 +56,9 @@ public class UserDAO {
     public static synchronized User registerUser(String username, String email, String password) {
         // Câu lệnh sql để chèn user mới
         String sql = "INSERT INTO users (username, email, password, created_at) VALUES (?, ?, ?, ?)";
-        Connection conn = DatabaseManager.getInstance().getConnection();
-        try (PreparedStatement pstmt = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
+        
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
             
             pstmt.setString(1, username);
             pstmt.setString(2, email);
@@ -85,9 +87,10 @@ public class UserDAO {
     public static synchronized boolean checkUser(String username, String password) {
         // Câu lệnh SQL tìm user có username và password khớp
         String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
-        Connection conn = DatabaseManager.getInstance().getConnection();
+        
 
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, username);
             pstmt.setString(2, password);
@@ -109,9 +112,10 @@ public class UserDAO {
     public static synchronized User getUser(String username, String password) {
         ServerLogger.info(String.format("Getting user by username: %s and password: %s", username, password));
         String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
-        Connection conn = DatabaseManager.getInstance().getConnection();
         
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, username);
             pstmt.setString(2, password);
@@ -127,7 +131,7 @@ public class UserDAO {
                 LocalDateTime createdAt = rs.getObject("created_at", LocalDateTime.class);
                 ServerLogger.info(String.format("User's id: %s, email: %s, created at: %s", id, email, createdAt));
 
-                return new User(0, username, password, email, createdAt);
+                return new User(id, username, password, email, createdAt);
             }
         } catch (Exception e) {
             System.out.println("UserDAO:getUser: " + e.getMessage());

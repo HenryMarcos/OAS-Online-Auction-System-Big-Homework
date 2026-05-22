@@ -15,6 +15,9 @@ public class SceneNavigator {
     // Một màn hình window duy nhất
     private static Stage mainStage;
 
+    // Theo dõi bất kỳ controller nào đang hiện trên màn hình
+    private Object currentController;
+
     private SceneNavigator() {}
 
     public static SceneNavigator getInstance() {
@@ -27,12 +30,21 @@ public class SceneNavigator {
 
     public void goTo(String fxmlPath) {
         // Đặt trong Platform.runLater để đảm bảo an toàn khi gọi
-        // Từ bất kỳ luồng nào, kể cả từ ServerListener chạy ở background
+        // từ bất kỳ luồng nào, kể cả từ ServerListener chạy ở background
         Platform.runLater(() -> {
             try {
+                // Dọn dẹp màn hình cũ(Nếu nó có hàm cleanup)
+                if (currentController instanceof  LifecycleController) {
+                    ((LifecycleController) currentController).cleanup();
+                }
+                // Load màn hình mới
                 FXMLLoader loader = new FXMLLoader(SceneNavigator.class.getResource(fxmlPath));
                 Parent root = loader.load();
+
+                // Lưu controller mới
+                currentController = loader.getController();
                 
+                // Hiển thị màn hình mới
                 mainStage.setScene(new Scene(root, 1080, 720));
                 mainStage.show();
                 

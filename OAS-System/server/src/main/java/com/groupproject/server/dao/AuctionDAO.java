@@ -20,7 +20,7 @@ import com.groupproject.shared.network.CreateAuctionRequest;
 public class AuctionDAO {
     public static synchronized Auction createAuction(int sellerId, String title, String description, Category category, 
                                                      Map<Integer, Map<String, String>> categoryGroupedSpecs , 
-                                                     double startingPrice, LocalDateTime endTime) {
+                                                     double startingPrice, LocalDateTime endTime, AuctionStatus status) {
         ServerLogger.info("Creating new auction");
 
         String auctionSql = "INSERT INTO auctions (seller_id, title, description, category_id, starting_price, end_time, status) " +
@@ -30,10 +30,16 @@ public class AuctionDAO {
                                   "VALUES (?, ?, ?, ?)";
         
 
-        Connection conn = DatabaseManager.getInstance().getConnection();
+        
         boolean originalAutoCommit = true;
 
-        try {
+        try (Connection conn = DatabaseManager.getInstance().getConnection(); ) {
+
+            if (conn == null) {
+                ServerLogger.error("Could not obtain a database connection from the pool.");
+                return null;
+            }
+
             // Bắt đầu giao dịch để duy trì tính toàn vẹn của cơ sở dữ liệu
             originalAutoCommit = conn.getAutoCommit();
             conn.setAutoCommit(false);
@@ -46,7 +52,7 @@ public class AuctionDAO {
                 pstmt.setInt(4, category.getId());
                 pstmt.setDouble(5, startingPrice);
                 pstmt.setString(6, endTime.toString());
-                pstmt.setString(7, "WAITING");
+                pstmt.setString(7, status.name());
 
                 ServerLogger.info("Prepare to execute prepared statement");
                 pstmt.executeUpdate();
@@ -78,45 +84,58 @@ public class AuctionDAO {
                         conn.commit();
                         ServerLogger.info("Successfully created auction ID: " + newAuctionId);
                         
-                        return new Auction(newAuctionId, sellerId, title, description, category, categoryGroupedSpecs, startingPrice, endTime);
+                        return new Auction(newAuctionId, sellerId, title, description, category, categoryGroupedSpecs, startingPrice, endTime, status);
                     } else {
                         ServerLogger.error("Failed to execute prepared statement");
                     }
                 }
+            } catch (SQLException transactionEx) {
+                // This catch block is INSIDE the outer try, meaning 'conn' is alive and fully accessible!
+                try {
+                    ServerLogger.error("Auction insertion failed. Rolling back transaction... Error: " + transactionEx.getMessage());
+                    conn.rollback(); // Rollback changes safely
+                } catch (SQLException rollbackEx) {
+                    ServerLogger.error("Critical error during transaction rollback: " + rollbackEx.getMessage());
+                }
+            } finally {
+                // Restore connection auto-commit rules before handing it back to the HikariCP pool
+                try {
+                    conn.setAutoCommit(originalAutoCommit);
+                } catch (SQLException e) {
+                    ServerLogger.error("Failed to restore connection auto-commit state: " + e.getMessage());
+                }
             }
-        } catch (SQLException e) {
-            try {
-                conn.rollback(); // Rollback changes if anything failed
-                ServerLogger.error("Auction insertion failed. Transaction rolled back.");
-            } catch (SQLException rollbackEx) {
-                ServerLogger.error("Critical error during transaction rollback: " + rollbackEx.getMessage());
-            }
-            ServerLogger.error("Database error creating auction: " + e.getMessage());
-        } finally {
-            try {
-                conn.setAutoCommit(originalAutoCommit); // Restore database connection rules
-            } catch (SQLException e) {
-                ServerLogger.error("Failed to restore connection auto-commit state: " + e.getMessage());
-            }
+        } catch (SQLException connectionEx) {
+            ServerLogger.error("Database connection level error: " + connectionEx.getMessage());
         }
         return null;
     }
 
     public static synchronized Auction createAuction(CreateAuctionRequest request) {
+        AuctionStatus parsedStatus;
+        // Đặt mặc định làm WAITING nếu không có
+        parsedStatus = (request.getStatus() != null)? request.getStatus() : AuctionStatus.WAITING; 
+        if (parsedStatus == AuctionStatus.WAITING) {
+            ServerLogger.info("Creating auction with WAITING status");
+        } else { ServerLogger.info("Creating auction with ACTIVATED status"); }
+
+
         return createAuction(request.getSellerId(), request.getTitle(), request.getDescription(), 
                              request.getCategory(), request.getCategoryGroupedSpecs(), 
-                             request.getStartingPrice(), LocalDateTime.parse(request.getEndTime()));
+                             request.getStartingPrice(), LocalDateTime.parse(request.getEndTime()),
+                             parsedStatus);
     }
 
 
     public static List<Auction> getAuctions() {
         List<Auction> auctionList = new ArrayList<>();
         String sql = "SELECT * FROM auctions";
-        Connection conn = DatabaseManager.getInstance().getConnection();
+        
 
         Map<Integer, Category> categoryMap = CategoryDAO.getCategories();
 
-        try (PreparedStatement pstmt = conn.prepareStatement(sql);
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
 
             while (rs.next()) {

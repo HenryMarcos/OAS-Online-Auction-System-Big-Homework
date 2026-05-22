@@ -6,6 +6,7 @@ import java.util.Map;
 import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.network.CreateAuctionRequest;
 import com.groupproject.shared.network.LoginRequest;
+import com.groupproject.shared.network.PlaceBidRequest;
 import com.groupproject.shared.network.Request;
 import com.groupproject.shared.network.Response;
 import com.groupproject.shared.network.SignupRequest;
@@ -18,6 +19,7 @@ public class RequestDispatcher {
         handlers.put(LoginRequest.class, new LoginHandler());
         handlers.put(SignupRequest.class, new SignupHandler());
         handlers.put(CreateAuctionRequest.class, new CreateAuctionHandler());
+        handlers.put(PlaceBidRequest.class, new PlaceBidHandler());
     }
 
     public Response dispatch(Request request) {

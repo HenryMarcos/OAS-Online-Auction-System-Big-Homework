@@ -17,13 +17,14 @@ public class Auction extends Entity {
     private double startingPrice;
     Map<Integer, Map<String, String>> categoryGroupedSpecs;
     private double currentBid; // Giá hiện tại của sản phẩm trong phiên đấu giá
-    private int highestBidderId; // ID của người đang có giá cao nhất
+    private Integer highestBidderId; // ID của người đang có giá cao nhất
     private LocalDateTime startTime; // Ngày bắt đầu của phiên đấu giá
     private LocalDateTime endTime; // Ngày kết thúc của phiên đấu giá
     private AuctionStatus status; // Trạng thái của phiên đấu giá (ví dụ: "active", "closed", "cancelled", ...)
 
     public Auction(int id, int sellerId, String title, String desciption, Category category, 
-                   Map<Integer, Map<String, String>> categoryGroupedSpecs, double startingPrice, LocalDateTime endTime) {
+                   Map<Integer, Map<String, String>> categoryGroupedSpecs, double startingPrice, 
+                   LocalDateTime endTime) {
         super(id);
         this.sellerId = sellerId;
         this.title = title;
@@ -34,6 +35,13 @@ public class Auction extends Entity {
         this.startTime = LocalDateTime.now();
         this.endTime = endTime;
         this.status = AuctionStatus.WAITING;
+    }
+
+    public Auction(int id, int sellerId, String title, String desciption, Category category, 
+                   Map<Integer, Map<String, String>> categoryGroupedSpecs, double startingPrice, 
+                   LocalDateTime endTime, AuctionStatus status) {
+        this(id, sellerId, title, desciption, category, categoryGroupedSpecs, startingPrice, endTime);
+        this.status = status;
     }
 
     public int getSellerId() { return sellerId; }

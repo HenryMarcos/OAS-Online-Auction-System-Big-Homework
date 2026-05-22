@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import com.groupproject.client.utils.LifecycleController;
 import com.groupproject.client.utils.SceneNavigator;
 
 import javafx.event.ActionEvent;
@@ -14,6 +15,9 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 public class MainController  implements Initializable {
+
+    private Object currentSubController;
+
     @FXML
     private BorderPane mainBorderPane;
     @FXML
@@ -24,16 +28,16 @@ public class MainController  implements Initializable {
     private void switchtologin(ActionEvent event) throws IOException {
         SceneNavigator.getInstance().goTo("/com/groupproject/client/FXML/login.fxml");
       
-   }
-   // Khi nhan vao nut Home o man hinh chinh 
-   @FXML
-   private void switchtoHome() throws IOException {
-      loadView("homecontent.fxml");
-   } 
-   @FXML
-   private void switchtoAddItem() throws IOException {
-      loadView("additem.fxml");
-   }
+    }
+    // Khi nhan vao nut Home o man hinh chinh 
+    @FXML
+    private void switchtoHome() throws IOException {
+        loadView("homecontent.fxml");
+    } 
+    @FXML
+    private void switchtoAddItem() throws IOException {
+        loadView("additem.fxml");
+    }
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // yêu cầu nhả ra các categories đã có sẵn trong máy.
@@ -58,8 +62,16 @@ public class MainController  implements Initializable {
     }
     private void loadView(String fxmlFileName) {
         try {
+            // Cleanup màn hình phụ trước đó trước khi đổi sang màn hình phụ khác
+            if (currentSubController instanceof LifecycleController) {
+                ((LifecycleController) currentSubController).cleanup();
+            }
+
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/groupproject/client/FXML/" + fxmlFileName));
             Node view = loader.load();
+
+            // Lưu controller phụ mới để dùng
+            currentSubController = loader.getController();
             
             // Lệnh này sẽ lấy phần ruột (ví dụ cái ScrollPane) đắp vào khoảng trống ở giữa!
             mainBorderPane.setCenter(view);

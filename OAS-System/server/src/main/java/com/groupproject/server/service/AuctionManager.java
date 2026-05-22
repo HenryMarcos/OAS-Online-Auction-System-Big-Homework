@@ -12,11 +12,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import com.groupproject.server.core.ServerApp;
 import com.groupproject.server.dao.AuctionDAO;
 import com.groupproject.server.dao.DatabaseManager;
 import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.AuctionItem;
+import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.network.BidRequest;
 
@@ -30,7 +30,7 @@ public class AuctionManager {
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
 
     private AuctionManager() {
-
+        loadActiveAuctionsFromDatabase();
     }
 
     public static synchronized AuctionManager getInstance() {
@@ -50,14 +50,23 @@ public class AuctionManager {
     public void registerAuction(Auction auction) {
         activeAuctions.put(auction.getId(), auction);
 
-        // Tính khoảng delay trước khi phiên đấu giá kết thúc
-        long delayInSeconds = Duration.between(LocalDateTime.now(), auction.getEndTime()).toSeconds();
-        if (delayInSeconds < 0) { delayInSeconds = 0; }
+        // Kiểm tra xem phiên đấu giá có ngay lập tức bắt đầu đếm xuống luôn không
+        if (auction.getStatus() == AuctionStatus.ACTIVATED) {
+            // Tính khoảng delay trước khi phiên đấu giá kết thúc
+            long delayInSeconds = Duration.between(LocalDateTime.now(), auction.getEndTime()).toSeconds();
+            if (delayInSeconds < 0) { delayInSeconds = 0; }
 
-        // Lên lịch cho nhiệm vụ đóng phiên đấu giá
-        scheduler.schedule(() -> {
-            endAuction(auction.getId());
-        }, delayInSeconds, TimeUnit.SECONDS);
+            // Lên lịch cho nhiệm vụ đóng phiên đấu giá
+            scheduler.schedule(() -> {
+                endAuction(auction.getId());
+            }, delayInSeconds, TimeUnit.SECONDS);
+
+            ServerLogger.info("Auction " + auction.getId() + " is ACTIVATED. Countdown timer started (" + delayInSeconds + "s).");
+        } else {
+            ServerLogger.info("Auction " + auction.getId() + " is WAITING. Timer will start once the seller activates it manually.");
+        }
+
+        
 
     }
 
@@ -87,15 +96,14 @@ public class AuctionManager {
     }
 
     public synchronized boolean placeBid(BidRequest request) {
-        return placeBid(request.getAuctionId(), )
+        return placeBid(request.getAuctionId(), request.getBidderId(), request.getBidAmount());
     }
 
-    public static synchronized boolean proccessBid(int auctionId, String bidderUsername, double bidAmount) {
+    public static synchronized boolean proccessBid(int auctionId, int bidderId, double bidAmount) {
         String checkSql = "SELECT current_bid, is_active FROM auctions WHERE id = ?";
         String updateSql = "UPDATE auctions SET current_bid = ?, highest_bidder = ? WHERE id = ?";
-        Connection conn = DatabaseManager.getInstance().getConnection();
 
-        try {
+        try (Connection conn = DatabaseManager.getInstance().getConnection();) {
 
             // Kiểm tra xem bid hợp lý chưa
             try (PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
@@ -108,11 +116,11 @@ public class AuctionManager {
 
                     // Nếu auction đã kết thúc hoặc bid quá thấp thì từ chối
                     if (!isActive || bidAmount <= currentBid) {
-                        ServerApp.log("USER " + bidderUsername + ": auction is not active or bid is too low");
+                        ServerLogger.info("USER " + bidderId + ": auction is not active or bid is too low");
                         return false;
                     }
                 } else {
-                    ServerApp.log("USER " + bidderUsername + ": auctionId does not exist");
+                    ServerLogger.info("USER " + bidderId + ": auctionId does not exist");
                     return false;
                 }
             }
@@ -120,28 +128,27 @@ public class AuctionManager {
             // Update bid cho các user
             try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
                 updateStmt.setDouble(1, bidAmount);
-                updateStmt.setString(2, bidderUsername);
+                updateStmt.setInt(2, bidderId);
                 updateStmt.setInt(3, auctionId);
                 updateStmt.executeQuery();
                 return true;
             }
 
         } catch (Exception e) {
-            ServerApp.log("Database error processing bid: " + e.getMessage());
+            ServerLogger.error("Database error processing bid: " + e.getMessage());
             return false;
         }
     }
 
     public static synchronized boolean proccessBid(BidRequest bidRequest) {
-        return proccessBid(bidRequest.getAuctionId(), bidRequest.getBidderUsername(), bidRequest.getBidAmount());
+        return proccessBid(bidRequest.getAuctionId(), bidRequest.getBidderId(), bidRequest.getBidAmount());
     }
 
     public static List<AuctionItem> getActiveAuctions() {
         List<AuctionItem> activeAuctions = new ArrayList<>();
         String sql = "SELECT * FROM auctions WHERE is_active = 1";
-        Connection conn = DatabaseManager.getInstance().getConnection();
 
-        try {
+        try (Connection conn = DatabaseManager.getInstance().getConnection();) {
             PreparedStatement pstmt = conn.prepareStatement(sql);
             ResultSet rs = pstmt.executeQuery();
 
@@ -156,8 +163,21 @@ public class AuctionManager {
                 activeAuctions.add(item);
             }
         } catch (Exception e) {
-            ServerApp.log("Error fetching auctions: " + e.getMessage());
+            ServerLogger.error("Error fetching auctions: " + e.getMessage());
         }
         return activeAuctions;
     }
+
+    private void endAuction(int auctionId) {
+        Auction auction = activeAuctions.remove(auctionId);
+        if (auction != null) {
+            ServerLogger.info("Auction " + auctionId + " has officially ended!");
+
+            // 1. Change status to CLOSED or COMPLETED in your DB via AuctionDAO
+
+            // 2. Broadcast a "AUCTION_ENDED" notification to all connected clients via ServerApp.broadcast()
+        }
+    }
+
 }
+

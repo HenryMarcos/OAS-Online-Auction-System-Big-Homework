@@ -2,9 +2,10 @@ package com.groupproject.client;
 
 import java.io.IOException;
 
-import com.groupproject.client.network.EventRouter;
+import com.groupproject.client.network.ClientMessageRouter;
 import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.ClientLogger;
+import com.groupproject.client.utils.LifecycleController;
 import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.network.LoginRequest;
@@ -19,7 +20,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.paint.Color;
 
-public class LoginController {
+public class LoginController implements LifecycleController {
     @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;
     @FXML private TextField passwordTextField;
@@ -33,7 +34,7 @@ public class LoginController {
         // Vẫn giữ dòng này để đồng bộ chữ giữa 2 ô nhập mật khẩu
         passwordField.textProperty().bindBidirectional(passwordTextField.textProperty());
 
-        EventRouter.getInstance().on(LoginResponse.class, this::handleLoginResponse);
+        ClientMessageRouter.getInstance().onResponse(LoginResponse.class, this::handleLoginResponse);
         // mở lại nút login dù có thành công hay thất bại 
         loginButton.setDisable(false);
     }
@@ -109,7 +110,10 @@ public class LoginController {
         SessionManager.getInstance().setCurrentCategories(response.getCategoryTree());
         SessionManager.getInstance().setCurrentAuctionList(response.getAuctionList());
 
-        // TODO: Chuyển sang màn hình chính
+        // Trước khi chuyển màn hình thì xóa hết listener để tránh tràn bộ nhớ
+        ClientMessageRouter.getInstance().clearAllListeners();
+
+        // Chuyển sang màn hình chính
         SceneNavigator.getInstance().goTo("/com/groupproject/client/FXML/mainscreen.fxml");
     }
 
@@ -119,6 +123,12 @@ public class LoginController {
         // errorLabel.setText(response.getMessage());
         statusLabel.setTextFill(Color.RED);
         statusLabel.setText(response.getMessage());
+    }
+
+    @Override
+    public void cleanup() {
+        // We are leaving the login screen forever, clear all pre-login listeners!
+        ClientMessageRouter.getInstance().clearAllListeners();
     }
 
 }

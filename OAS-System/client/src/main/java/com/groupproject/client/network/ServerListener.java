@@ -4,6 +4,7 @@ import java.io.ObjectInputStream;
 
 import com.groupproject.client.utils.ClientLogger;
 import com.groupproject.shared.network.Response;
+import com.groupproject.shared.network.ServerEvent;
 
 public class ServerListener implements Runnable {
     
@@ -17,10 +18,8 @@ public class ServerListener implements Runnable {
                 Object incomingData = in.readObject();
 
                 // 2. Make sure it's our standard response object
-                if (incomingData instanceof Response) {
-                    Response response = (Response) incomingData;
-
-                    EventRouter.getInstance().dispatch(response);
+                if (incomingData instanceof Response || incomingData instanceof ServerEvent) {
+                    ClientMessageRouter.getInstance().handleIncomingMessage(incomingData);
                 } else {
                     ClientLogger.warning("Received unknown object from server.");
                 }

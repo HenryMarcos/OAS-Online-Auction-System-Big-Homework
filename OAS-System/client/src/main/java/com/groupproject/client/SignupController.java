@@ -2,8 +2,9 @@ package com.groupproject.client;
 
 import java.io.IOException;
 
-import com.groupproject.client.network.EventRouter;
+import com.groupproject.client.network.ClientMessageRouter;
 import com.groupproject.client.network.RequestSender;
+import com.groupproject.client.utils.LifecycleController;
 import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.network.SignupRequest;
@@ -20,7 +21,7 @@ import javafx.scene.paint.Color;
 
 
 
-public class SignupController {
+public class SignupController implements LifecycleController {
     @FXML private TextField usernameField;
     @FXML private TextField emailField;
     @FXML private PasswordField passwordField;
@@ -31,7 +32,7 @@ public class SignupController {
 
     @FXML
     public void initialize() {
-        EventRouter.getInstance().on(SignupResponse.class, this::handleSignupResponse);
+        ClientMessageRouter.getInstance().onResponse(SignupResponse.class, this::handleSignupResponse);
     }
 
     @FXML
@@ -85,7 +86,9 @@ public class SignupController {
         SessionManager.getInstance().setCurrentCategories(response.getCategoryTree());
         SessionManager.getInstance().setCurrentAuctionList(response.getAuctionList());
 
-        System.out.println("Signup Success! Switching screens...");
+        // Trước khi chuyển màn hình thì xóa hết listener để tránh tràn bộ nhớ
+        ClientMessageRouter.getInstance().clearAllListeners();
+
         // chuyển sang màn hình chính
         SceneNavigator.getInstance().goTo("/com/groupproject/client/FXML/mainscreen.fxml");
     }
@@ -96,6 +99,12 @@ public class SignupController {
         // errorLabel.setText(response.getMessage());
         statusLabel.setTextFill(Color.RED);
         statusLabel.setText(response.getMessage());
+    }
+
+    @Override
+    public void cleanup() {
+        // We are leaving the signup screen forever, clear all pre-signup listeners!
+        ClientMessageRouter.getInstance().clearAllListeners();
     }
 }
 
