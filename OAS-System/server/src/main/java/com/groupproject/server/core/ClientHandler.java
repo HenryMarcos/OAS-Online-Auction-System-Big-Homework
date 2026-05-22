@@ -38,6 +38,7 @@ public class ClientHandler implements Runnable {
                 Object recievedData = in.readObject();
 
                 // Xử lý trường hợp client gửi yêu cầu
+                // Có 3 yêu cầu: CreateAuctionRequest, LoginRequest, SignupRequest
                 if (recievedData instanceof Request) {
                     Request request = (Request) recievedData;
                     ServerLogger.info("User " + socket.getInetAddress() + " sent a " + request.getClass().getSimpleName());
