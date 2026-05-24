@@ -5,10 +5,10 @@ import java.io.ObjectOutputStream;
 import com.groupproject.server.core.ClientManager;
 import com.groupproject.server.utils.ClientContext;
 import com.groupproject.server.utils.ServerLogger;
-import com.groupproject.shared.network.LeaveAuctionRoomRequest;
-import com.groupproject.shared.network.LeaveAuctionRoomResponse;
-import com.groupproject.shared.network.Request;
-import com.groupproject.shared.network.Response;
+import com.groupproject.shared.network.request.LeaveAuctionRoomRequest;
+import com.groupproject.shared.network.request.Request;
+import com.groupproject.shared.network.response.LeaveAuctionRoomResponse;
+import com.groupproject.shared.network.response.Response;
 
 public class LeaveAuctionRoomHandler implements RequestHandler {
     @Override

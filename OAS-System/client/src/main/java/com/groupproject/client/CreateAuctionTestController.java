@@ -14,8 +14,8 @@ import com.groupproject.client.utils.ClientLogger;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.model.categories.Category;
 import com.groupproject.shared.model.enums.AuctionStatus;
-import com.groupproject.shared.network.CreateAuctionRequest;
-import com.groupproject.shared.network.CreateAuctionResponse;
+import com.groupproject.shared.network.request.CreateAuctionRequest;
+import com.groupproject.shared.network.response.CreateAuctionResponse;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -259,11 +259,11 @@ public class CreateAuctionTestController implements Initializable {
         ClientLogger.info("Form validation successful. Transmitting new auction layout details...");
 
         AuctionStatus initialStatus = (startNowCheckBox != null && startNowCheckBox.isSelected())? 
-                                       AuctionStatus.ACTIVATED : AuctionStatus.WAITING;
+                                       AuctionStatus.ACTIVED : AuctionStatus.WAITING;
 
         if (initialStatus == AuctionStatus.WAITING) {
             ClientLogger.info("Created auction with WAITING status");
-        } else { ClientLogger.info("Created auction with ACTIVATED status"); }
+        } else { ClientLogger.info("Created auction with ACTIVED status"); }
 
         CreateAuctionRequest request = new CreateAuctionRequest(currentUserId, title, description, selectedCategory, categoryGroupedSpecs, startingPrice, endTime.toString(), initialStatus);
         RequestSender.send(request);

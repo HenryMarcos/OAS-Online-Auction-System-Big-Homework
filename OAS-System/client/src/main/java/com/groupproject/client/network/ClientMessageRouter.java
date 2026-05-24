@@ -7,8 +7,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
 import com.groupproject.client.utils.ClientLogger;
-import com.groupproject.shared.network.Response;
-import com.groupproject.shared.network.ServerEvent;
+import com.groupproject.shared.network.event.ServerEvent;
+import com.groupproject.shared.network.response.Response;
 
 import javafx.application.Platform;
 

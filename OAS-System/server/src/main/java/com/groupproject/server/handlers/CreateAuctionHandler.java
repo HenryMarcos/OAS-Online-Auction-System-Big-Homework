@@ -4,10 +4,10 @@ import com.groupproject.server.dao.AuctionDAO;
 import com.groupproject.server.service.AuctionManager;
 import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.model.transaction.Auction;
-import com.groupproject.shared.network.CreateAuctionRequest;
-import com.groupproject.shared.network.CreateAuctionResponse;
-import com.groupproject.shared.network.Request;
-import com.groupproject.shared.network.Response;
+import com.groupproject.shared.network.request.CreateAuctionRequest;
+import com.groupproject.shared.network.request.Request;
+import com.groupproject.shared.network.response.CreateAuctionResponse;
+import com.groupproject.shared.network.response.Response;
 
 public class CreateAuctionHandler implements RequestHandler {
     @Override

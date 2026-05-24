@@ -7,8 +7,10 @@ module com.groupproject.shared {
     exports com.groupproject.shared.model.transaction;
     exports com.groupproject.shared.model.categories;
     exports com.groupproject.shared.model.enums;
-    exports com.groupproject.shared.network;
-
+    exports com.groupproject.shared.network.event;
+    exports com.groupproject.shared.network.response;
+    exports com.groupproject.shared.network.request;
+    
     // 2. Export các nhóm Factory
     exports com.groupproject.shared.factory;
 }

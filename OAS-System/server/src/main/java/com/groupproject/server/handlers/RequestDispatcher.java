@@ -4,16 +4,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.groupproject.server.utils.ServerLogger;
-import com.groupproject.shared.network.ChangeAuctionStatusRequest;
-import com.groupproject.shared.network.CreateAuctionRequest;
-import com.groupproject.shared.network.GetMyAuctionsRequest;
-import com.groupproject.shared.network.JoinAuctionRoomRequest;
-import com.groupproject.shared.network.LeaveAuctionRoomRequest;
-import com.groupproject.shared.network.LoginRequest;
-import com.groupproject.shared.network.PlaceBidRequest;
-import com.groupproject.shared.network.Request;
-import com.groupproject.shared.network.Response;
-import com.groupproject.shared.network.SignupRequest;
+import com.groupproject.shared.network.request.ChangeAuctionStatusRequest;
+import com.groupproject.shared.network.request.CreateAuctionRequest;
+import com.groupproject.shared.network.request.GetMyAuctionsRequest;
+import com.groupproject.shared.network.request.JoinAuctionRoomRequest;
+import com.groupproject.shared.network.request.LeaveAuctionRoomRequest;
+import com.groupproject.shared.network.request.LoginRequest;
+import com.groupproject.shared.network.request.PlaceBidRequest;
+import com.groupproject.shared.network.request.Request;
+import com.groupproject.shared.network.request.SignupRequest;
+import com.groupproject.shared.network.response.Response;
 
 public class RequestDispatcher {
     private final Map<Class<? extends Request>, RequestHandler> handlers = new HashMap<>();

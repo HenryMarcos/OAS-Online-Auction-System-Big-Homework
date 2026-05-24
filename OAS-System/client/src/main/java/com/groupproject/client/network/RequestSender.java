@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 
 import com.groupproject.client.utils.ClientLogger;
-import com.groupproject.shared.network.Request;
+import com.groupproject.shared.network.request.Request;
 
 public class RequestSender {
 

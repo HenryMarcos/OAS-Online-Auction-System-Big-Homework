@@ -4,14 +4,16 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 import com.groupproject.server.dao.AuctionDAO;
-import com.groupproject.server.service.AuctionManager;
+import com.groupproject.server.service.AuctionManager; // Thêm import này để check Admin
+import com.groupproject.server.utils.ClientContext;
 import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.shared.model.transaction.Auction;
-import com.groupproject.shared.network.ChangeAuctionStatusRequest;
-import com.groupproject.shared.network.ChangeAuctionStatusResponse;
-import com.groupproject.shared.network.Request;
-import com.groupproject.shared.network.Response;
+import com.groupproject.shared.model.user.User;
+import com.groupproject.shared.network.request.ChangeAuctionStatusRequest;
+import com.groupproject.shared.network.request.Request;
+import com.groupproject.shared.network.response.ChangeAuctionStatusResponse;
+import com.groupproject.shared.network.response.Response;
 
 public class ChangeAuctionStatusHandler implements RequestHandler {
 
@@ -24,11 +26,28 @@ public class ChangeAuctionStatusHandler implements RequestHandler {
         ChangeAuctionStatusRequest changeReq = (ChangeAuctionStatusRequest) request;
         int auctionId = changeReq.getAuctionId();
         AuctionStatus newStatus = changeReq.getNewStatus();
+        
+        // ==============================================================
+        // BƯỚC BẢO MẬT: LẤY THÔNG TIN NGƯỜI DÙNG TỪ BỘ NHỚ SERVER
+        // ==============================================================
+        User userMakingRequest = ClientContext.currentUser.get();
+        
+        // 1. Nếu chưa đăng nhập (hoặc phiên hết hạn)
+        if (userMakingRequest == null) {
+            return new ChangeAuctionStatusResponse(false, "Bạn chưa đăng nhập hoặc phiên kết nối đã hết hạn!");
+        }
+
+        int requesterId = userMakingRequest.getId();
+        boolean isAdmin = userMakingRequest.isAdmin();
 
         // 1. Lấy thông tin hiện tại từ DB để đối chiếu
         Auction currentAuction = AuctionDAO.getAuctionById(auctionId);
         if (currentAuction == null) {
             return new ChangeAuctionStatusResponse(false, "Phiên đấu giá không tồn tại trong hệ thống.");
+        }
+        if (currentAuction.getSellerId() != requesterId && !isAdmin) {
+            ServerLogger.warning("CẢNH BÁO BẢO MẬT: User ID " + requesterId + " đang cố gắng can thiệp vào Auction ID " + auctionId);
+            return new ChangeAuctionStatusResponse(false, "Từ chối truy cập: Bạn không phải là chủ sở hữu của phiên đấu giá này.");
         }
 
         AuctionStatus currentStatus = currentAuction.getStatus();
@@ -42,13 +61,19 @@ public class ChangeAuctionStatusHandler implements RequestHandler {
             }
 
             LocalDateTime now = LocalDateTime.now();
+            
+            // Xử lý an toàn: Đề phòng endTime bị null văng lỗi Crash Server
+            if (currentAuction.getEndTime() == null) {
+                return new ChangeAuctionStatusResponse(false, "Phiên đấu giá bị lỗi dữ liệu (Không có thời gian kết thúc).");
+            }
+
             long secondsRemaining = Duration.between(now, currentAuction.getEndTime()).toSeconds();
 
             // Nếu sát giờ hoặc lố giờ -> Ép kết thúc
             if (secondsRemaining < 60) {
                 ServerLogger.warning("Auction " + auctionId + " start request too close to end_time. Forcing ENDED.");
                 if (AuctionDAO.updateAuctionStatusOnly(auctionId, AuctionStatus.ENDED)) {
-                    AuctionManager.getInstance().cancelAuction(auctionId); // Gỡ khỏi RAM
+                    AuctionManager.getInstance().forceCancelWaitingAuction(auctionId); // Gỡ khỏi RAM
                     currentAuction.setStatus(AuctionStatus.ENDED);
                     return new ChangeAuctionStatusResponse(false, "Đã quá sát giờ kết thúc, phiên đấu giá bị đóng tự động.", currentAuction);
                 }

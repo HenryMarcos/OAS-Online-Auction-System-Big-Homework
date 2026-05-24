@@ -7,8 +7,8 @@ import java.net.Socket;
 import com.groupproject.server.handlers.RequestDispatcher;
 import com.groupproject.server.utils.ClientContext;
 import com.groupproject.server.utils.ServerLogger;
-import com.groupproject.shared.network.Request;
-import com.groupproject.shared.network.Response;
+import com.groupproject.shared.network.request.Request;
+import com.groupproject.shared.network.response.Response;
 
 // --- NỘI HÀM: CHUÕI RIÊNG CHO MỖI CLIENT ---
 public class ClientHandler implements Runnable {

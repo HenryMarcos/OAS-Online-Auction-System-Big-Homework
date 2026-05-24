@@ -56,28 +56,32 @@ public class DatabaseManager {
                          "username TEXT UNIQUE NOT NULL," + 
                          "email TEXT UNIQUE NOT NULL," +
                          "password TEXT NOT NULL," +
+                         "balance REAL DEFAULT 0.0," +
                          "created_at DATETIME NOT NULL)";
             stmt.execute(sql);
-            
+
+            // Tao bảng admin_list để lưu danh sách các user có quyền admin (chỉ chứa id của user, liên kết với bảng users)
+            String sqlAdmin = "CREATE TABLE IF NOT EXISTS admin_list (" +
+                              "user_id INTEGER PRIMARY KEY," +
+                            "FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE)";
+            stmt.execute(sqlAdmin);
+
             // Tạo bảng chứa các phiên đấu giá
             String auctionSql = "CREATE TABLE IF NOT EXISTS auctions (" +
                                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                                 "seller_id INTEGER NOT NULL, " +
-                                "title TEXT NOT NULL, " +
-                                "description TEXT NOT NULL, " +
-                                "category_id INTEGER NOT NULL, " +
-                                "starting_price REAL NOT NULL, " +
-                                "start_time DATETIME, " + // Null nếu status là WAITING
-                                "end_time DATETIME NOT NULL, " +
-                                "current_bid REAL DEFAULT 0, " + // Mặc định là 0 khi mới tạo
+                                "title TEXT NOT NULL," +
+                                "description TEXT NOT NULL," +
+                                "category_id INTEGER NOT NULL," +
+                                "starting_price REAL NOT NULL," +
+                                "start_time DATETIME, " +
+                                "end_time DATETIME NOT NULL," +
+                                "current_bid REAL," + 
                                 "current_bidder_id INTEGER, " +
-                                "status TEXT NOT NULL, " +
-                                // Thêm các ràng buộc an toàn:
+                                "status TEXT NOT NULL, " + 
                                 "FOREIGN KEY(seller_id) REFERENCES users(id), " +
-                                "FOREIGN KEY(category_id) REFERENCES categories(id), " +
-                                "FOREIGN KEY(current_bidder_id) REFERENCES users(id), " + // MỚI: Khóa ngoại cho người đấu giá
-                                "CHECK (status IN ('WAITING', 'SCHEDULED', 'ACTIVED', 'ENDED', 'CANCELLED'))" + // MỚI: Ràng buộc trạng thái
-                                ")";
+                                "FOREIGN KEY(current_bidder_id) REFERENCES users(id), " + 
+                                "FOREIGN KEY(category_id) REFERENCES categories(id))";
             stmt.execute(auctionSql);
 
             // Xóa trước khi tạo bảng để test(sau này sẽ không dùng)

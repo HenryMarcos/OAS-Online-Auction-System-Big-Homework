@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.groupproject.server.utils.ServerLogger;
-import com.groupproject.shared.network.ServerEvent;
+import com.groupproject.shared.network.event.ServerEvent;
 
 public class ClientManager {
     private static ClientManager instance;
@@ -54,6 +54,13 @@ public class ClientManager {
             if (auctionRooms.get(auctionId).isEmpty()) {
                 auctionRooms.remove(auctionId); // Dọn dẹp phòng trống
             }
+        }
+    }
+
+    public void removeAuctionRoom(int auctionId) {
+        if (auctionRooms.containsKey(auctionId)) {
+            auctionRooms.remove(auctionId);
+            ServerLogger.info("Auction Room " + auctionId + " has been removed from ClientManager.");
         }
     }
 

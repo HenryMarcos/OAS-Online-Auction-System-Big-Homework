@@ -5,10 +5,10 @@ import java.io.ObjectOutputStream;
 import com.groupproject.server.core.ClientManager;
 import com.groupproject.server.utils.ClientContext;
 import com.groupproject.server.utils.ServerLogger;
-import com.groupproject.shared.network.JoinAuctionRoomRequest;
-import com.groupproject.shared.network.JoinAuctionRoomResponse;
-import com.groupproject.shared.network.Request;
-import com.groupproject.shared.network.Response;
+import com.groupproject.shared.network.request.JoinAuctionRoomRequest;
+import com.groupproject.shared.network.request.Request;
+import com.groupproject.shared.network.response.JoinAuctionRoomResponse;
+import com.groupproject.shared.network.response.Response;
 
 public class JoinAuctionRoomHandler implements RequestHandler {
     @Override

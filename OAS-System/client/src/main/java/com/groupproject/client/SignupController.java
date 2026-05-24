@@ -7,8 +7,8 @@ import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.LifecycleController;
 import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
-import com.groupproject.shared.network.SignupRequest;
-import com.groupproject.shared.network.SignupResponse;
+import com.groupproject.shared.network.request.SignupRequest;
+import com.groupproject.shared.network.response.SignupResponse;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;

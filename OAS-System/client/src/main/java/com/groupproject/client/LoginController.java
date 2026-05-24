@@ -8,8 +8,8 @@ import com.groupproject.client.utils.ClientLogger;
 import com.groupproject.client.utils.LifecycleController;
 import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
-import com.groupproject.shared.network.LoginRequest;
-import com.groupproject.shared.network.LoginResponse;
+import com.groupproject.shared.network.request.LoginRequest;
+import com.groupproject.shared.network.response.LoginResponse;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
