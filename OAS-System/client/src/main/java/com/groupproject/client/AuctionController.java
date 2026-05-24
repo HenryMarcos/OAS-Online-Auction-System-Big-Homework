@@ -1,25 +1,26 @@
 package com.groupproject.client;
 import java.io.IOException;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-
+import java.util.List;
 import com.groupproject.client.network.AuctionIntegrationService;
 import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.AlertUtils;
+import com.groupproject.client.utils.ClientLogger;
 import com.groupproject.client.utils.CountDownHelper;
 import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
+import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.model.transaction.AuctionDetail;
 import com.groupproject.shared.model.transaction.BidTransaction;
 import com.groupproject.shared.network.AuctionEvent.*;
 import com.groupproject.shared.network.BidRequest;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.chart.LineChart;
+import javafx.scene.chart.AreaChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Series;
 import javafx.scene.control.Alert;
@@ -28,13 +29,14 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
+// MAX_BIDS_TO_DISPLAY: có thể thêm nếu cần thiết bởi không cần thiết phải lấy hết tất cả mà chỉ cần lấy 10 người đứng đầu thôi chẳng hạn.
 public class AuctionController implements AuctionListener  {
     private AuctionDetail currentAuctionDetail = SessionManager.getInstance().getCurrentAuctionDetail();
     private final ObservableList<BidTransaction> bidDataList= FXCollections.observableArrayList();
     private AuctionIntegrationService integrationService;
-    @FXML private LineChart<String,Number> linechart;
+    private final int MAX_BIDS_TO_DISPLAY=20;
+    @FXML private AreaChart<String,Number> priceChart;
     private Series<String, Number> priceSeries = new XYChart.Series<>() ;
     @FXML private TableView<BidTransaction> bottomtable;
     @FXML private TableColumn<BidTransaction, Double> pricecol;
@@ -58,22 +60,28 @@ public class AuctionController implements AuctionListener  {
     }
     @FXML
     public  void initialize() {
-        int id = currentAuctionDetail.getAuction().getId().intValue();
+        // cài đặt một cái được tích hợp để phát thông báo 
+        Auction currentAuction= currentAuctionDetail.getAuction();
+        int id = currentAuction.getId().intValue();
         this.integrationService = new AuctionIntegrationService(id, this);
         this.integrationService.startListening();
         setAuction(currentAuctionDetail.getAuction());
         // Cài đặt bảng 
         setUpTableView();
-        // Cài đặt linechart 
-        linechart.getData().add(priceSeries);
-        // lắng nghe tín hiệu từ Sever 
+        // Cài đặt priceChart 
+        priceChart.setLegendVisible(false);
+        priceChart.getData().add(priceSeries);
+        // Nhận dữ liệu để load những dữ liệu cũ  
+        loadInitialData(currentAuctionDetail.getBidHistory());
     }
     @Override 
     public void onBidUpdated(BidUpdatedEvent event) {
         Platform.runLater(() -> {
             String priceText = String.format("Current price : %.2f VND", event.getBidAmount());
             auctioncurrentprice.setText(priceText);
-            String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+            updateAuctionUI(event.getAuctionId(),event.getHighestBidderId(),event.getBidAmount());
+            // Vẽ điểm trên đồ thị khi có BidUpdated 
+            priceSeries.getData().add(new XYChart.Data<>(event.getTimeStamp(),event.getBidAmount()));
             AlertUtils.showSuccess("Success", "Someone places bid successfully");
             bidButton.setDisable(true);
             bidButton.setText("PLACE BID");
@@ -85,6 +93,10 @@ public class AuctionController implements AuctionListener  {
             updateName();
             updatePrice();
             updateTime();
+            if (currentAuctionDetail.getAuction().getStatus()==AuctionStatus.ACTIVED) {
+                bidButton.setDisable(false);
+            }
+            bidButton.setDisable(true);
         });
     }
     private void updatePrice() {
@@ -97,6 +109,7 @@ public class AuctionController implements AuctionListener  {
         auctionproductname.setText(name);
         participant.setText(SessionManager.getInstance().getCurrentUser().getUsername());
     }
+
     private void updateTime() {
         CountDownHelper countDownHelper = new CountDownHelper();
         countDownHelper.start(currentAuctionDetail, () -> auctiontimeleft.setText("ENDED"), auctiontimeleft);
@@ -124,7 +137,7 @@ public class AuctionController implements AuctionListener  {
             BidRequest request = new BidRequest(currentAuctionDetail.getAuction().getId().intValue(), username, price);
             RequestSender.send(request);
             enterprice.clear();
-            bidButton.setDisable(false);
+            bidButton.setDisable(true);
             bidButton.setText("Loading...");
             
         }
@@ -134,20 +147,19 @@ public class AuctionController implements AuctionListener  {
     }
 
     private void setUpTableView() {
-        userIdcol.setCellValueFactory(new PropertyValueFactory<>("bidderId"));
-        pricecol.setCellValueFactory(new PropertyValueFactory<>("price"));
-        timecol.setCellValueFactory(new PropertyValueFactory<>("time"));
+        userIdcol.setCellValueFactory(celldata -> new SimpleObjectProperty<>(celldata.getValue().getBidderId()));
+        pricecol.setCellValueFactory(celldata -> new SimpleObjectProperty<>(celldata.getValue().getBidAmount()));
+        timecol.setCellValueFactory(celldata -> new SimpleObjectProperty<>(celldata.getValue().getTimeStamp()));
         bottomtable.setItems(bidDataList);
     }
-    /* 
-    private void updateAuctionUI() {
+    // Vẫn chưa điền dữ liệu vào những bảng cần điền ( đang mới chỉ lưu dữ liệu mà thôi)
+    private void updateAuctionUI( int auctionId,int bidderId,double bidAmount) {
         // CHÚ Ý: Vì gói tin mạng chạy ở luồng ngầm (Background Thread),
         // bắt buộc phải dùng Platform.runLater để can thiệp vào giao diện (UI Thread) nhằm tránh crash.
         Platform.runLater(() -> {
-            
             // 1. Thêm lượt đặt giá mới vào ĐẦU danh sách (vị trí số 0) 
             // Điều này giúp lượt đặt giá mới nhất luôn nhảy lên dòng ĐẦU TIÊN của bảng để dễ nhìn.
-            bidDataList.add(0,new BidTransaction(id, currentbid,time));
+            bidDataList.add(0,new BidTransaction(auctionId,bidderId,bidAmount));
 
             // 2. GIẢI QUYẾT YÊU CẦU CỦA BẠN: Kiểm tra và xóa bớt phần tử thừa để tránh lãng phí bộ nhớ
             // Sử dụng vòng lặp while để đảm bảo danh sách không bao giờ vượt quá ngưỡng quy định.
@@ -163,32 +175,37 @@ public class AuctionController implements AuctionListener  {
             
             // 3. Tự động cuộn bảng lên trên cùng để xem dòng mới nhất vừa nhảy vào
             bottomtable.scrollTo(0);
-        });
-        thêm vào khi có một lượt đặt giá mới 
-        duyệt ngay từ đầu khi vào một phiên đấu giá 
-        public void loadInitialBidHistory(List<BidTransaction> serverHistory) {
-        if (serverHistory == null) return;
+        }); 
+    }
+    public void loadInitialData(List<BidTransaction> serverHistory) {
+        if (serverHistory == null || serverHistory.isEmpty()) return;
 
         bidDataList.clear();
 
         // Kiểm tra tối ưu ngay từ lúc nạp dữ liệu ban đầu
         if (serverHistory.size() > MAX_BIDS_TO_DISPLAY) {
-            // Nếu Server trả về quá nhiều (ví dụ 1000 dòng), ta chỉ cắt lấy 30 dòng mới nhất đưa vào UI
+            // Nếu Server trả về quá nhiều (ví dụ 1000 dòng), ta chỉ cắt lấy 20 dòng mới nhất đưa vào UI
             List<BidTransaction> truncatedList = serverHistory.subList(0, MAX_BIDS_TO_DISPLAY);
             bidDataList.addAll(truncatedList);
+            for (int i = 0 ; i < truncatedList.size() ; i ++) {
+                BidTransaction bid = truncatedList.get(i);
+                priceSeries.getData().add(new XYChart.Data<>(bid.getTimeStamp(),bid.getBidAmount()));
+            }
             ClientLogger.info("Đã cắt bớt lịch sử đấu giá ban đầu để tối ưu RAM.");
         } else {
             bidDataList.addAll(serverHistory);
+            for (int i = 0 ;  i < serverHistory.size(); i ++ ) { 
+                BidTransaction bid = serverHistory.get(i);
+                priceSeries.getData().add(new XYChart.Data<>(bid.getTimeStamp(),bid.getBidAmount()));
+            }
         }
     }
-
-    */
 
     @Override 
     public void onAuctionCancelled(AuctionCancelledEvent event) {
         Platform.runLater(() -> {
             AlertUtils.showAlert(Alert.AlertType.INFORMATION, "THÔNG BÁO", event.getReason());
-            bidButton.setDisable(false);
+            bidButton.setDisable(true);
 
         });
         
@@ -197,7 +214,7 @@ public class AuctionController implements AuctionListener  {
     public void onAuctionFinished(AuctionFinisedEvent event) {
         Platform.runLater(() -> {
             AlertUtils.showAlert(Alert.AlertType.INFORMATION, "THÔNG BÁO", "PHIÊN ĐẤU GIÁ ĐÃ ĐƯỢC HOÀN THÀNH");
-            bidButton.setDisable(false);
+            bidButton.setDisable(true);
 
         });
     }
@@ -205,14 +222,14 @@ public class AuctionController implements AuctionListener  {
     public void onAuctionStarted(AuctionStartedEvent event) {
         Platform.runLater(() -> {
             AlertUtils.showAlert(Alert.AlertType.INFORMATION,"THÔNG BÁO"," PHIÊN ĐẤU GIÁ BẮT ĐẦU ");
-            bidButton.setDisable(true);
+            bidButton.setDisable(false);
         });
     }
     @Override 
     public void onAuctionEnded(AuctionEndedEvent event) {
         Platform.runLater(() -> {
             AlertUtils.showAlert(Alert.AlertType.INFORMATION,"THÔNG BÁO"," PHIÊN ĐẤU GIÁ KẾT THÚC ! CHỜ THANH TOÁN ");
-            bidButton.setDisable(false);
+            bidButton.setDisable(true);
         });
     }
 

@@ -87,7 +87,7 @@ public class App extends Application {
         try (Socket socket = new Socket(serverIp, port)) {
             // Nếu kết nối được thì thông báo thành công
             System.out.println("Connected to the server");
-
+            // CÓ THỂ CHO USER NÀY LÀM ADMIN 
             // Tạo 1 User để kiểm tra
             User myUser = new User("Henry", "e@gmail.com", "Ninooo");
 

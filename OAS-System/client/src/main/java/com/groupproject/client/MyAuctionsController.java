@@ -4,16 +4,8 @@ import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.network.GetAuctionRequest;
-import javafx.fxml.FXML;
-public class YourAuctionsController extends BaseAuctionViewController {
-    @FXML
-   public void initialize() {
-      drawCategoryUI();
-      addEventHandles();
-      setupGlobalEventListeners();
-      fetchInitialData();
-      setupReactiveUI();
-   }
+
+public class MyAuctionsController extends BaseAuctionViewController {
    // hàm load những items có trong từng mục category
    @Override
    public boolean shouldInclude(Auction newItem) {
@@ -23,7 +15,14 @@ public class YourAuctionsController extends BaseAuctionViewController {
    public void fetchInitialData() {
       User user = SessionManager.getInstance().getCurrentUser();
       int idUser = user.getId().intValue();
-      GetAuctionRequest request = GetAuctionRequest.getMyAuctions(idUser);
+      GetAuctionRequest request = GetAuctionRequest.getBySeller(idUser, null);
+      RequestSender.send(request);
+   }
+   @Override 
+   public void fetchDataByCategory(int categoryId) {
+      User user = SessionManager.getInstance().getCurrentUser();
+      int idUser = user.getId().intValue();
+      GetAuctionRequest request = GetAuctionRequest.getBySeller(idUser, categoryId);
       RequestSender.send(request);
    }
     

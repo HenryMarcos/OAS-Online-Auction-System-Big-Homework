@@ -1,8 +1,10 @@
 package com.groupproject.client;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.model.enums.AuctionStatus;
 
@@ -88,5 +90,9 @@ public class AdminDashBoardController {
         
         // Riêng nút được bấm thì đổi màu highlight nổi bật lên (Ví dụ màu xanh tươi)
         activeRow.setStyle("-fx-background-color: #34495e; -fx-text-fill: #3498db; -fx-font-weight: bold;");
+    }
+    @FXML
+    private void switchtoLogin(ActionEvent event) throws IOException {
+        SceneNavigator.goTo("/com/groupproject/client/FXML/login.fxml");
     }
 }

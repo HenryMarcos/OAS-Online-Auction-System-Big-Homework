@@ -4,6 +4,8 @@ package com.groupproject.client;
 import com.groupproject.client.network.RequestSender;
 import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.network.GetAuctionRequest;
+import com.groupproject.shared.network.Request;
+
 import javafx.fxml.FXML;
 
 
@@ -11,16 +13,6 @@ import javafx.fxml.FXML;
 
 // phan center cua mainscreen.fxml 
 public class HomeController extends BaseAuctionViewController  {
-   @FXML
-   public void initialize() {
-      // ĐƯỢC KẾ THỪA TỪ ABSTRACT CLASS
-      drawCategoryUI();
-      addEventHandles();
-      // ĐƯỢC OVERRIDE NGAY TẠI HÀM CON
-      setupGlobalEventListeners();
-      fetchInitialData();
-      setupReactiveUI();
-   }
    // hàm load những items có trong từng mục category
    @Override
    public boolean shouldInclude(Auction newItem) {
@@ -28,7 +20,12 @@ public class HomeController extends BaseAuctionViewController  {
    }
    @Override
    public void fetchInitialData() {
-      GetAuctionRequest request = GetAuctionRequest.getAllAuctions();
+      GetAuctionRequest request = GetAuctionRequest.getAll();
+      RequestSender.send(request);
+   }
+   @Override
+   public void fetchDataByCategory(int categoryId) {
+      GetAuctionRequest request = GetAuctionRequest.getByStatus(null, categoryId);
       RequestSender.send(request);
    }
 }

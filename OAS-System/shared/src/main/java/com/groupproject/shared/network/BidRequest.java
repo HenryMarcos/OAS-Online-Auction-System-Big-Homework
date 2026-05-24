@@ -1,18 +1,21 @@
 package com.groupproject.shared.network;
-
+// HÀM NÀY SẼ ĐƯỢC SỬ DỤNG ĐÊ LẤY RA LỊCH SỬ CÁC CUỘC GIAO DỊCH TRONG MỘT AUCTION
 public class BidRequest extends Request {
     private int auctionId;
-    private String bidderUsername;
-    private double bidAmount;
-    
-    public BidRequest(int auctionId, String bidderUsername, double bidAmount) {
-        this.auctionId = auctionId;
-        this.bidderUsername = bidderUsername;
-        this.bidAmount = bidAmount;
+    private double newBidAmount;
+    private String newHighestBidder;
+    public BidRequest(int auctionId,String newHighestBidder, double newBidAmount) {
+        this.auctionId= auctionId;
+        this.newHighestBidder=newHighestBidder;
+        this.newBidAmount= newBidAmount;
     }
+    
 
-    public Integer getAuctionId() { return auctionId; }
-    public String getBidderUsername() { return bidderUsername; }
-    public double getBidAmount() { return bidAmount; }
-
+    public int getAuctionId() { return auctionId; }
+    public String getBidderUsername() {
+        return newHighestBidder;
+    }
+    public double getBidAmount() {
+        return newBidAmount;
+    }
 }

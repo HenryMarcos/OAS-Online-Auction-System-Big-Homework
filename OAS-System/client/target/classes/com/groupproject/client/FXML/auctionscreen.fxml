@@ -4,7 +4,7 @@
 <?import javafx.geometry.Pos?>
 <?import javafx.scene.Scene?>
 <?import javafx.scene.chart.CategoryAxis?>
-<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.AreaChart?>
 <?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.chart.XYChart?>
 <?import javafx.scene.control.*?>
@@ -15,16 +15,15 @@
 <?import javafx.scene.image.Image?>
 <BorderPane stylesheets="@../CSS/auctionscreen.css" styleClass="main-container" fx:controller="com.groupproject.client.AuctionController" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" >
     <padding>
-        <Insets top="15.0"/>
+        <Insets top="15.0" right="20.0" bottom="20.0" left="20.0"/>
     </padding>
     <top>
-        <HBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS"> 
+        <HBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS" spacing="15.0" styleClass="header-bar"> 
             <padding>  
                 <Insets bottom="15.0"/> 
             </padding>
             <Label text="Auction Online" styleClass="header-title" fx:id="auctionsession"/>
-        </HBox>
-        <HBox alignment="CENTER_RIGHT" spacing="12.0">
+            <Region HBox.hgrow="ALWAYS" />
             <Label fx:id="participant" styleClass="participant-name"/>
             <Button fx:id="exitbutton" styleClass="exit-button" text="EXIT ->" onAction="#switchtoHome" />      
         </HBox>
@@ -38,7 +37,7 @@
                         <Image url="@../Image/sample.png"/>
                     </image>
                 </ImageView>
-                <Label styleClass="product-name" fx:id="auctionproductname"/>
+                <Label styleClass="product-name" fx:id="auctionproductname" wrapText="true"/>
                 <Label fx:id="startprice" />
             </children>
         </VBox>
@@ -49,38 +48,46 @@
             <padding>
                 <Insets left="15.0" right="15.0" />
             </padding>
-            <LineChart fx:id="linechart" title="Lich su bien dong gia" >
+            <AreaChart fx:id="priceChart" title="LICH SU BIEN DONG GIA" >
                 <xAxis >
-                    <CategoryAxis label ="Time" animated="false"/>
+                    <CategoryAxis label ="Time" animated="false" side="BOTTOM"/>
                 </xAxis>
                 <yAxis >
-                    <NumberAxis label="Price (k VND)" autoRanging="true" animated="false"/>
+                    <NumberAxis label="Price (USD)" autoRanging="true" animated="false" side="LEFT"/>
                 </yAxis>
-            </LineChart>
+            </AreaChart>
         </VBox>
     </center>
 
     <right>
-        <VBox spacing="15.0" prefHeight="250.0" styleClass="section-pane">
+        <VBox spacing="15.0" prefHeight="250.0" styleClass="card-pane">
+            <padding>
+                <Insets top="20.0" right="15.0" bottom="20.0" left="15.0" />
+            </padding>
             <children>
                 <Label  fx:id="auctioncurrentprice" styleClass="current-price"/>
                 <Label fx:id="auctiontimeleft" styleClass="time-left" />
+                <Region VBox.vgrow="ALWAYS" />
                 <Label text="Enter your price" />
-                <TextField fx:id="enterprice"  />
+                <TextField fx:id="enterprice" promptText="VD : 1000 USD"  />
                 <Button fx:id="bidButton" text="PLACE BID" maxWidth="Infinity" disable="false" styleClass="bid-button" onAction="#handlePlaceBid" /> 
             </children>
         </VBox>
     </right>
 
     <bottom>
-        <TableView fx:id="bottomtable" prefHeight="160.0" >
-            <columns>
-                <TableColumn fx:id="userIdcol" text="BidderId" prefWidth="200.0"/>
-                <TableColumn fx:id="pricecol" text="Price" prefWidth="200.0" />
-                <TableColumn fx:id="timecol" text="Time" prefWidth="200.0" />
-            </columns>
-        </TableView>
-
+        <VBox styleClass="card-pane" style="-fx-margin-top:15px;" >
+            <padding>
+                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0" />
+            </padding>
+            <Label text="Bid History" styleClass="table-title" />
+            <TableView fx:id="bottomtable" prefHeight="160.0" >
+                <columns>
+                    <TableColumn fx:id="userIdcol" text="BidderId" prefWidth="200.0"/>
+                    <TableColumn fx:id="pricecol" text="Price (USD)" prefWidth="200.0" />
+                    <TableColumn fx:id="timecol" text="Time" prefWidth="200.0" />
+                </columns>
+            </TableView>
+        </VBox>
     </bottom>
-
 </BorderPane>

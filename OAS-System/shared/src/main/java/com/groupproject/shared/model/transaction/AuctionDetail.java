@@ -10,7 +10,6 @@ public class AuctionDetail implements Serializable {
         this.auction = auction;
         this.bidHistory = bidHistory;
     }
-
     public Auction getAuction() { return auction; }
     public List<BidTransaction> getBidHistory() { return bidHistory; }
 }

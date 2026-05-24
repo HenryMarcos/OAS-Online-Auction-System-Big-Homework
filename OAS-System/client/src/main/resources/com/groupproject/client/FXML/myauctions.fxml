@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.geometry.Insets?>
 
-<SplitPane dividerPositions="0.25" prefHeight="430.0" prefWidth="637.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.ActiveAuctionsController">
+<SplitPane dividerPositions="0.25" prefHeight="430.0" prefWidth="637.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.MyAuctionsController">
 
     <VBox spacing="10.0" styleClass="sidebar-container" stylesheets="@../CSS/sidebar.css">
         <Label prefHeight="23.0" prefWidth="130.0" styleClass="sidebar-title" text="DANH MỤC SẢN PHẨM" />

@@ -7,7 +7,7 @@ public class GetAuctionResponse extends Response {
         super(success, message);
         this.selectedAuctions= auctions;
     }
-    public List<Auction> getAuction() {
+    public List<Auction> getAuctions() {
         return selectedAuctions;
     }
     // HANDLE LATER

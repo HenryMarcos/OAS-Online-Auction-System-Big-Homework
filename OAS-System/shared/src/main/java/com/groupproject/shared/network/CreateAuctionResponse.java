@@ -9,9 +9,9 @@ public class CreateAuctionResponse extends Response {
         super(success, message);
         this.newlyCreatedAuction = newlyCreatedAuction;
     }
-    
-    public Auction getAuction() { return newlyCreatedAuction; }
-    
+    public Auction getAuction() {
+        return newlyCreatedAuction;
+    }
     @Override
     public String getType() {
         return "CREATE_AUCTION";

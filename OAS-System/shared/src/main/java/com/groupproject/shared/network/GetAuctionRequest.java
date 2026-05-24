@@ -1,36 +1,53 @@
 package com.groupproject.shared.network;
-import com.groupproject.shared.model.enums.*;
+import com.groupproject.shared.model.enums.AuctionStatus;
 public class GetAuctionRequest extends Request {
-    public enum FilterType {
-        ALL, // Lấy tất cả các phiên đấu giá 
-        BY_SELLER,  // Lấy tất cả những phiên đấu giá của tôi;
-        BY_STATUS  // Lấy tất cả những phiên đấu giá theo trạng thái ;
-    }
-    private FilterType filterType;
-    private int sellerId;
+    private Integer sellerId;
     private AuctionStatus status;
-    // ĐẶT CÁC PHƯƠNG THỨC LÀ STATIC 
+    private Integer categoryId;
 
-    // GOI HAM LAY TAT CA CAC PHIEN DAU GIA 
-    public static GetAuctionRequest getAllAuctions() {
-        GetAuctionRequest request = new GetAuctionRequest();
-        request.filterType= FilterType.ALL;
-        return request;
+    // Bắt buộc phải có constructor rỗng để chuẩn hóa (Serialization) khi gửi qua mạng
+    public GetAuctionRequest() {}
+
+    // Constructor chính
+    public GetAuctionRequest(Integer sellerId, AuctionStatus status, Integer categoryId) {
+        this.sellerId = sellerId;
+        this.status = status;
+        this.categoryId = categoryId;
     }
-    // HÀM GỌI LẤY TẤT CẢ CÁC PHIÊN ĐẤU GIÁ CỦA TÔI
-    public static GetAuctionRequest getMyAuctions(int sellerId) {
-        GetAuctionRequest request = new GetAuctionRequest();
-        request.filterType= FilterType.BY_SELLER;
-        request.sellerId = sellerId;
-        return  request;
+
+    // ==============================================================================
+    // CÁC HÀM TẠO NHANH (STATIC FACTORY METHODS) ĐỂ DÙNG Ở CLIENT
+    // ==============================================================================
+
+    /**
+     * Dùng cho HomeController: Lấy các phiên theo Trạng thái (thường là ACTIVED), có thể kèm theo Category
+     */
+    public static GetAuctionRequest getByStatus(AuctionStatus status, Integer categoryId) {
+        // sellerId = null -> Không quan tâm ai bán
+        return new GetAuctionRequest(null, status, categoryId);
     }
-    // HÀM GỌI LẤY TẤT CẢ CÁC PHIÊN ĐẤU GIÁ CÓ TRẠNG THÁI LÀ ACTIVED
-    public static GetAuctionRequest getActivedAuctions() {
-        GetAuctionRequest request = new GetAuctionRequest();
-        request.filterType= FilterType.BY_STATUS;
-        request.status= AuctionStatus.ACTIVED;
-        return request;
+
+    /**
+     * Dùng cho YourAuctionsController: Lấy các phiên CỦA MÌNH, có thể kèm theo Category
+     */
+    public static GetAuctionRequest getBySeller(Integer sellerId, Integer categoryId) {
+        // status = null -> Lấy cả đang bán, chờ bán, đã kết thúc
+        return new GetAuctionRequest(sellerId, null, categoryId);
     }
+
+    /**
+     * Dùng cho Admin hoặc tìm kiếm toàn cục: Lấy tất cả
+     */
+    public static GetAuctionRequest getAll() {
+        return new GetAuctionRequest(null, null, null);
+    }
+
+    // ==============================================================================
+    // GETTERS
+    // ==============================================================================
+    public Integer getSellerId() { return sellerId; }
+    public AuctionStatus getStatus() { return status; }
+    public Integer getCategoryId() { return categoryId; }
     
 }
     

@@ -16,7 +16,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.paint.Color;
-
+// XỬ LÝ LUÔN Ở PHẦN LOGIN XEM NGƯỜI ĐÓ CÓ PHẢI ADMIN KHÔNG ? CHỈ CHO MỘT TÀI KHOẢN ĐƯỢC QUYỀN TRUY CẬP
 public class LoginController {
     @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;

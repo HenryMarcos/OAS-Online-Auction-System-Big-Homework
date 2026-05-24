@@ -7,20 +7,18 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
-<?import javafx.scene.control.ToggleButton?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.Region?>
 <HBox stylesheets="@../CSS/card.css" fx:id="cardroot" spacing="10.0" maxWidth="Infinity" styleClass="product-card" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.CardController">
     <VBox alignment="TOP_CENTER" spacing="8.0" maxWidth="Infinity" prefWidth="150.0" >
     
-        <ImageView fx:id="image" fitHeight="150" fitWidth="150.0" preserveRatio="true" pickOnBounds="true" styleClass="image">
+        <ImageView fx:id="image" fitHeight="150" fitWidth="150.0" preserveRatio="true" pickOnBounds="true" styleClass="image-container">
             <image>
                 <Image url="@../Image/sample.png" />
             </image>
         </ImageView>
-        <!--ToggleButton fx:id="buttonSubscribe" styleClass="subscribebutton" onAction="#handleSubscribe" text="Follow now !" focusTraversable="false" maxWidth="Infinity"/>
     </VBox>
-
-    <!-- Phần thông tin bên dưới ảnh -->
+    <!-- -->
     <VBox spacing="6" styleClass="cardContent" maxWidth="Infinity">
         <padding>
             <Insets top="10" right="12" bottom="12" left="12" />
@@ -35,18 +33,20 @@
                 <Font name="System Italic" size="13.0" />
             </font>
         </Label>
-        <Label fx:id="currentprice" styleClass="labels" maxWidth="Infinity">
+        <Label fx:id="currentprice" styleClass="price-label" maxWidth="Infinity">
             <font>
                 <Font name="System Bold" size="15.0" />
             </font>
         </Label>
 
-        <Label fx:id="timeleft" styleClass="labels" maxWidth="Infinity">
+        <Label fx:id="timeleft" styleClass="time-label" maxWidth="Infinity">
             <font>
                 <Font name="System Bold" size="15.0" />
             </font>
         </Label>
-
-        <Button  onAction="#handleBid" text="Bid Now" styleClass="bidbutton" maxWidth="Infinity" prefHeight="30" />
+        <Region VBox.vgrow="ALWAYS" />
+        <HBox alignment="BOTTOM_RIGHT" >
+            <Button  onAction="#handleBid" text="Bid Now" styleClass="bidbutton" maxWidth="Infinity" prefHeight="30" />
+        </HBox>
     </VBox>
 </HBox>

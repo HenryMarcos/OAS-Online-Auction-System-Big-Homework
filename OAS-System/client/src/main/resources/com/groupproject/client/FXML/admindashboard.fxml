@@ -22,7 +22,7 @@
             <Button fx:id="btnEnded" text="Đã kết thúc (ENDED)" onAction="#filterEnded" styleClass="sidebar-btn" maxWidth="Infinity"/>
             <Button fx:id="btnCancelled" text="Đã hủy (CANCELLED)" onAction="#filterCancelled" styleClass="sidebar-btn" maxWidth="Infinity"/>
             <Button fx:id="btnFinshed" text="Đã hoàn thành (FINISHED)" onAction="filterFinished" styleClass="sidebar-btn" maxWidth="Infinity" />
-            <Region VBox.vgrow="ALWAYS" /> <Button text="Đăng xuất" onAction="#logout" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" maxWidth="Infinity"/>
+            <Region VBox.vgrow="ALWAYS"/> <Button text="Logout" onAction="#switchtoLogin" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" maxWidth="Infinity"/>
         </VBox>
     </left>
 
@@ -37,7 +37,7 @@
             <TableView fx:id="adminTableView" VBox.vgrow="ALWAYS" style="-fx-font-size: 14px;">
                 <columns>
                     <TableColumn fx:id="colTitle" text="Tên sản phẩm" prefWidth="250" />
-                    <TableColumn fx:id="colseller" text="Người bán" prefWidth="120" />
+                    <TableColumn fx:id="colseller" text="ID Người bán" prefWidth="120" />
                     <TableColumn fx:id="colPrice" text="Giá hiện  tại" prefWidth="120" />
                     <TableColumn fx:id="colStatus" text="Trạng thái" prefWidth="120" />
                     <TableColumn fx:id="colAction" text="Hành động" prefWidth="180" />

@@ -6,9 +6,14 @@ public class Bidder extends User {
     public Bidder() {
         super();
     }
+    public Bidder(String username, String password,String email) {
+        super(username,password, email);
+        this.accountBalance=1000000.0;
+    }
     public Bidder(String username, String password, String email, double accountBalance) {
         super(username, password, email);
-        this.accountBalance=100000.0;
+        this.accountBalance= accountBalance;
+        
     }
     public void setAccountBalance(double accountBalance) {
         this.accountBalance = accountBalance;

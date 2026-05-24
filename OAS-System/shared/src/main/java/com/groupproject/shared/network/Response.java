@@ -1,5 +1,4 @@
 package com.groupproject.shared.network;
-
 import java.io.Serializable;
 
 public abstract class Response implements Serializable {
@@ -22,4 +21,9 @@ public abstract class Response implements Serializable {
 
     public boolean isSuccess() { return success; }
     public String getMessage() {return message; }
+    /*
+    public List<Auction> getAuction() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    */
 }

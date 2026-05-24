@@ -1,21 +1,13 @@
 package com.groupproject.client;
 import java.io.IOException;
 
-import com.groupproject.client.network.AuctionEventBus;
 import com.groupproject.client.network.EventRouter;
-
-import javafx.scene.control.ToggleButton;
-import javafx.scene.image.ImageView;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-
 import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.AlertUtils;
-import com.groupproject.client.utils.SessionManager;
-import com.groupproject.client.utils.SceneNavigator;
-import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.client.utils.CountDownHelper;
+import com.groupproject.client.utils.SceneNavigator;
+import com.groupproject.client.utils.SessionManager;
+import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.network.AuctionEvent.AuctionCancelledEvent;
 import com.groupproject.shared.network.AuctionEvent.AuctionEndedEvent;
@@ -25,22 +17,20 @@ import com.groupproject.shared.network.AuctionEvent.AuctionStartedEvent;
 import com.groupproject.shared.network.AuctionEvent.BidUpdatedEvent;
 import com.groupproject.shared.network.GetAuctionDetailRequest;
 import com.groupproject.shared.network.GetAuctionDetailResponse;
-
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 
 
 public class CardController implements AuctionListener { 
     private Auction currentAuction;
-    private CountDownHelper countDownHelper = new CountDownHelper();
-    @FXML
-    private ImageView image;
     @FXML
     private Label productname;
     @FXML
     private Label currentprice;
     @FXML
     private Label timeleft;
-    @FXML private ToggleButton buttonSubscribe;
     @FXML private Label auctionStatus;
 
     @FXML
@@ -53,17 +43,16 @@ public class CardController implements AuctionListener {
         // Chỉ lưu ID vào session, AuctionController sẽ tự fetch từ Server khi initialize
         GetAuctionDetailRequest request = new GetAuctionDetailRequest(currentAuction.getId());
         RequestSender.send(request);
-        
     }
     public void populateUI(Auction auction) {
         Platform.runLater(() -> {
             this.currentAuction = auction;
             productname.setText(auction.getTitle());
             currentprice.setText(String.valueOf(auction.getCurrentBid()));
+            CountDownHelper countDownHelper = new CountDownHelper();
+            countDownHelper.start(auction, () -> timeleft.setText("ENDED"), timeleft);
             applyAuctionStatus(auction.getStatus());
-
         });
-        
     }
     private void handleGetDetailAuction(GetAuctionDetailResponse response) {
         if (response.isSuccess()) {

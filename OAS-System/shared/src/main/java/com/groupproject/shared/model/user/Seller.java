@@ -2,7 +2,7 @@ package com.groupproject.shared.model.user;
 
 public class Seller extends User {
     private static final long serialVersionUID = 1L;
-
+    private double accountBalance;
     private int ratingNumber; // Số lượng đánh giá mà người bán đã nhận được, có thể được sử dụng để tính toán đánh giá trung bình của người bán
     private float rating; // Đánh giá trung bình của người bán, có thể được tính dựa trên phản hồi của người mua sau mỗi giao dịch
     private String bankAccount; // Thông tin tài khoản ngân hàng của người bán, dùng để nhận tiền sau khi bán được sản phẩm
@@ -22,14 +22,16 @@ public class Seller extends User {
         this.rating = 0.0f; 
         this.bankAccount = ""; 
         this.isVerified = false; 
+        this.accountBalance=1000000.0;
     }
 
-    public Seller(int ratingNumber, float rating, String bankAccount, boolean isVerified, String username, String password, String email) {
+    public Seller(int ratingNumber, float rating, String bankAccount, boolean isVerified, String username, String password, String email, double accountBalance) {
         super(username, password, email);
         this.ratingNumber = ratingNumber;
         this.rating = rating;
         this.bankAccount = bankAccount;
         this.isVerified = isVerified;
+        this.accountBalance=accountBalance;
     }
 
     public void setRating(float rating) {
@@ -70,5 +72,11 @@ public class Seller extends User {
 
     public boolean isVerified() {
         return isVerified;
+    }
+    public void setAccountBalance(double accountBalance) {
+        this.accountBalance=accountBalance;
+    }
+    public double getAccountBalance() {
+        return accountBalance;
     }
 }
