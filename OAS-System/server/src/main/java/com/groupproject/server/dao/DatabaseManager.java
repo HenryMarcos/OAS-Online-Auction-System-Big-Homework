@@ -63,16 +63,21 @@ public class DatabaseManager {
             String auctionSql = "CREATE TABLE IF NOT EXISTS auctions (" +
                                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                                 "seller_id INTEGER NOT NULL, " +
-                                "title TEXT NOT NULL," +
-                                "description TEXT NOT NULL," +
-                                "category_id INTEGER NOT NULL," +
-                                "starting_price REAL NOT NULL," +
-                                "end_time DATETIME NOT NULL," +
-                                "current_bid REAL," + 
+                                "title TEXT NOT NULL, " +
+                                "description TEXT NOT NULL, " +
+                                "category_id INTEGER NOT NULL, " +
+                                "starting_price REAL NOT NULL, " +
+                                "start_time DATETIME, " + // Null nếu status là WAITING
+                                "end_time DATETIME NOT NULL, " +
+                                "current_bid REAL DEFAULT 0, " + // Mặc định là 0 khi mới tạo
                                 "current_bidder_id INTEGER, " +
-                                "status TEXT NOT NULL, " + 
+                                "status TEXT NOT NULL, " +
+                                // Thêm các ràng buộc an toàn:
                                 "FOREIGN KEY(seller_id) REFERENCES users(id), " +
-                                "FOREIGN KEY(category_id) REFERENCES categories(id))";
+                                "FOREIGN KEY(category_id) REFERENCES categories(id), " +
+                                "FOREIGN KEY(current_bidder_id) REFERENCES users(id), " + // MỚI: Khóa ngoại cho người đấu giá
+                                "CHECK (status IN ('WAITING', 'SCHEDULED', 'ACTIVED', 'ENDED', 'CANCELLED'))" + // MỚI: Ràng buộc trạng thái
+                                ")";
             stmt.execute(auctionSql);
 
             // Xóa trước khi tạo bảng để test(sau này sẽ không dùng)

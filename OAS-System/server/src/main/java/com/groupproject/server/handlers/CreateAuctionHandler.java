@@ -13,26 +13,31 @@ public class CreateAuctionHandler implements RequestHandler {
     @Override
     public Response handle(Request request) {
         ServerLogger.info("Handling " + request.getClass().getSimpleName());
-        boolean success;
+        
+        // 1. Kiểm tra an toàn kiểu dữ liệu (Ngăn chặn ClassCastException)
         if (!(request instanceof CreateAuctionRequest)) { 
-            success = false; // Nếu không phải loại request phù hợp thì thất bại
-            ServerLogger.info("This request is not CreateAuctionRequest but " + request.getClass().getSimpleName());
+            ServerLogger.error("This request is not CreateAuctionRequest but " + request.getClass().getSimpleName());
+            return new CreateAuctionResponse(false, "Invalid request type"); // Dừng và trả về lỗi ngay
         }
 
-        Auction newlyCreatedAuction = AuctionDAO.createAuction((CreateAuctionRequest) request);
+        // 2. Ép kiểu an toàn sau khi đã check
+        CreateAuctionRequest createRequest = (CreateAuctionRequest) request;
 
-        success = (newlyCreatedAuction != null);
+        // 3. Gọi Database (DAO lúc này đã lo toàn bộ việc gán status WAITING hay SCHEDULED)
+        Auction newlyCreatedAuction = AuctionDAO.createAuction(createRequest);
 
-        if (success) {
-            ServerLogger.info("Create auction success");
-            // Đăng ký auction cho AuctionManager để quản lý thời gian trước khi kết thúc phiên đấu giá
+        // 4. Xử lý kết quả trả về
+        if (newlyCreatedAuction != null) {
+            ServerLogger.info("Create auction success. ID: " + newlyCreatedAuction.getId() + " - Status: " + newlyCreatedAuction.getStatus());
+            
+            // Đăng ký cho AuctionManager. 
+            // Manager sẽ tự biết phải làm gì với WAITING và SCHEDULED
             AuctionManager.getInstance().registerAuction(newlyCreatedAuction);
             
-            return new CreateAuctionResponse(true, newlyCreatedAuction, null);
-        }
-        else {
-            ServerLogger.error("Failed to create auction");
-            return new CreateAuctionResponse(false, "Failed to create auction");
+            return new CreateAuctionResponse(true, newlyCreatedAuction, "Auction created successfully!");
+        } else {
+            ServerLogger.error("Failed to create auction in database");
+            return new CreateAuctionResponse(false, "Failed to create auction in database");
         }
     }
 }

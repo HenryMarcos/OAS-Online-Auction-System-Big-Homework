@@ -5,6 +5,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 import com.groupproject.server.handlers.RequestDispatcher;
+import com.groupproject.server.utils.ClientContext;
 import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.network.Request;
 import com.groupproject.shared.network.Response;
@@ -27,9 +28,11 @@ public class ClientHandler implements Runnable {
             out.flush();
             in = new ObjectInputStream(socket.getInputStream()); // Từ client đến server
 
+            // Lưu ObjectOutputStream của client này vào ThreadLocal để các phần khác của code có thể truy cập dễ dàng
+            ClientContext.currentOut.set(out);
+
             // Thêm client vào danh sách báo tin chính 1 cách an toàn 
             ClientManager.getInstance().addClient(out);
-
             RequestDispatcher dispatcher = new RequestDispatcher();
 
             // Vòng lặp vô hạn riêng cho client này
@@ -38,7 +41,7 @@ public class ClientHandler implements Runnable {
                 Object recievedData = in.readObject();
 
                 // Xử lý trường hợp client gửi yêu cầu
-                // Có 3 yêu cầu: CreateAuctionRequest, LoginRequest, SignupRequest
+                // Có 5 yêu cầu: CreateAuctionRequest, LoginRequest, SignupRequest, ChangeAuctionStatusHandle, GetMyAuctionHandler
                 if (recievedData instanceof Request) {
                     Request request = (Request) recievedData;
                     ServerLogger.info("User " + socket.getInetAddress() + " sent a " + request.getClass().getSimpleName());
@@ -80,10 +83,11 @@ public class ClientHandler implements Runnable {
             ServerLogger.error("Client disconnected or error occurred: " + e.getMessage());
 
         } finally {
-            // CLEANUP: Khi client rời, xóa client trong danh sách đi
+            // CLEANUP: Khi client rời, xóa client trong danh sách các client và các phòng đấu giá
             if (out != null) {
-                ClientManager.getInstance().removeClient(out);
+                ClientManager.getInstance().removeClientCompletely(out);
             }
+            ClientContext.clear(); // Dọn dẹp ThreadLocal
             try { 
                 if (socket != null && !socket.isClosed()) {
                     ServerLogger.info("Cleaning up connection for " + socket.getInetAddress());

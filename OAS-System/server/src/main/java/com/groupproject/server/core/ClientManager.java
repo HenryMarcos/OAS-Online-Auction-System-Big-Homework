@@ -87,4 +87,24 @@ public class ClientManager {
             ServerLogger.error("Failed to send ServerEvent: " + e.getMessage());
         }
     }
+
+    // Hàm dọn dẹp toàn bộ tài nguyên liên quan đến client khi họ rời đi
+    public void removeClientCompletely(ObjectOutputStream out) {
+        // 1. Xóa khỏi danh sách chung
+        removeClient(out);
+
+        // 2. Càn quét toàn bộ các phòng và đuổi client này ra
+        for (Map.Entry<Integer, Set<ObjectOutputStream>> entry : auctionRooms.entrySet()) {
+            Set<ObjectOutputStream> roomClients = entry.getValue();
+            if (roomClients.contains(out)) {
+                roomClients.remove(out);
+                
+                // Nếu phòng trống thì dẹp phòng luôn
+                if (roomClients.isEmpty()) {
+                    auctionRooms.remove(entry.getKey());
+                }
+            }
+        }
+        ServerLogger.info("Cleaned up all resources for disconnected client.");
+    }
 }

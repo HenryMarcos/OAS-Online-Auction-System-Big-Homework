@@ -21,8 +21,6 @@ import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.network.BidRequest;
 
 public class AuctionManager {
-    private static AuctionManager instance;
-
     // Tìm nhanh các phiên đấu giá còn đang hoạt động
     private final ConcurrentHashMap<Integer, Auction> activeAuctions = new ConcurrentHashMap<>();
 
@@ -53,27 +51,173 @@ public class AuctionManager {
         }
     }
 
+    // Thêm một phiên đấu giá mới vào hệ thống có status là WAITING, SCHEDULED (dùng khi tạo mới hoặc load từ DB)
     public void registerAuction(Auction auction) {
         activeAuctions.put(auction.getId(), auction);
 
-        // Kiểm tra xem phiên đấu giá có ngay lập tức bắt đầu đếm xuống luôn không
-        if (auction.getStatus() == AuctionStatus.ACTIVATED) {
-            // Tính khoảng delay trước khi phiên đấu giá kết thúc
-            long delayInSeconds = Duration.between(LocalDateTime.now(), auction.getEndTime()).toSeconds();
-            if (delayInSeconds < 0) { delayInSeconds = 0; }
+        long now = System.currentTimeMillis();
 
-            // Lên lịch cho nhiệm vụ đóng phiên đấu giá
+        if (auction.getStatus() == AuctionStatus.ACTIVED) {
+            // --- LOGIC KẾT THÚC --- (Đếm ngược đến endTime chuyển từ ACTIVED -> ENDED)
+            long delayEnd = Duration.between(LocalDateTime.now(), auction.getEndTime()).toSeconds();
+            scheduler.schedule(() -> finishAuction(auction.getId()), Math.max(0, delayEnd), TimeUnit.SECONDS);
+            
+        } else if (auction.getStatus() == AuctionStatus.SCHEDULED) {
+            // --- LOGIC BẮT ĐẦU TỰ ĐỘNG --- (Đếm ngược đến startTime chuyển từ SCHEDULED -> ACTIVED)
+            long delayStart = Duration.between(LocalDateTime.now(), auction.getStartTime()).toSeconds();
+            
             scheduler.schedule(() -> {
-                endAuction(auction.getId());
-            }, delayInSeconds, TimeUnit.SECONDS);
-
-            ServerLogger.info("Auction " + auction.getId() + " is ACTIVATED. Countdown timer started (" + delayInSeconds + "s).");
-        } else {
-            ServerLogger.info("Auction " + auction.getId() + " is WAITING. Timer will start once the seller activates it manually.");
+                startAuction(auction.getId());
+            }, Math.max(0, delayStart), TimeUnit.SECONDS);
+            
+            ServerLogger.info("Auction " + auction.getId() + " is SCHEDULED. Start timer set in " + delayStart + "s.");
         }
+    }
 
+    /**
+     * Dùng khi người bán tự bấm nút "Start Now" (Chuyển WAITING -> ACTIVED)
+     * Hàm này được gọi TỪ ChangeAuctionStatusHandler.
+     */
+    public void activateWaitingAuction(Auction updatedAuction) {
+        // 1. Cập nhật lại đối tượng Auction mới nhất (đã có startTime và status = ACTIVED) vào bộ nhớ RAM
+        activeAuctions.put(updatedAuction.getId(), updatedAuction);
+
+        // 2. Tính toán thời gian từ "bây giờ" đến lúc kết thúc (endTime)
+        long delayEnd = Duration.between(LocalDateTime.now(), updatedAuction.getEndTime()).toSeconds();
+        if (delayEnd < 0) { delayEnd = 0; }
+
+        // 3. Đưa nhiệm vụ "Đóng phiên đấu giá" vào hàng đợi của ScheduledExecutorService
+        scheduler.schedule(() -> {
+            finishAuction(updatedAuction.getId());
+        }, delayEnd, TimeUnit.SECONDS);
+
+        ServerLogger.info("Auction " + updatedAuction.getId() + " manually ACTIVATED. End timer set in " + delayEnd + "s.");
         
+        // (Tuỳ chọn) Chỗ này sau này bạn có thể gọi ClientManager để gửi Broadcast 
+        // thông báo cho tất cả Client khác là: "Ê, có phiên đấu giá mới vừa mở nè!"
+    }
 
+    /**
+     * Dùng khi hệ thống ép kết thúc một phiên WAITING do bấm Start quá trễ
+     */
+    public void forceEndWaitingAuction(int auctionId) {
+        // Lấy và xóa luôn khỏi danh sách đang chờ trên RAM
+        Auction auction = activeAuctions.remove(auctionId);
+        
+        if (auction != null) {
+            auction.setStatus(AuctionStatus.ENDED);
+            ServerLogger.info("Auction " + auctionId + " forced to END because it was started too late.");
+            
+            // TODO: Thông báo cho người bán biết phiên đấu giá đã bị hủy do quá hạn
+        }
+    }
+
+    /**
+     * Dùng khi người bán hoặc Admin HỦY phiên đấu giá
+     */
+    public void cancelAuction(int auctionId) {
+        // Gỡ khỏi RAM để các tiến trình ScheduledExecutorService không thực thi nữa
+        Auction auction = activeAuctions.remove(auctionId);
+        
+        if (auction != null) {
+            auction.setStatus(AuctionStatus.CANCELLED);
+            ServerLogger.info("Auction " + auctionId + " cancelled and removed from active RAM memory.");
+            
+            // TODO (Tương lai): Thông báo cho người bán và tất cả người mua đã đặt giá thầu biết phiên đấu giá đã bị hủy
+        }
+    }
+
+    /**
+     * Dùng khi hệ thống TỰ ĐỘNG mở phiên đấu giá đã lên lịch (Chuyển SCHEDULED -> ACTIVED)
+     * Hàm này được gọi BỞI chính luồng ngầm của ScheduledExecutorService.
+     */
+    private void startAuction(int auctionId) {
+        Auction auction = activeAuctions.get(auctionId);
+        
+        // Kiểm tra an toàn xem phiên đấu giá có còn tồn tại và đúng là đang SCHEDULED không
+        if (auction != null && auction.getStatus() == AuctionStatus.SCHEDULED) {
+            LocalDateTime now = LocalDateTime.now();
+            
+            // 1. Cập nhật xuống Database trước (Dùng hàm updateAuctionStatus đã viết trong DAO)
+            boolean isUpdatedInDb = AuctionDAO.updateAuctionStatus(auctionId, AuctionStatus.ACTIVED, now);
+            
+            if (isUpdatedInDb) {
+                // 2. Cập nhật đối tượng trên RAM
+                auction.setStatus(AuctionStatus.ACTIVED);
+                auction.setStartTime(now); 
+                
+                // 3. Lên lịch đếm ngược để ĐÓNG phiên đấu giá này
+                long delayEnd = Duration.between(now, auction.getEndTime()).toSeconds();
+                if (delayEnd < 0) { delayEnd = 0; }
+                
+                scheduler.schedule(() -> {
+                    finishAuction(auctionId);
+                }, delayEnd, TimeUnit.SECONDS);
+                
+                ServerLogger.info("Auction " + auctionId + " auto-started from SCHEDULED. End timer set in " + delayEnd + "s.");
+                
+                // (Tuỳ chọn) Broadcast thông báo cho Client...
+            } else {
+                ServerLogger.error("Failed to auto-start SCHEDULED auction " + auctionId + " in Database.");
+            }
+        }
+    }
+
+    /**
+     * BƯỚC 1: Hết giờ đếm ngược (Chuyển ACTIVED -> FINISHED)
+     * Khóa phiên đấu giá, chốt sổ và bắt đầu xử lý hậu kỳ.
+     */
+    private void finishAuction(int auctionId) {
+        Auction auction = activeAuctions.get(auctionId);
+        
+        if (auction != null && auction.getStatus() == AuctionStatus.ACTIVED) {
+            ServerLogger.info("Time is up! Changing auction " + auctionId + " status to FINISHED...");
+            
+            // 1. Cập nhật Database: status = FINISHED (Tận dụng hàm updateAuctionStatusOnly bên DAO)
+            boolean isFinishedInDb = AuctionDAO.updateAuctionStatusOnly(auctionId, AuctionStatus.FINISHED);
+            
+            if (isFinishedInDb) {
+                // 2. Cập nhật RAM: Trạng thái này sẽ chặn mọi BidRequest mới gửi tới
+                auction.setStatus(AuctionStatus.FINISHED);
+                
+                // 3. TẠI ĐÂY BẠN SẼ VIẾT LOGIC HẬU KỲ:
+                // - Lấy highestBidderId và currentBid để chốt người thắng
+                // - Kiểm tra xem có ai bid không (nếu không có thì móm/rớt giá)
+                // - Gọi logic tạo hóa đơn (Invoice) hoặc lưu lịch sử
+                // - Gửi thông báo (Notification) cho Seller và Buyer
+                
+                // 4. Chuyển sang bước đóng hoàn toàn (ENDED)
+                // (Bạn có thể gọi trực tiếp luôn, hoặc đưa vào scheduler nếu logic hậu kỳ cần thời gian xử lý)
+                endAuction(auctionId);
+            } else {
+                ServerLogger.error("Failed to change auction " + auctionId + " to FINISHED in DB.");
+            }
+        }
+    }
+
+    /**
+     * BƯỚC 2: Đóng hoàn toàn phiên đấu giá (Chuyển FINISHED -> ENDED)
+     * Hàm này được gọi sau khi mọi thủ tục hậu kỳ đã hoàn tất.
+     */
+    private void endAuction(int auctionId) {
+        Auction auction = activeAuctions.get(auctionId);
+        
+        if (auction != null && auction.getStatus() == AuctionStatus.FINISHED) {
+            ServerLogger.info("Post-processing complete. Closing auction " + auctionId + " (ENDED).");
+            
+            // 1. Cập nhật Database: status = ENDED
+            boolean isEndedInDb = AuctionDAO.updateAuctionStatusOnly(auctionId, AuctionStatus.ENDED);
+            
+            if (isEndedInDb) {
+                // 2. Cập nhật RAM
+                auction.setStatus(AuctionStatus.ENDED);
+                
+                // 3. XÓA KHỎI BỘ NHỚ RAM (Vì phiên đấu giá đã kết thúc hoàn toàn vòng đời)
+                activeAuctions.remove(auctionId);
+                
+                ServerLogger.info("Auction " + auctionId + " fully ENDED and cleared from RAM.");
+            }
+        }
     }
 
     public synchronized boolean placeBid(int auctionId, int bidderId, double bidAmount) {
@@ -173,17 +317,5 @@ public class AuctionManager {
         }
         return activeAuctions;
     }
-
-    private void endAuction(int auctionId) {
-        Auction auction = activeAuctions.remove(auctionId);
-        if (auction != null) {
-            ServerLogger.info("Auction " + auctionId + " has officially ended!");
-
-            // 1. Change status to CLOSED or COMPLETED in your DB via AuctionDAO
-
-            // 2. Broadcast a "AUCTION_ENDED" notification to all connected clients via ServerApp.broadcast()
-        }
-    }
-
 }
 
