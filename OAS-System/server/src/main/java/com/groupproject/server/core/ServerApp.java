@@ -1,8 +1,4 @@
-// Class chính để setup server và các thứ các thứ
-
 package com.groupproject.server.core;
-
-
 
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
@@ -11,9 +7,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.groupproject.server.dao.DatabaseManager;
+import com.groupproject.server.dao.UserDAO;
 import com.groupproject.server.service.AuctionManager;
 import com.groupproject.server.utils.Config;
 import com.groupproject.server.utils.ServerLogger;
+import com.groupproject.shared.model.user.User;
 
 public class ServerApp {
 
@@ -21,21 +19,36 @@ public class ServerApp {
     private static final ExecutorService clientThreadPool = Executors.newFixedThreadPool(MAX_CONCURRENT_USER);
 
     public static void main(String[] args) {
-        // Khởi tạo database người dùng
+        // 1. Khởi tạo database và nạp dữ liệu (Seed Data)
         DatabaseManager.getInstance().initDatabse();
+        
+        // 2. Tự động khởi tạo hệ thống đấu giá
         AuctionManager.getInstance();
 
-         
+        // ==========================================================
+        // KHU VỰC TEST GIẢ LẬP (CHẠY TRƯỚC KHI MỞ CỔNG SERVER)
+        // ==========================================================
+        ServerLogger.info("--- STARTING INTERNAL TEST ---");
+        
+        // Giả lập Login bằng tài khoản admin đã được Seed trong DatabaseManager
+        User testAdmin = UserDAO.getUser("admin", "admin123");
+        
+        if (testAdmin != null) {
+            ServerLogger.info("Mock Login: Success!");
+            ServerLogger.info("User Role: " + (testAdmin.isAdmin() ? "ADMIN" : "USER"));
+            ServerLogger.info("Balance: " + testAdmin.getBalance());
+        } else {
+            ServerLogger.error("Mock Login: Failed! Check Seed Data in DatabaseManager.");
+        }
+        ServerLogger.info("--- END OF INTERNAL TEST ---");
+        // ==========================================================
 
         // ServerSocket chính là thứ lắng nghe lưu lượng truy cập internet
         try (ServerSocket serverSocket = new ServerSocket(Config.SERVER_PORT)) {
-            // Thông báo để kiểm tra xem server có chạy được hay không
             ServerLogger.info("Server is online and listening on port " + Config.SERVER_PORT + "...");
 
             // Vòng lặp vô hạn để server tồn tại mãi mãi đợi clients
             while (true) {
-                // Đợi đến khi có 1 client kết nối tới server
-                // Code sẽ dừng ở dòng này và chỉ chạy tiếp khi có client kết nối
                 Socket clientSocket = serverSocket.accept();
                 ServerLogger.info("ServerApp: New client connected from " + clientSocket.getInetAddress());
 
@@ -44,18 +57,17 @@ public class ServerApp {
                 clientThreadPool.execute(handler);
             }
         } catch (Exception e) {
-            // Dừng vòng lặp lại tại đây
             ServerLogger.error(e.getMessage());
         } finally {
-            // Dọn dẹp pool nếu server shutdown
             if (clientThreadPool != null) {
                 clientThreadPool.shutdown();
             }
         }
     }
+
     // --- HÀM BÁO TIN/THÔNG BÁO ---
-    // Gửi 1 tin nhắn cho mỗi client trong danh sách
     public static void broadcast(String message, ObjectOutputStream senderOut) {
+        // Lưu ý: Nên sử dụng ClientManager.getInstance().broadcastSystemEvent để đồng bộ với các logic trước đó
         synchronized (ClientManager.getInstance().getClients()) {
             for (ObjectOutputStream writer : ClientManager.getInstance().getClients()) {
                 if (writer != senderOut) {
@@ -63,13 +75,10 @@ public class ServerApp {
                         writer.writeObject(message);
                         writer.flush();
                     } catch (Exception e) {
-                        // Nếu có lỗi thì bỏ qua
-                        // Hàm catch sẽ xử lý vẫn đề chết kết nối
                         ServerLogger.error(e.getMessage());
                     }
                 }
             }
         }
     }
-
 }

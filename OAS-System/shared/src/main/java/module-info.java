@@ -1,16 +1,13 @@
-module com.groupproject.shared {
-    // 1. Export các nhóm Entity
-    exports com.groupproject.shared;
-    exports com.groupproject.shared.model.base;
+module shared {
+    // Bạn phải export từng folder con chứa Class
     exports com.groupproject.shared.model.user;
-    exports com.groupproject.shared.model.item;
-    exports com.groupproject.shared.model.transaction;
-    exports com.groupproject.shared.model.categories;
-    exports com.groupproject.shared.model.enums;
-    exports com.groupproject.shared.network.event;
-    exports com.groupproject.shared.network.response;
+    exports com.groupproject.shared.model.base;
     exports com.groupproject.shared.network.request;
+    exports com.groupproject.shared.network.response;
+    exports com.groupproject.shared.network.event;
+    // Nếu có thêm folder con nào khác (ví dụ: .utils, .categories), bạn cũng phải thêm vào đây
     
-    // 2. Export các nhóm Factory
-    exports com.groupproject.shared.factory;
+    // Cần thiết để Java Serialization có thể làm việc qua module
+    opens com.groupproject.shared.model.user to server, client;
+    opens com.groupproject.shared.network.request to server, client;
 }

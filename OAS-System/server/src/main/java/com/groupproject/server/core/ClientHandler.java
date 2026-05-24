@@ -7,6 +7,7 @@ import java.net.Socket;
 import com.groupproject.server.handlers.RequestDispatcher;
 import com.groupproject.server.utils.ClientContext;
 import com.groupproject.server.utils.ServerLogger;
+import com.groupproject.shared.network.event.SystemNotificationEvent;
 import com.groupproject.shared.network.request.Request;
 import com.groupproject.shared.network.response.Response;
 
@@ -55,10 +56,29 @@ public class ClientHandler implements Runnable {
                     }
                 } else if (recievedData instanceof String) {
                     String message = (String) recievedData;
-                    ServerLogger.info("Broadcast Request: " + message);
+    
+                    // 1. Lấy thông tin user hiện tại từ ThreadLocal thông qua ClientContext
+                    var currentUser = ClientContext.currentUser.get();
 
-                    // Gửi thông báo cho tất cả mọi người
-                    ServerApp.broadcast(message, out);
+                    // 2. Kiểm tra xem người dùng có phải là Admin hay không
+                    if (currentUser != null && currentUser.isAdmin()) {
+                        ServerLogger.info("Admin [" + currentUser.getUsername() + "] phát thông báo hệ thống: " + message);
+                        
+                        // 3. Tạo một ServerEvent để bọc tin nhắn (Giúp Client dễ dàng phân loại và hiển thị)
+                        // Lưu ý: Bạn nên có một class SystemNotificationEvent kế thừa ServerEvent
+                        SystemNotificationEvent notification = new SystemNotificationEvent(message, "Hệ Thống");
+
+                        // 4. Gọi hàm broadcastSystemEvent từ ClientManager để gửi cho tất cả mọi người
+                        ClientManager.getInstance().broadcastSystemEvent(notification);
+                        
+                    } else {
+                        // Xử lý trường hợp User bình thường cố tình gửi tin nhắn broadcast
+                        String actor = (currentUser != null) ? currentUser.getUsername() : "Ẩn danh";
+                        ServerLogger.warning("Cảnh báo: Người dùng [" + actor + "] cố gắng dùng quyền Admin trái phép.");
+                        
+                        // (Tùy chọn) Gửi thông báo lỗi ngược lại cho người gửi
+                        // sendToClient(new ErrorResponse("Bạn không có quyền phát thông báo toàn hệ thống!"));
+                    }
                 }
             }
 

@@ -48,19 +48,22 @@ public class UserDAO {
                 boolean emailMatch = foundEmail.equalsIgnoreCase(email);
 
                 if (usernameMatch && emailMatch) {
-                    System.out.println("Username and email already exists.");
+                    ServerLogger.info("Username and email already exists.");
                     return "Username and email already exists.";
                 } else if (usernameMatch) {
-                    System.out.println("Username is already exists");
+                    ServerLogger.info("Username is already exists");
                     return "Username is already exists";
                 } else if (emailMatch) {
-                    System.out.println("An account with that email already exists.");
+                    ServerLogger.info("An account with that email already exists.");
                     return "An account with that email already exists.";
                 }
             }
             
-        } catch (SQLException e) {} 
-        catch (Exception e) {}
+        } catch (SQLException e) {
+            ServerLogger.error("UserDAO:checkDuplicates: " + e.getMessage());
+        } catch (Exception e) {
+            ServerLogger.error("UserDAO:checkDuplicates: " + e.getMessage());
+        }
 
         return null; // Trả về null tức là không có tài khoản nào trùng cả
     }
@@ -92,7 +95,7 @@ public class UserDAO {
                 System.err.println("Error: Can't get user's id for some reason");
             }
         } catch (SQLException e) {
-            System.err.println("Database error during registration: " + e.getMessage());
+            ServerLogger.error("UserDAO:registerUser: " + e.getMessage());
         }
         return null; // Lưu thất bại
     }
@@ -116,7 +119,7 @@ public class UserDAO {
             // Nếu rs.next() là true, nghĩa là tìm thấy ít nhất 1 dòng khớp -> Đăng nhập thành công
             return rs.next();
         } catch (Exception e) {
-            System.out.println("UserDAO:checkUser: " + e.getMessage());
+            ServerLogger.error("UserDAO:checkUser: " + e.getMessage());
             return false;
         }
     }
@@ -134,14 +137,20 @@ public class UserDAO {
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
+                // Xử lý LocalDateTime tương tự hàm getUser để tránh lỗi parse
+                String createdAtStr = rs.getString("created_at");
+                LocalDateTime createdAt = (createdAtStr != null) 
+                    ? LocalDateTime.parse(createdAtStr.replace(" ", "T")) 
+                    : LocalDateTime.now();
+
                 return new User(
                     rs.getInt("id"),
                     rs.getString("username"),
                     rs.getString("password"),
                     rs.getString("email"),
                     rs.getDouble("balance"),
-                    isAdmin(userId), // Đừng quên check Admin
-                    rs.getObject("created_at", LocalDateTime.class)
+                    isAdmin(userId), 
+                    createdAt
                 );
             }
         } catch (Exception e) {
@@ -184,7 +193,8 @@ public class UserDAO {
                 int id = rs.getInt("id");
                 String email = rs.getString("email");
                 double balance = rs.getDouble("balance");
-                LocalDateTime createdAt = rs.getObject("created_at", LocalDateTime.class);
+                String createdAtStr = rs.getString("created_at");
+                LocalDateTime createdAt = (createdAtStr != null) ? LocalDateTime.parse(createdAtStr.replace(" ", "T")) : LocalDateTime.now();
                 
                 // KIỂM TRA QUYỀN ADMIN
                 boolean isUserAdmin = isAdmin(id);
@@ -195,7 +205,7 @@ public class UserDAO {
                 return new User(id, username, password, email, balance, isUserAdmin, createdAt);
             }
         } catch (Exception e) {
-            System.out.println("UserDAO:getUser: " + e.getMessage());
+            ServerLogger.error("UserDAO:getUser: " + e.getMessage());
             return null;
         }
 

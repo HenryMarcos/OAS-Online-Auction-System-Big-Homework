@@ -206,13 +206,27 @@ public class DatabaseManager {
             stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (41, 'Sport');");
             stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (41, 'Player / Athlete');");
             stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (41, 'Graded (Yes/No)');");
-
-            
-
             
             CategoryDAO.getMainCategories();
             
             ServerLogger.info("Database initialized successfully!");
+
+            // --- SEED DATA: TẠO ADMIN ĐỂ TEST ---
+            try {
+                // 1. Tạo user 'admin' vào bảng users (nếu chưa tồn tại)
+                // Mình dùng ID 1 cho dễ nhớ
+                String seedUser = "INSERT OR IGNORE INTO users (id, username, email, password, balance, created_at) " +
+                                "VALUES (1, 'admin', 'admin@test.com', 'admin123', 999999.0, '" + java.time.LocalDateTime.now() + "')";
+                stmt.execute(seedUser);
+
+                // 2. Thêm ID 1 vào bảng admin_list để xác nhận quyền Admin
+                String seedAdmin = "INSERT OR IGNORE INTO admin_list (user_id) VALUES (1)";
+                stmt.execute(seedAdmin);
+                
+                ServerLogger.info(">>> Seed Data: Tài khoản admin/admin123 đã sẵn sàng.");
+            } catch (Exception e) {
+                ServerLogger.error("Lỗi khi tạo dữ liệu mẫu: " + e.getMessage());
+            }
         } catch (Exception e) {
             ServerLogger.error(e.getMessage());
         }
