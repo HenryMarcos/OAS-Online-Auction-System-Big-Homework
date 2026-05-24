@@ -265,7 +265,16 @@ public class CreateAuctionTestController implements Initializable {
             ClientLogger.info("Created auction with WAITING status");
         } else { ClientLogger.info("Created auction with ACTIVED status"); }
 
-        CreateAuctionRequest request = new CreateAuctionRequest(currentUserId, title, description, selectedCategory, categoryGroupedSpecs, startingPrice, endTime.toString(), initialStatus);
+        CreateAuctionRequest request = new CreateAuctionRequest(
+            title,                  // 1. title
+            description,            // 2. description
+            selectedCategory,       // 3. category
+            categoryGroupedSpecs,   // 4. categoryGroupedSpecs
+            startingPrice,          // 5. startingPrice
+            null,                   // 6. startTime (Bạn đang thiếu cái này, để null nếu tạo ngay)
+            endTime.toString(),     // 7. endTime
+            initialStatus           // 8. status
+        );
         RequestSender.send(request);
 
         ClientLogger.info("Finish handling submit auction");
