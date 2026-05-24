@@ -7,11 +7,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.groupproject.server.dao.DatabaseManager;
-import com.groupproject.server.dao.UserDAO;
 import com.groupproject.server.service.AuctionManager;
 import com.groupproject.server.utils.Config;
 import com.groupproject.server.utils.ServerLogger;
-import com.groupproject.shared.model.user.User;
 
 public class ServerApp {
 
@@ -24,24 +22,6 @@ public class ServerApp {
         
         // 2. Tự động khởi tạo hệ thống đấu giá
         AuctionManager.getInstance();
-
-        // ==========================================================
-        // KHU VỰC TEST GIẢ LẬP (CHẠY TRƯỚC KHI MỞ CỔNG SERVER)
-        // ==========================================================
-        ServerLogger.info("--- STARTING INTERNAL TEST ---");
-        
-        // Giả lập Login bằng tài khoản admin đã được Seed trong DatabaseManager
-        User testAdmin = UserDAO.getUser("admin", "admin123");
-        
-        if (testAdmin != null) {
-            ServerLogger.info("Mock Login: Success!");
-            ServerLogger.info("User Role: " + (testAdmin.isAdmin() ? "ADMIN" : "USER"));
-            ServerLogger.info("Balance: " + testAdmin.getBalance());
-        } else {
-            ServerLogger.error("Mock Login: Failed! Check Seed Data in DatabaseManager.");
-        }
-        ServerLogger.info("--- END OF INTERNAL TEST ---");
-        // ==========================================================
 
         // ServerSocket chính là thứ lắng nghe lưu lượng truy cập internet
         try (ServerSocket serverSocket = new ServerSocket(Config.SERVER_PORT)) {
