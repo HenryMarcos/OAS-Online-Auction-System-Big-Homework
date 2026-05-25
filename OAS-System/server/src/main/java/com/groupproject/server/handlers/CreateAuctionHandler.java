@@ -17,11 +17,30 @@ public class CreateAuctionHandler implements RequestHandler {
         // 1. Kiểm tra an toàn kiểu dữ liệu (Ngăn chặn ClassCastException)
         if (!(request instanceof CreateAuctionRequest)) { 
             ServerLogger.error("This request is not CreateAuctionRequest but " + request.getClass().getSimpleName());
-            return new CreateAuctionResponse(false, "Invalid request type"); // Dừng và trả về lỗi ngay
+            return new CreateAuctionResponse(false, "Invalid request type");
         }
 
         // 2. Ép kiểu an toàn sau khi đã check
         CreateAuctionRequest createRequest = (CreateAuctionRequest) request;
+
+        // =====================================================================
+        // TRẠM KIỂM TRA BẢO VỆ (DATA VALIDATION)
+        // =====================================================================
+        if (createRequest.getTitle() == null || createRequest.getTitle().trim().isEmpty()) {
+            ServerLogger.warning("Yêu cầu tạo đấu giá thất bại: Tiêu đề trống.");
+            return new CreateAuctionResponse(false, "Tiêu đề đấu giá không được để trống!");
+        }
+
+        if (createRequest.getCategory() == null) {
+            ServerLogger.warning("Yêu cầu tạo đấu giá thất bại: Danh mục (Category) bị null.");
+            return new CreateAuctionResponse(false, "Yêu cầu phải cung cấp danh mục (Category) hợp lệ!");
+        }
+
+        if (createRequest.getEndTime() == null) {
+            ServerLogger.warning("Yêu cầu tạo đấu giá thất bại: Thời gian kết thúc bị null.");
+            return new CreateAuctionResponse(false, "Thời gian kết thúc không được để trống!");
+        }
+        // =====================================================================
 
         // 3. Gọi Database (DAO lúc này đã lo toàn bộ việc gán status WAITING hay SCHEDULED)
         Auction newlyCreatedAuction = AuctionDAO.createAuction(createRequest);

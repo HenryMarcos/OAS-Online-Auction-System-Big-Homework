@@ -53,6 +53,20 @@ public class ClientHandler implements Runnable {
                         out.writeObject(serverReply);
                         out.flush();
                         out.reset();
+                        // ================================================================
+                        // SỬA ĐỔI: Đăng ký kênh nhận Log cho Admin sau khi Login/Signup
+                        // ================================================================
+                        if (request instanceof com.groupproject.shared.network.request.LoginRequest || 
+                            request instanceof com.groupproject.shared.network.request.SignupRequest) {
+                            
+                            var currentUser = ClientContext.currentUser.get();
+                            
+                            // Nếu User có tồn tại (đăng nhập/đăng ký thành công) và là Admin
+                            if (currentUser != null && currentUser.isAdmin()) {
+                                ClientManager.getInstance().addAdminClient(out);
+                            }
+                        }
+                        // ================================================================
                     }
                 } else if (recievedData instanceof String) {
                     String message = (String) recievedData;

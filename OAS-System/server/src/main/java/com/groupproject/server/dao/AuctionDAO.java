@@ -1,8 +1,17 @@
 package com.groupproject.server.dao;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.groupproject.server.utils.ClientContext;
 import com.groupproject.server.utils.ServerLogger;
@@ -259,9 +268,17 @@ public class AuctionDAO {
     private static LocalDateTime parseDateTimeSafely(String dateTimeStr) {
         if (dateTimeStr == null || dateTimeStr.trim().isEmpty()) return null;
         try {
+            // Thử parse theo chuẩn thông thường (Ví dụ: "2026-05-25T07:40:00")
             return LocalDateTime.parse(dateTimeStr.replace(" ", "T"));
         } catch (Exception e) {
-            return null;
+            try {
+                // SỬA LỖI Ở ĐÂY: Xử lý trường hợp Driver SQLite lưu thành số mili-giây (Unix Epoch)
+                long millis = Long.parseLong(dateTimeStr);
+                return LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(millis), java.time.ZoneId.systemDefault());
+            } catch (Exception ex) {
+                ServerLogger.error("Không thể dịch ngày tháng từ DB: " + dateTimeStr);
+                return null;
+            }
         }
     }
 }

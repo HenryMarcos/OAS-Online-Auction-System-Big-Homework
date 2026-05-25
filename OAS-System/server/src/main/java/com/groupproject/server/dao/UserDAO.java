@@ -219,4 +219,20 @@ public class UserDAO {
     public static synchronized User getUser(SignupRequest request) {
         return getUser(request.getUsername(), request.getPassword());
     }
+
+    public static boolean addBalance(int userId, double amount) {
+        String sql = "UPDATE users SET balance = balance + ? WHERE id = ?";
+        try (java.sql.Connection conn = DatabaseManager.getInstance().getConnection();
+             java.sql.PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setDouble(1, amount);
+            pstmt.setInt(2, userId);
+            
+            return pstmt.executeUpdate() > 0;
+            
+        } catch (java.sql.SQLException e) {
+            ServerLogger.error("Lỗi cập nhật số dư khi nạp tiền: " + e.getMessage());
+            return false;
+        }
+    }
 }
