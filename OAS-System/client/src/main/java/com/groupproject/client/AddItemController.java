@@ -142,11 +142,11 @@ public class AddItemController implements Initializable {
     }
     @FXML
     private void switchtoHome(ActionEvent event) throws IOException {
-      SceneNavigator.getInstance().goTo("/com/groupproject/client/FXML/mainscreen.fxml");
+      SceneNavigator.INSTANCE.goTo("/com/groupproject/client/FXML/mainscreen.fxml");
     } 
     @FXML
     private void switchtologin(ActionEvent event) throws IOException {
-       SceneNavigator.getInstance().goTo("/com/groupproject/client/FXML/login.fxml");
+       SceneNavigator.INSTANCE.goTo("/com/groupproject/client/FXML/login.fxml");
 
     }
 

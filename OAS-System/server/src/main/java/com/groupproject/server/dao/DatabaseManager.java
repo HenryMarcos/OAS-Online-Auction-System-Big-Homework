@@ -9,9 +9,9 @@ import com.groupproject.server.utils.ServerLogger;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
-public class DatabaseManager {
+public enum DatabaseManager {
+    INSTANCE;
 
-    private static DatabaseManager instance;
     private HikariDataSource dataSource;
 
     private DatabaseManager() {
@@ -40,13 +40,6 @@ public class DatabaseManager {
         }
     }
 
-    public static DatabaseManager getInstance() {
-        if (instance == null) {
-            instance = new DatabaseManager();
-        }
-        return instance;
-    }
-
     public void initDatabse() {
         try (Statement stmt = getConnection().createStatement()) {
 
@@ -56,6 +49,7 @@ public class DatabaseManager {
                          "username TEXT UNIQUE NOT NULL," + 
                          "email TEXT UNIQUE NOT NULL," +
                          "password TEXT NOT NULL," +
+                         "balance REAL DEFAULT 10000," +
                          "created_at DATETIME NOT NULL)";
             stmt.execute(sql);
             
@@ -67,11 +61,13 @@ public class DatabaseManager {
                                 "description TEXT NOT NULL," +
                                 "category_id INTEGER NOT NULL," +
                                 "starting_price REAL NOT NULL," +
+                                "start_time DATETIME, " +
                                 "end_time DATETIME NOT NULL," +
-                                "current_bid REAL," + 
+                                "current_bid REAL," +
                                 "current_bidder_id INTEGER, " +
-                                "status TEXT NOT NULL, " + 
+                                "status TEXT NOT NULL, " +
                                 "FOREIGN KEY(seller_id) REFERENCES users(id), " +
+                                "FOREIGN KEY(current_bidder_id) REFERENCES users(id), " +
                                 "FOREIGN KEY(category_id) REFERENCES categories(id))";
             stmt.execute(auctionSql);
 

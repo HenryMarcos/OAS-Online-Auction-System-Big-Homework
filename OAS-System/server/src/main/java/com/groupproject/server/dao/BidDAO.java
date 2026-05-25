@@ -4,14 +4,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 
 import com.groupproject.server.utils.ServerLogger;
-import com.groupproject.shared.network.PlaceBidRequest;
+import com.groupproject.shared.network.requests.PlaceBidRequest;
 
 public class BidDAO {
     // Returns true if successful, false if something failed
     public static boolean insertBid(int auctionId, int bidderId, double amount) {
         String sql = "INSERT INTO bids (auction_id, bidder_id, amount, bid_time) VALUES (?, ?, ?, NOW())";
         
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setInt(1, auctionId);

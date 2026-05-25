@@ -28,5 +28,6 @@ replay_pid*
 
 # Folders
 OAS-System/client/target/
+OAS-System/client/OAS-App/
 OAS-System/server/target/
 OAS-System/shared/target/

@@ -7,8 +7,10 @@ com\groupproject\client\utils\SessionManager.class
 com\groupproject\client\network\RequestSender.class
 com\groupproject\client\SimpleChatAppController.class
 com\groupproject\client\network\ClientMessageRouter.class
+com\groupproject\client\TestAuctionScreenController.class
 com\groupproject\client\AuctionController.class
 com\groupproject\client\CreateAuctionTestController.class
+com\groupproject\client\utils\TimeFormatter.class
 com\groupproject\client\Data\Item.class
 com\groupproject\client\App.class
 module-info.class
@@ -17,6 +19,7 @@ com\groupproject\client\utils\ClientLogger.class
 com\groupproject\client\SortingmenuController.class
 com\groupproject\client\MainController.class
 com\groupproject\client\utils\SceneNavigator.class
+com\groupproject\client\TestCardController.class
 com\groupproject\client\CreateAuctionTestController$1.class
 com\groupproject\client\utils\ClientConfig.class
 com\groupproject\client\AuctionScreen.class

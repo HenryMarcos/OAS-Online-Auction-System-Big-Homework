@@ -8,8 +8,8 @@ import java.time.LocalDateTime;
 
 import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.model.user.User;
-import com.groupproject.shared.network.LoginRequest;
-import com.groupproject.shared.network.SignupRequest;
+import com.groupproject.shared.network.requests.LoginRequest;
+import com.groupproject.shared.network.requests.SignupRequest;
 
 public class UserDAO {
 
@@ -17,7 +17,7 @@ public class UserDAO {
         String sql = "SELECT username, email FROM users WHERE username = ? OR email = ?";
         
 
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, username);
@@ -57,7 +57,7 @@ public class UserDAO {
         // Câu lệnh sql để chèn user mới
         String sql = "INSERT INTO users (username, email, password, created_at) VALUES (?, ?, ?, ?)";
         
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
             
             pstmt.setString(1, username);
@@ -89,7 +89,7 @@ public class UserDAO {
         String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
         
 
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, username);
@@ -114,7 +114,7 @@ public class UserDAO {
         String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
         
         
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, username);

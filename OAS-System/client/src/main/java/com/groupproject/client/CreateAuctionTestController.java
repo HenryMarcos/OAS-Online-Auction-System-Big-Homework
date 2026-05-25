@@ -14,8 +14,8 @@ import com.groupproject.client.utils.ClientLogger;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.model.categories.Category;
 import com.groupproject.shared.model.enums.AuctionStatus;
-import com.groupproject.shared.network.CreateAuctionRequest;
-import com.groupproject.shared.network.CreateAuctionResponse;
+import com.groupproject.shared.network.requests.CreateAuctionRequest;
+import com.groupproject.shared.network.responses.CreateAuctionResponse;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -48,7 +48,7 @@ public class CreateAuctionTestController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Nối response với hàm tương ứng
-        ClientMessageRouter.getInstance().onResponse(CreateAuctionResponse.class, this::handleCreateAuctionResponse);
+        ClientMessageRouter.INSTANCE.onResponse(CreateAuctionResponse.class, this::handleCreateAuctionResponse);
 
         // Thêm lựa chọn giờ(từ 0 đến 23, 24 tính là 1 ngày nên không cần thêm)
         for (int i = 0; i < 24; i++) hoursComboBox.getItems().add(i);
@@ -58,7 +58,7 @@ public class CreateAuctionTestController implements Initializable {
         setupCategoryComboBoxFormatting();
 
         // Lấy categories
-        List<Category> mainCategories = SessionManager.getInstance().getCurrentCategories();
+        List<Category> mainCategories = SessionManager.INSTANCE.getCurrentCategories();
         if (mainCategories != null) {
             populateCategoryData(mainCategories);
         }
@@ -253,7 +253,7 @@ public class CreateAuctionTestController implements Initializable {
         }
 
         // 3. Packages and submits to Server pipeline
-        int currentUserId = SessionManager.getInstance().getCurrentUser().getId();
+        int currentUserId = SessionManager.INSTANCE.getCurrentUser().getId();
         int categoryId = selectedCategory.getId();
 
         ClientLogger.info("Form validation successful. Transmitting new auction layout details...");

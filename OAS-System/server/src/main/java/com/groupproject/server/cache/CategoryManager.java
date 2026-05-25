@@ -1,5 +1,6 @@
 package com.groupproject.server.cache;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -9,12 +10,12 @@ import com.groupproject.server.dao.CategoryDAO;
 import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.model.categories.Category;
 
-public class CategoryManager {
-    private static CategoryManager instance;
+public enum CategoryManager {
+    INSTANCE;
 
     // Lưu tất cả vào map bằng id để có tốc độ tìm O(1)
     private Map<Integer, Category> categoryMap;
-    private List<Category> mainCategoryMap;
+    private List<Category> mainCategoryList;
 
     // Khóa đọc/ghi đảm bảo các máy khách có thể đọc đồng thời,
     // nhưng việc đọc chỉ bị chặn trong tích tắc khi bộ nhớ đệm đang được cập nhật
@@ -22,12 +23,8 @@ public class CategoryManager {
 
     private CategoryManager() {
         this.categoryMap = new ConcurrentHashMap<>();
+        this.mainCategoryList = new ArrayList<>();
         refreshCache(); // Load từ database lúc khởi tạo
-    }
-
-    public static synchronized CategoryManager getInstance() {
-        if (instance == null) { instance = new CategoryManager(); }
-        return instance;
     }
 
     /*
@@ -44,8 +41,8 @@ public class CategoryManager {
             this.categoryMap.clear();
             this.categoryMap.putAll(categories);
 
-            this.mainCategoryMap.clear();
-            this.mainCategoryMap.addAll(mainCategories);
+            this.mainCategoryList.clear();
+            this.mainCategoryList.addAll(mainCategories);
 
             ServerLogger.info("Category Cache refreshed successfully.");
         } catch (Exception e) {
@@ -76,7 +73,7 @@ public class CategoryManager {
     public List<Category> getMainCategories() {
         lock.readLock().lock();
         try {
-            return mainCategoryMap;
+            return mainCategoryList;
         } finally {
             lock.readLock().unlock();
         }

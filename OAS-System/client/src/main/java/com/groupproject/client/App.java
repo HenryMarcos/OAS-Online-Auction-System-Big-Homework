@@ -27,15 +27,15 @@ public class App extends Application {
         // Kết nối với server 1 lần duy nhất khi bắt đầu
         new Thread(() -> connectToServer()).start();
 
-        SceneNavigator.getInstance().setMainStage(stage);
+        SceneNavigator.INSTANCE.setMainStage(stage);
         // Vào màn hình login
-        SceneNavigator.getInstance().goTo("/com/groupproject/client/FXML/login.fxml");
+        SceneNavigator.INSTANCE.goTo("/com/groupproject/client/FXML/login.fxml");
     }
 
     public static void connectToServer() {
         try {
             // Dùng Google Cloud IP hoặc bất kỳ IP nào phù hợp
-            NetworkManager.getInstance().connect(ClientConfig.getServerIp(), ClientConfig.getServerPort());
+            NetworkManager.INSTANCE.connect(ClientConfig.getServerIp(), ClientConfig.getServerPort());
                         
             Thread listenerThread = new Thread(new ServerListener());
             listenerThread.setDaemon(true); // Đảm bảo thread sẽ chết khi tắt app

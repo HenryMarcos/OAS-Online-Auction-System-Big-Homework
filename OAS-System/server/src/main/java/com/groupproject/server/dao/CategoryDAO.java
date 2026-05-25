@@ -22,7 +22,7 @@ public class CategoryDAO {
         String sql = "SELECT c.id, c.name, c.parent_id, cf.field_name FROM categories c " +
                      "LEFT JOIN category_fields cf ON c.id = cf.category_id";
 
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
             

@@ -4,12 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.groupproject.server.utils.ServerLogger;
-import com.groupproject.shared.network.CreateAuctionRequest;
-import com.groupproject.shared.network.LoginRequest;
-import com.groupproject.shared.network.PlaceBidRequest;
-import com.groupproject.shared.network.Request;
-import com.groupproject.shared.network.Response;
-import com.groupproject.shared.network.SignupRequest;
+import com.groupproject.shared.network.requests.CreateAuctionRequest;
+import com.groupproject.shared.network.requests.JoinAuctionRequest;
+import com.groupproject.shared.network.requests.LoginRequest;
+import com.groupproject.shared.network.requests.PlaceBidRequest;
+import com.groupproject.shared.network.requests.Request;
+import com.groupproject.shared.network.requests.SignupRequest;
+import com.groupproject.shared.network.responses.Response;
 
 public class RequestDispatcher {
     private final Map<Class<? extends Request>, RequestHandler> handlers = new HashMap<>();
@@ -20,6 +21,7 @@ public class RequestDispatcher {
         handlers.put(SignupRequest.class, new SignupHandler());
         handlers.put(CreateAuctionRequest.class, new CreateAuctionHandler());
         handlers.put(PlaceBidRequest.class, new PlaceBidHandler());
+        handlers.put(JoinAuctionRequest.class, new JoinAuctionHandler());
     }
 
     public Response dispatch(Request request) {

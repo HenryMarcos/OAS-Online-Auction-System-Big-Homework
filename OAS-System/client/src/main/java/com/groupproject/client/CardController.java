@@ -1,23 +1,21 @@
 package com.groupproject.client;
-import com.groupproject.client.Data.*;
-
-import javafx.scene.Parent;
-import javafx.scene.layout.VBox;
 import java.io.IOException;
-import java.time.*;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.net.URL;
-import java.util.ResourceBundle;
-import javafx.scene.image.ImageView;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
+
+import com.groupproject.client.Data.Item;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
-import javafx.scene.Scene;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 public class CardController { 
     private Item item;
@@ -90,5 +88,4 @@ public class CardController {
             }
         }
     }
-    
 }

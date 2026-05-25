@@ -1,13 +1,13 @@
 package com.groupproject.server.handlers;
 
-import com.groupproject.server.dao.AuctionDAO;
-import com.groupproject.server.dao.CategoryDAO;
+import com.groupproject.server.cache.CategoryManager;
 import com.groupproject.server.dao.UserDAO;
+import com.groupproject.server.service.AuctionManager;
 import com.groupproject.server.utils.ServerLogger;
-import com.groupproject.shared.network.LoginRequest;
-import com.groupproject.shared.network.LoginResponse;
-import com.groupproject.shared.network.Request;
-import com.groupproject.shared.network.Response;
+import com.groupproject.shared.network.requests.LoginRequest;
+import com.groupproject.shared.network.requests.Request;
+import com.groupproject.shared.network.responses.LoginResponse;
+import com.groupproject.shared.network.responses.Response;
 
 public class LoginHandler implements RequestHandler {
     @Override
@@ -22,7 +22,7 @@ public class LoginHandler implements RequestHandler {
 
         if (success) { 
             ServerLogger.info("Successfully handle " + request.getClass().getSimpleName());
-            return new LoginResponse(true, UserDAO.getUser((LoginRequest) request), CategoryDAO.getMainCategories(), AuctionDAO.getAuctions(), "Welcome back!"); 
+            return new LoginResponse(true, UserDAO.getUser((LoginRequest) request), CategoryManager.INSTANCE.getMainCategories(), AuctionManager.INSTANCE.getActiveAuctionList(), "Welcome back!"); 
         }
         else { 
             ServerLogger.error("Failed to handle" + request.getClass().getSimpleName());

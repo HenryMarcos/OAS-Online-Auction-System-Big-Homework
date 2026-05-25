@@ -7,8 +7,8 @@ import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.LifecycleController;
 import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
-import com.groupproject.shared.network.SignupRequest;
-import com.groupproject.shared.network.SignupResponse;
+import com.groupproject.shared.network.requests.SignupRequest;
+import com.groupproject.shared.network.responses.SignupResponse;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -32,7 +32,7 @@ public class SignupController implements LifecycleController {
 
     @FXML
     public void initialize() {
-        ClientMessageRouter.getInstance().onResponse(SignupResponse.class, this::handleSignupResponse);
+        ClientMessageRouter.INSTANCE.onResponse(SignupResponse.class, this::handleSignupResponse);
     }
 
     @FXML
@@ -68,7 +68,7 @@ public class SignupController implements LifecycleController {
     
     @FXML
     private void switchtologin(ActionEvent event) throws IOException {
-        SceneNavigator.getInstance().goTo("/com/groupproject/client/FXML/login.fxml");
+        SceneNavigator.INSTANCE.goTo("/com/groupproject/client/FXML/login.fxml");
     }
 
     // Hàm xử lý kết quả nhận về từ server
@@ -82,15 +82,15 @@ public class SignupController implements LifecycleController {
         statusLabel.setTextFill(javafx.scene.paint.Color.GREEN);
         statusLabel.setText("Success! Loading chat...");
         // Lưu user
-        SessionManager.getInstance().setCurrentUser(response.getUser());
-        SessionManager.getInstance().setCurrentCategories(response.getCategoryTree());
-        SessionManager.getInstance().setCurrentAuctionList(response.getAuctionList());
+        SessionManager.INSTANCE.setCurrentUser(response.getUser());
+        SessionManager.INSTANCE.setCurrentCategories(response.getCategoryTree());
+        SessionManager.INSTANCE.setCurrentAuctionList(response.getAuctionList());
 
         // Trước khi chuyển màn hình thì xóa hết listener để tránh tràn bộ nhớ
-        ClientMessageRouter.getInstance().clearAllListeners();
+        ClientMessageRouter.INSTANCE.clearAllListeners();
 
         // chuyển sang màn hình chính
-        SceneNavigator.getInstance().goTo("/com/groupproject/client/FXML/mainscreen.fxml");
+        SceneNavigator.INSTANCE.goTo("/com/groupproject/client/FXML/mainscreen.fxml");
     }
 
     private void handleFailedSignup(SignupResponse response) {
@@ -104,7 +104,7 @@ public class SignupController implements LifecycleController {
     @Override
     public void cleanup() {
         // We are leaving the signup screen forever, clear all pre-signup listeners!
-        ClientMessageRouter.getInstance().clearAllListeners();
+        ClientMessageRouter.INSTANCE.clearAllListeners();
     }
 }
 

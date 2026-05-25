@@ -8,8 +8,8 @@ import com.groupproject.client.utils.ClientLogger;
 import com.groupproject.client.utils.LifecycleController;
 import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
-import com.groupproject.shared.network.LoginRequest;
-import com.groupproject.shared.network.LoginResponse;
+import com.groupproject.shared.network.requests.LoginRequest;
+import com.groupproject.shared.network.responses.LoginResponse;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -34,7 +34,7 @@ public class LoginController implements LifecycleController {
         // Vẫn giữ dòng này để đồng bộ chữ giữa 2 ô nhập mật khẩu
         passwordField.textProperty().bindBidirectional(passwordTextField.textProperty());
 
-        ClientMessageRouter.getInstance().onResponse(LoginResponse.class, this::handleLoginResponse);
+        ClientMessageRouter.INSTANCE.onResponse(LoginResponse.class, this::handleLoginResponse);
         // mở lại nút login dù có thành công hay thất bại 
         loginButton.setDisable(false);
     }
@@ -85,12 +85,12 @@ public class LoginController implements LifecycleController {
     }
 
     @FXML 
-    private void  switchtohome(ActionEvent event) throws IOException {
-        SceneNavigator.getInstance().goTo("/com/groupproject/client/FXML/mainscreen.fxml");
+    private void switchtohome(ActionEvent event) throws IOException {
+        SceneNavigator.INSTANCE.goTo("/com/groupproject/client/FXML/mainscreen.fxml");
     }
     @FXML
     private void switchtoSignup(ActionEvent event) throws IOException {
-        SceneNavigator.getInstance().goTo("/com/groupproject/client/FXML/signup.fxml");
+        SceneNavigator.INSTANCE.goTo("/com/groupproject/client/FXML/signup.fxml");
         //App.setRoot("signup");
     }
 
@@ -106,15 +106,18 @@ public class LoginController implements LifecycleController {
         statusLabel.setTextFill(javafx.scene.paint.Color.GREEN);
         statusLabel.setText("Success! Loading chat...");
         // Lưu user
-        SessionManager.getInstance().setCurrentUser(response.getUser());
-        SessionManager.getInstance().setCurrentCategories(response.getCategoryTree());
-        SessionManager.getInstance().setCurrentAuctionList(response.getAuctionList());
+        SessionManager.INSTANCE.setCurrentUser(response.getUser());
+        SessionManager.INSTANCE.setCurrentCategories(response.getCategoryTree());
+        if (!response.getAuctionList().isEmpty()) {
+            ClientLogger.info("Got " + response.getAuctionList().size() + " active auctions from server");
+        }
+        SessionManager.INSTANCE.setCurrentAuctionList(response.getAuctionList());
 
         // Trước khi chuyển màn hình thì xóa hết listener để tránh tràn bộ nhớ
-        ClientMessageRouter.getInstance().clearAllListeners();
+        ClientMessageRouter.INSTANCE.clearAllListeners();
 
         // Chuyển sang màn hình chính
-        SceneNavigator.getInstance().goTo("/com/groupproject/client/FXML/mainscreen.fxml");
+        SceneNavigator.INSTANCE.goTo("/com/groupproject/client/FXML/mainscreen.fxml");
     }
 
     private void handleFailedLogin(LoginResponse response) {
@@ -128,7 +131,7 @@ public class LoginController implements LifecycleController {
     @Override
     public void cleanup() {
         // We are leaving the login screen forever, clear all pre-login listeners!
-        ClientMessageRouter.getInstance().clearAllListeners();
+        ClientMessageRouter.INSTANCE.clearAllListeners();
     }
 
 }

@@ -6,8 +6,8 @@ import java.net.Socket;
 
 import com.groupproject.server.handlers.RequestDispatcher;
 import com.groupproject.server.utils.ServerLogger;
-import com.groupproject.shared.network.Request;
-import com.groupproject.shared.network.Response;
+import com.groupproject.shared.network.requests.Request;
+import com.groupproject.shared.network.responses.Response;
 
 // --- NỘI HÀM: CHUÕI RIÊNG CHO MỖI CLIENT ---
 public class ClientHandler implements Runnable {
@@ -28,7 +28,7 @@ public class ClientHandler implements Runnable {
             in = new ObjectInputStream(socket.getInputStream()); // Từ client đến server
 
             // Thêm client vào danh sách báo tin chính 1 cách an toàn 
-            ClientManager.getInstance().addClient(out);
+            ClientManager.INSTANCE.addClient(out);
 
             RequestDispatcher dispatcher = new RequestDispatcher();
 
@@ -82,7 +82,7 @@ public class ClientHandler implements Runnable {
         } finally {
             // CLEANUP: Khi client rời, xóa client trong danh sách đi
             if (out != null) {
-                ClientManager.getInstance().removeClient(out);
+                ClientManager.INSTANCE.removeClient(out);
             }
             try { 
                 if (socket != null && !socket.isClosed()) {

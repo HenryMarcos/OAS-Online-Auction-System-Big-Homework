@@ -11,13 +11,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.groupproject.server.cache.CategoryManager;
 import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.model.categories.Category;
 import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.shared.model.transaction.Auction;
-import com.groupproject.shared.network.CreateAuctionRequest;
+import com.groupproject.shared.network.requests.CreateAuctionRequest;
 
 public class AuctionDAO {
+    // Tạo phiên đấu giá mới
+    // ---------------------
     public static synchronized Auction createAuction(int sellerId, String title, String description, Category category, 
                                                      Map<Integer, Map<String, String>> categoryGroupedSpecs , 
                                                      double startingPrice, LocalDateTime endTime, AuctionStatus status) {
@@ -33,7 +36,7 @@ public class AuctionDAO {
         
         boolean originalAutoCommit = true;
 
-        try (Connection conn = DatabaseManager.getInstance().getConnection(); ) {
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection(); ) {
 
             if (conn == null) {
                 ServerLogger.error("Could not obtain a database connection from the pool.");
@@ -111,6 +114,8 @@ public class AuctionDAO {
         return null;
     }
 
+    // Tạo phiên đấu giá mới(nhận dữ liệu dưới dạng Request)
+    // -----------------------------------------------------
     public static synchronized Auction createAuction(CreateAuctionRequest request) {
         AuctionStatus parsedStatus;
         // Đặt mặc định làm WAITING nếu không có
@@ -128,19 +133,20 @@ public class AuctionDAO {
 
     // Lấy các phiên đấu giá phục vụ cho tính năng xem lịch sử đâu giá
     // Lấy hết các phiên đấu giá kể cả đã kết thúc
+    // ---------------------------------------------------------------
     public static List<Auction> getAuctions() {
         List<Auction> auctionList = new ArrayList<>();
         String sql = "SELECT * FROM auctions";
-        
 
-        Map<Integer, Category> categoryMap = CategoryDAO.getCategories();
+        Map<Integer, Category> categoryMap = CategoryManager.INSTANCE.getCategories();
 
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
 
             while (rs.next()) {
                 // Lấy các thông tin cơ bản của phiên đấu giá
+                // ------------------------------------------
                 int id = rs.getInt("id");
                 int sellerId = rs.getInt("seller_id");
                 String title = rs.getString("title");
@@ -162,6 +168,8 @@ public class AuctionDAO {
 
                 Map<Integer, Map<String, String>> specs = getAuctionSpecifications(id, conn);
 
+                // Tạo lớp Auction từ các thông tin lấy được phía trên
+                // ---------------------------------------------------
                 Auction auction = new Auction(id, sellerId, title, description, category, specs, startingPrice, endTime);
                 auction.setCurrentBid(currentBid);
                 auction.setHighestBidderId(currentBidderId);
@@ -177,60 +185,101 @@ public class AuctionDAO {
         return auctionList;
     }
 
-    // Chỉ lấy những phiên đấu giá đang hoạt động (WAITING hoặc ACTIVED) 
-    // và thời gian kết thúc phải lớn hơn thời gian hiện tại
-    public static List<Auction> getActiveAuctions() {
-        List<Auction> activedAuctionList = new ArrayList<>();
-        
-        // SQL: Chỉ lấy những phiên đang WAITING hoặc ACTIVED và thời gian kết thúc phải lớn hơn thời gian hiện tại
-        String sql = "SELECT * FROM auctions WHERE status IN ('WAITING', 'ACTIVED') AND end_time > ?";
-        
-        Map<Integer, Category> categoryMap = CategoryDAO.getCategories();
+    // Lấy các phiên đấu giá theo trạng thái của chúng
+    // -----------------------------------------------
+    public static List<Auction> getAuctionsByStatus(AuctionStatus status) {
+        ServerLogger.info("Getting auctions with status " + status.name());
+        List<Auction> auctionList = new ArrayList<>();
+        String sql = "SELECT * FROM auctions WHERE status = ?";
+        Map<Integer, Category> categoryMap = CategoryManager.INSTANCE.getCategories();
 
-        // Sử dụng try-with-resources để tự động đóng Connection, PreparedStatement và ResultSet
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-             
-            // Truyền thời gian hiện tại của Server (dạng chuỗi) vào để Database lọc giúp
-            pstmt.setString(1, LocalDateTime.now().toString());
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);) {
             
+            pstmt.setString(1, status.name());
+
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
+                    // Lấy các thông tin cơ bản của phiên đấu giá
+                    // ------------------------------------------
                     int id = rs.getInt("id");
                     int sellerId = rs.getInt("seller_id");
                     String title = rs.getString("title");
                     String description = rs.getString("description");
                     int categoryId = rs.getInt("category_id");
                     double startingPrice = rs.getDouble("starting_price");
+                    String startTimeStr = rs.getString("start_time");
                     String endTimeStr = rs.getString("end_time");
                     double currentBid = rs.getDouble("current_bid");
-                    String status = rs.getString("status");
 
                     // Lấy id của người đấu giá (đảm bảo an toàn nếu null)
-                    int bidderIdRaw = rs.getInt("current_bidder_id");
-                    Integer currentBidderId = rs.wasNull() ? null : bidderIdRaw;
+                    Integer currentBidderId = (Integer) rs.getObject("current_bidder_id");
 
-                    LocalDateTime endTime = (endTimeStr != null) ? LocalDateTime.parse(endTimeStr) : null;
+                    LocalDateTime startTime = (startTimeStr != null)? LocalDateTime.parse(startTimeStr) : null;
+                    LocalDateTime endTime = (endTimeStr != null)? LocalDateTime.parse(endTimeStr) : null;
+
                     Category category = categoryMap.get(categoryId);
 
                     Map<Integer, Map<String, String>> specs = getAuctionSpecifications(id, conn);
 
-                    Auction auction = new Auction(id, sellerId, title, description, category, specs, startingPrice, endTime);
+                    Auction auction = new Auction(id, sellerId, title, description, category, specs, startingPrice, endTime, status);
                     auction.setCurrentBid(currentBid);
                     auction.setHighestBidderId(currentBidderId);
-                    auction.setStatus(AuctionStatus.valueOf(status.toUpperCase()));
 
-                    activedAuctionList.add(auction);
+                    auctionList.add(auction);
                 }
             }
-        } catch (SQLException e) {
-            ServerLogger.error("Database error getting active auctions: " + e.getMessage());
+        } catch (Exception e) {
+            ServerLogger.error("Database error getting " + status.name() +" auctions: " + e.getMessage());
+            return null;
+        }
+        if (auctionList == null || auctionList.isEmpty()) {
+            ServerLogger.warning("Got 0 auctions");
+        } else {
+            ServerLogger.info("Successfully get " + status.name() + " auctions, found " + auctionList.size());
         }
 
-        return activedAuctionList;
+        return auctionList;
     }
 
+    // Update thông tin về bid mới
+    // ---------------------------
+    public static boolean updateBid(int auctionId, int bidderId, double bidAmount) {
+        String updateSql = "UPDATE auctions SET current_bid = ?, current_bidder_id = ? WHERE id = ?";
+
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
+             PreparedStatement updateStmt = conn.prepareStatement(updateSql);) {
+            
+            updateStmt.setDouble(1, bidAmount);
+            updateStmt.setInt(2, bidderId);
+            updateStmt.setInt(3, auctionId);
+
+            return updateStmt.executeUpdate() > 0;
+        } catch (Exception e) {
+            ServerLogger.error("Database error updating bid: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // Update trạng thái phiên đấu giá(dùng sau khi kết thúc)
+    // ------------------------------------------------------
+    public static boolean updateAuctionStatus(int auctionId, AuctionStatus status) {
+        String updateSql = "UPDATE auctions SET status = ? WHERE id = ?";
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
+             PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+             
+            updateStmt.setString(1, status.name());
+            updateStmt.setInt(2, auctionId);
+
+            return updateStmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            ServerLogger.error("Error updating status: " + e.getMessage());
+            return false;
+        }
+    }
     
+    // Lấy thông tin về các field người dùng đã nhập vào khi tạo phiên đấu giá
+    // -----------------------------------------------------------------------
     private static Map<Integer, Map<String, String>> getAuctionSpecifications(int auctionId, Connection conn) throws SQLException {
         Map<Integer, Map<String, String>> groupedSpecs = new HashMap<>();
         String query = "SELECT category_id, field_name, field_value FROM auction_specifications WHERE auction_id = ?";

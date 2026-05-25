@@ -7,6 +7,9 @@ import java.util.ResourceBundle;
 
 import com.groupproject.client.Data.Item;
 import com.groupproject.client.Data.ItemRespository;
+import com.groupproject.client.utils.ClientLogger;
+import com.groupproject.client.utils.SessionManager;
+import com.groupproject.shared.model.transaction.Auction;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -23,10 +26,9 @@ import javafx.stage.StageStyle;
 // phan center cua mainscreen.fxml 
 public class HomeController implements  Initializable {
    private static HomeController instance;
-   @FXML
-   private GridPane productgrid;
-   @FXML
-   private Button sortbutton;
+
+   @FXML private GridPane productgrid;
+   @FXML private Button sortbutton;
    // Khi nhan vao nut Log out o mep ben phai cua man hinh 
 
 
@@ -49,8 +51,50 @@ public class HomeController implements  Initializable {
    public void initialize(URL location, ResourceBundle resources) {
       instance = this;
       addEventHandles();
+
+      // Tải các phiên đấu giá đang hoạt động lên màn hình mỗi khi mở lên
+      loadAuctions();
       
    }
+
+   // Tải các phiên đấu giá
+   // ---------------------
+   public void loadAuctions() {
+      // Xóa các data cũ đi
+      productgrid.getChildren().clear();
+
+      // Lấy danh sách các phiên đấu giá đang hoạt động 
+      List<Auction> liveAuctions = SessionManager.INSTANCE.getCurrentAuctionList();
+
+      // Kiểm tra xem danh sách có trống không
+      if (liveAuctions == null || liveAuctions.isEmpty()) {
+         ClientLogger.warning("No active auctions to display.");
+         return;
+      }
+      // Tạo 1 card mới từ mỗi auction
+      for (int i = 0; i < liveAuctions.size(); i++) {
+            try {
+               FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/groupproject/client/FXML/testCard.fxml"));
+               HBox card = loader.load();
+                
+               // Configure layout sizes
+               card.setMaxWidth(Double.MAX_VALUE);
+               GridPane.setFillWidth(card, true);
+                
+               // Pass the Auction object to the card
+               TestCardController controller = loader.getController();
+               controller.setAuction(liveAuctions.get(i));
+                
+               // Add to grid (i % 2 gives column 0 or 1, i / 2 gives row 0, 1, 2...)
+               productgrid.add(card, i % 2, i / 2);
+
+            } catch (IOException e) {
+                System.err.println("Failed to load card.fxml for an auction!");
+                e.printStackTrace();
+            }
+        }
+   }  
+
    public void loadItems() {
       productgrid.getChildren().clear();
       

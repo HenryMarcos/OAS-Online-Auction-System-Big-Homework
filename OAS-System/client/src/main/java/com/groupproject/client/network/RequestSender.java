@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 
 import com.groupproject.client.utils.ClientLogger;
-import com.groupproject.shared.network.Request;
+import com.groupproject.shared.network.requests.Request;
 
 public class RequestSender {
 
     public static void send(Request request) {
-        ObjectOutputStream out = NetworkManager.getInstance().getOut();
+        ObjectOutputStream out = NetworkManager.INSTANCE.getOut();
         // Kiểm tra xem đã kết nối chưa
         if (out == null) {
             ClientLogger.error("CRITICAL ERROR: Trying to send data, but not connected to server!");

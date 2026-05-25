@@ -22,10 +22,8 @@ public class ServerApp {
 
     public static void main(String[] args) {
         // Khởi tạo database người dùng
-        DatabaseManager.getInstance().initDatabse();
-        AuctionManager.getInstance();
-
-         
+        DatabaseManager.INSTANCE.initDatabse();
+        AuctionManager.INSTANCE.refreshCache();
 
         // ServerSocket chính là thứ lắng nghe lưu lượng truy cập internet
         try (ServerSocket serverSocket = new ServerSocket(Config.SERVER_PORT)) {
@@ -56,8 +54,8 @@ public class ServerApp {
     // --- HÀM BÁO TIN/THÔNG BÁO ---
     // Gửi 1 tin nhắn cho mỗi client trong danh sách
     public static void broadcast(String message, ObjectOutputStream senderOut) {
-        synchronized (ClientManager.getInstance().getClients()) {
-            for (ObjectOutputStream writer : ClientManager.getInstance().getClients()) {
+        synchronized (ClientManager.INSTANCE.getClients()) {
+            for (ObjectOutputStream writer : ClientManager.INSTANCE.getClients()) {
                 if (writer != senderOut) {
                     try {
                         writer.writeObject(message);

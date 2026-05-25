@@ -7,13 +7,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
 import com.groupproject.client.utils.ClientLogger;
-import com.groupproject.shared.network.Response;
-import com.groupproject.shared.network.ServerEvent;
+import com.groupproject.shared.network.events.ServerEvent;
+import com.groupproject.shared.network.responses.Response;
 
 import javafx.application.Platform;
 
-public class ClientMessageRouter {
-    private static ClientMessageRouter instance;
+public enum ClientMessageRouter {
+    INSTANCE;
 
     // Registry for Request-Response patterns
     private final Map<Class<? extends Response>, List<Consumer<Response>>> responseListeners = new ConcurrentHashMap<>();
@@ -22,11 +22,6 @@ public class ClientMessageRouter {
     private final Map<Class<? extends ServerEvent>, List<Consumer<ServerEvent>>> eventListeners = new ConcurrentHashMap<>();
 
     private ClientMessageRouter() {}
-
-    public static synchronized ClientMessageRouter getInstance() {
-        if (instance == null) { instance = new ClientMessageRouter(); }
-        return instance;
-    }
 
     // --- SUBSCRIBE TO SOLICITED RESPONSES (e.g., LoginResponse) ---
     @SuppressWarnings("unchecked")

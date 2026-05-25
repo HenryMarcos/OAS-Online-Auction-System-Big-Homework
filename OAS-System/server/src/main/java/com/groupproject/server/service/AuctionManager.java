@@ -1,58 +1,47 @@
 package com.groupproject.server.service;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.groupproject.server.dao.AuctionDAO;
-import com.groupproject.server.dao.DatabaseManager;
 import com.groupproject.server.utils.ServerLogger;
-import com.groupproject.shared.AuctionItem;
 import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.shared.model.transaction.Auction;
-import com.groupproject.shared.network.BidRequest;
+import com.groupproject.shared.network.requests.PlaceBidRequest;
 
-public class AuctionManager {
-    private static AuctionManager instance;
-
-    // Tìm nhanh các phiên đấu giá còn đang hoạt động
-    private final ConcurrentHashMap<Integer, Auction> activeAuctions = new ConcurrentHashMap<>();
-
+public enum AuctionManager {
+    INSTANCE;
+    
+    // Sử dụng ConcurrentSkipListMap để danh sách luôn tự động được sắp xếp theo Auction ID
+    private final ConcurrentSkipListMap<Integer, Auction> activeAuctions = new ConcurrentSkipListMap<>();
     // Xử lý tất cả phần thời gian đấu giá của các phiên đấu giá
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
 
-    // 1. Constructor private để ngăn chặn việc khởi tạo từ bên ngoài
-    private AuctionManager() {
-        // Khi khởi tạo, load tất cả các phiên đấu giá đang hoạt động từ database vào bộ nhớ
+    private AuctionManager() {}
+
+    public void refreshCache() {
         loadActiveAuctionsFromDatabase();
     }
 
-    // 2. Static inner class chứa instance duy nhất (The Bill Pugh concept)
-    private static class AuctionManagerHelper {
-        // Biến INSTANCE được khởi tạo và gán là final
-        private static final AuctionManager INSTANCE = new AuctionManager();
-    }
-
-    // 3. Phương thức lấy instance hoàn toàn không cần 'synchronized'
-    public static AuctionManager getInstance() {
-        return AuctionManagerHelper.INSTANCE;
-    }
-
+    // Lấy các phiên đấu giá đang hoạt động và đăng ký chúng
+    // -----------------------------------------------------
     private void loadActiveAuctionsFromDatabase() {
-        // Chỉ lấy những cái thực sự cần thiết từ Database
-        for (Auction auction : AuctionDAO.getActiveAuctions()) {
+        activeAuctions.clear();
+        List<Auction> activeAuctionList = AuctionDAO.getAuctionsByStatus(AuctionStatus.ACTIVATED);
+
+        for (Auction auction : activeAuctionList) {
             registerAuction(auction);
         }
     }
 
+    // Đăng ký phiên đấu giá
+    // ---------------------
     public void registerAuction(Auction auction) {
         activeAuctions.put(auction.getId(), auction);
 
@@ -63,24 +52,35 @@ public class AuctionManager {
             if (delayInSeconds < 0) { delayInSeconds = 0; }
 
             // Lên lịch cho nhiệm vụ đóng phiên đấu giá
-            scheduler.schedule(() -> {
-                endAuction(auction.getId());
-            }, delayInSeconds, TimeUnit.SECONDS);
+            scheduler.schedule(() -> { endAuction(auction.getId()); }, delayInSeconds, TimeUnit.SECONDS);
 
             ServerLogger.info("Auction " + auction.getId() + " is ACTIVATED. Countdown timer started (" + delayInSeconds + "s).");
         } else {
             ServerLogger.info("Auction " + auction.getId() + " is WAITING. Timer will start once the seller activates it manually.");
         }
-
-        
-
     }
 
+    // Hàm lấy các phiên đấu giá dưới dạng List để gửi cho client
+    // ----------------------------------------------------------
+    public List<Auction> getActiveAuctionList() {
+        ServerLogger.info("Getting activated auction list");
+        if (activeAuctions.isEmpty()) {
+            ServerLogger.warning("Found no activated auction");
+            return new ArrayList<>(); // Return empty list instead of null
+        } 
+
+        List<Auction> activeAuctionList = new ArrayList<>(activeAuctions.values());
+        ServerLogger.info("Finish getting activated auction list with " + activeAuctionList.size() + " auctions");
+        return activeAuctionList;
+    }
+
+    // Xử lý việc đặt bid
+    // ------------------
     public synchronized boolean placeBid(int auctionId, int bidderId, double bidAmount) {
         Auction auction = activeAuctions.get(auctionId);
 
-        if (auction == null) {
-            ServerLogger.warning("Bid rejected: Auction " + auctionId + " is not active or already closed.");
+        if (auction == null || auction.getStatus() != AuctionStatus.ACTIVATED) {
+            ServerLogger.warning("Bid rejected: Auction " + auctionId + " is not active.");
             return false;
         }
 
@@ -89,89 +89,31 @@ public class AuctionManager {
             return false;
         }
 
-        // Update trạng thái trong bộ nhớ
+        // Update bid trong database
+        boolean dbSuccess = AuctionDAO.updateBid(auctionId, bidderId, bidAmount);
 
-        // TODO: Thông báo cho người dùng có trạng thái cao nhất trước
+        if (dbSuccess) {
+            // Update bộ nhớ nếu thành công
+            auction.setCurrentBid(bidAmount);
+            auction.setHighestBidderId(bidderId);
+            ServerLogger.info("User " + bidderId + " successfully bid $" + bidAmount + " on Auction " + auctionId);
 
-        auction.setCurrentBid(bidAmount);
-        auction.setHighestBidderId(bidderId);
-
-        // TODO: Update trạng thái trong database
-
-        return true;
-    }
-
-    public synchronized boolean placeBid(BidRequest request) {
-        return placeBid(request.getAuctionId(), request.getBidderId(), request.getBidAmount());
-    }
-
-    public static synchronized boolean proccessBid(int auctionId, int bidderId, double bidAmount) {
-        String checkSql = "SELECT current_bid, is_active FROM auctions WHERE id = ?";
-        String updateSql = "UPDATE auctions SET current_bid = ?, highest_bidder = ? WHERE id = ?";
-
-        try (Connection conn = DatabaseManager.getInstance().getConnection();) {
-
-            // Kiểm tra xem bid hợp lý chưa
-            try (PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
-                checkStmt.setInt(1, auctionId);
-                ResultSet rs = checkStmt.executeQuery();
-
-                if (rs.next()) {
-                    double currentBid = rs.getDouble("current_bid");
-                    boolean isActive = rs.getBoolean("is_active");
-
-                    // Nếu auction đã kết thúc hoặc bid quá thấp thì từ chối
-                    if (!isActive || bidAmount <= currentBid) {
-                        ServerLogger.info("USER " + bidderId + ": auction is not active or bid is too low");
-                        return false;
-                    }
-                } else {
-                    ServerLogger.info("USER " + bidderId + ": auctionId does not exist");
-                    return false;
-                }
-            }
-
-            // Update bid cho các user
-            try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
-                updateStmt.setDouble(1, bidAmount);
-                updateStmt.setInt(2, bidderId);
-                updateStmt.setInt(3, auctionId);
-                updateStmt.executeQuery();
-                return true;
-            }
-
-        } catch (Exception e) {
-            ServerLogger.error("Database error processing bid: " + e.getMessage());
+            // TODO: Broadcast NewBidEvent cho toàn bộ user trong phòng đấu giá
+            return true;
+        } else {
+            ServerLogger.error("Failed to save bid to DB for Auction " + auctionId);
             return false;
         }
     }
 
-    public static synchronized boolean proccessBid(BidRequest bidRequest) {
-        return proccessBid(bidRequest.getAuctionId(), bidRequest.getBidderId(), bidRequest.getBidAmount());
+    // Xử lý việc đặt bid(Lấy dữ liệu dưới dạng PlaceBidRequest)
+    // ---------------------------------------------------------
+    public synchronized boolean placeBid(PlaceBidRequest request) {
+        return placeBid(request.getAuctionId(), request.getBidderId(), request.getBidAmount());
     }
-
-    public static List<AuctionItem> getActiveAuctions() {
-        List<AuctionItem> activeAuctions = new ArrayList<>();
-        String sql = "SELECT * FROM auctions WHERE is_active = 1";
-
-        try (Connection conn = DatabaseManager.getInstance().getConnection();) {
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            ResultSet rs = pstmt.executeQuery();
-
-            while (rs.next()) {
-                AuctionItem item = new AuctionItem(
-                    rs.getInt("id"),
-                    rs.getString("item_name"), 
-                    rs.getDouble("current_bid"), 
-                    rs.getString("highest_bidd")
-                );
-
-                activeAuctions.add(item);
-            }
-        } catch (Exception e) {
-            ServerLogger.error("Error fetching auctions: " + e.getMessage());
-        }
-        return activeAuctions;
+    
+    public Auction getAuction(int auctionId) {
+        return activeAuctions.get(auctionId);
     }
 
     private void endAuction(int auctionId) {
@@ -179,9 +121,13 @@ public class AuctionManager {
         if (auction != null) {
             ServerLogger.info("Auction " + auctionId + " has officially ended!");
 
-            // 1. Change status to CLOSED or COMPLETED in your DB via AuctionDAO
-
-            // 2. Broadcast a "AUCTION_ENDED" notification to all connected clients via ServerApp.broadcast()
+            // Cập nhật memory
+            auction.setStatus(AuctionStatus.ENDED);
+            
+            // Gọi DAO để update database
+            AuctionDAO.updateAuctionStatus(auctionId, AuctionStatus.ENDED);
+            
+            // TODO: Broadcast "AUCTION_ENDED" notification to connected clients
         }
     }
 
