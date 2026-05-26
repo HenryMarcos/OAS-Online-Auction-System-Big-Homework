@@ -28,7 +28,7 @@ public class NotificationController implements Initializable {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/groupproject/client/FXML/notificationitem.fxml"));
                 HBox itemBox = loader.load();
                 Label messageLabel= (Label) itemBox.lookup("#message");
-                Label timeLabel =(Label) itemBox.lookup("#messageTime");
+                Label timeLabel =(Label) itemBox.lookup("#notificationtime");
                 messageLabel.setText(notification.getMessage());
                 timeLabel.setText(notification.getTime());
                 notificationcontainer.getChildren().add(itemBox);

@@ -12,6 +12,5 @@ public class GetCategoriesResponse extends Response {
         this.categories = categories;
     }
 
-    @Override
-    public String getType() { return "GET_CATEGORIES_RESULT"; }
+   
 }

@@ -12,8 +12,5 @@ public class CreateAuctionResponse extends Response {
     public Auction getAuction() {
         return newlyCreatedAuction;
     }
-    @Override
-    public String getType() {
-        return "CREATE_AUCTION";
-    }
+   
 }

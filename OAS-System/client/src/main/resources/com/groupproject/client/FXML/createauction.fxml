@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
+<?import javafx.geometry.*?>
 
 <VBox spacing="15.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.CreateAuctionController">
    <padding>
@@ -55,12 +55,26 @@
                <Label text="Category Specifications" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #555;"/>
                
                <VBox fx:id="dynamicFieldsContainer" spacing="10" />
-
             </VBox>
          </content>
       </ScrollPane>
       <Separator />
-
+      <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <Button onAction="#handleChooseMainImage" fx:id="chooseImageButton" prefHeight="35.0" prefWidth="120.0" styleClass="myButtons" text="Choose Image" />
+                <Label fx:id="imageLabel" text="No file selected" textFill="#6b6b6b" />
+        </HBox>
+        <HBox  spacing="10.0">
+            <Button fx:id="chooseSecondaryImages" onAction="#handleChooseSecondaryImages" styleClass="action-btn" text="Choose secondary images" />
+            <Label prefHeight="28.0" prefWidth="169.0" style="-fx-font-weight: bold;" text="Album ảnh phụ (Tối đa 10 ảnh)" />
+        </HBox>
+        <ScrollPane prefHeight="100.0" fitToHeight="true" hbarPolicy="NEVER" style="-fx-background-color: transparent; -fx-border-color: transparent;">
+            <padding>
+                <Insets top="10.0" bottom="10.0" left="10.0" right="10.0" />
+            </padding>
+            <content>
+                <FlowPane fx:id="secondaryPreviewContainer" hgap="10.0" vgap="10.0" prefWidth="200"/>
+            </content>
+        </ScrollPane>
       <HBox spacing="15" alignment="CENTER_RIGHT">
          <children>
             <Label fx:id="statusLabel" textFill="RED" />

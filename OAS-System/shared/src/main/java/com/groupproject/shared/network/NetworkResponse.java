@@ -18,8 +18,7 @@ public class NetworkResponse extends Response {
         this(action, isSuccess, null, null);
     }
 
-    @Override
-    public String getType() { return "NETWORK_RESULT"; }
+  
 
     public String getAction() { return action; }
     public Object getPayload() { return payload; }

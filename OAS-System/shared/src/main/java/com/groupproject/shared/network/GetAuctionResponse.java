@@ -11,8 +11,5 @@ public class GetAuctionResponse extends Response {
         return selectedAuctions;
     }
     // HANDLE LATER
-    @Override
-    public String getType() {
-        return "GET_AUCTIONS_RESULT";
-    }
+    
 }

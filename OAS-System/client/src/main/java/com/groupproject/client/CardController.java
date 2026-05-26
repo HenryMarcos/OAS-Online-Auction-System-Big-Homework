@@ -1,6 +1,7 @@
 package com.groupproject.client;
 import java.io.IOException;
 
+import com.groupproject.client.network.AuctionEventBus;
 import com.groupproject.client.network.EventRouter;
 import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.AlertUtils;
@@ -9,6 +10,7 @@ import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.shared.model.transaction.Auction;
+import com.groupproject.shared.model.user.User;
 import com.groupproject.shared.network.AuctionEvent.AuctionCancelledEvent;
 import com.groupproject.shared.network.AuctionEvent.AuctionEndedEvent;
 import com.groupproject.shared.network.AuctionEvent.AuctionFinisedEvent;
@@ -17,11 +19,15 @@ import com.groupproject.shared.network.AuctionEvent.AuctionStartedEvent;
 import com.groupproject.shared.network.AuctionEvent.BidUpdatedEvent;
 import com.groupproject.shared.network.GetAuctionDetailRequest;
 import com.groupproject.shared.network.GetAuctionDetailResponse;
+import com.groupproject.shared.network.JoinAuctionRequest;
+import com.groupproject.shared.network.JoinAuctionResponse;
+
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.Button;
 
 public class CardController implements AuctionListener { 
     private Auction currentAuction;
@@ -32,11 +38,14 @@ public class CardController implements AuctionListener {
     @FXML
     private Label timeleft;
     @FXML private Label auctionStatus;
-
+    @FXML private ToggleButton subscribeToggle;
+    @FXML private Button cancelButton;
     @FXML
     public  void initialize() {
         // ĐĂN KÝ VIỆC LẮNG NGHE TRẢ VỀ KẾT QUẢ
         EventRouter.getInstance().on(GetAuctionDetailResponse.class, this::handleGetDetailAuction);
+        EventRouter.getInstance().on(JoinAuctionResponse.class,this::handleJoinAuctionResponse);
+        populateUI(currentAuction);
     }
     @FXML 
     private void handleBid(ActionEvent event) throws IOException {
@@ -52,6 +61,12 @@ public class CardController implements AuctionListener {
             CountDownHelper countDownHelper = new CountDownHelper();
             countDownHelper.start(auction, () -> timeleft.setText("ENDED"), timeleft);
             applyAuctionStatus(auction.getStatus());
+
+            // NGHIỆP VỤ ĐỂ HIỂN THỊ NÚT HỦY PHIÊN 
+            if (auction.getStatus()==AuctionStatus.WAITING) {
+                cancelButton.setVisible(true);
+                cancelButton.setManaged(true);
+            }
         });
     }
     private void handleGetDetailAuction(GetAuctionDetailResponse response) {
@@ -103,5 +118,32 @@ public class CardController implements AuctionListener {
         Platform.runLater(() -> {
             applyAuctionStatus(AuctionStatus.FINISHED);
         });
+    }
+    @FXML
+    private void handleSubscribeToggle(ActionEvent event) {
+        if (subscribeToggle.isSelected()) {
+            subscribeToggle.setText("UNFOLLOW");
+            User user= SessionManager.getInstance().getCurrentUser();
+            // GỬI THÔNG BÁO MUỐN NHẬN TIN CỦA PHIÊN ĐẤU GIÁ NÀY LÊN SERVER
+            RequestSender.send(new JoinAuctionRequest(currentAuction.getId().intValue(), user.getId().intValue()));
+            // CLIENTLOGGER GHI LAI SU KIEN
+        }
+        else {
+            subscribeToggle.setText("FOLLOW NOW !");
+            AuctionEventBus.getInstance().unsubscribe(currentAuction.getId().intValue(), this);
+            // XU LY KHI HO HUY THONG BAO
+        }
+    }
+    @FXML
+    private void handleCancelAuction(ActionEvent event) {
+
+    }
+    private void handleJoinAuctionResponse(JoinAuctionResponse response) {
+        if (response.isSuccess()) {
+            AuctionEventBus.getInstance().subscribe(currentAuction.getId().intValue(),this);
+        }
+        else {
+            // Thong bao cho khac hang la ho da dang ky that bai 
+        }
     }
 }

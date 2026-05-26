@@ -17,8 +17,6 @@ public abstract class Response implements Serializable {
         this(success, null);
     }
 
-    public abstract String getType();
-
     public boolean isSuccess() { return success; }
     public String getMessage() {return message; }
     /*

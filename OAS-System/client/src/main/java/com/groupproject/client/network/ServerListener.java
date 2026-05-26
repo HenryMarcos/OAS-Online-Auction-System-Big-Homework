@@ -50,6 +50,7 @@ public class ServerListener implements Runnable {
                 if (incomingData instanceof AuctionEvent) {
                     AuctionEvent event = (AuctionEvent) incomingData;
                     AuctionEventBus.getInstance().publish(event);
+                    // Tạo thêm thông báo ở trong notification ( dùng logger đẻ ghi lại hoặc dùng như cũ để hiển thị)
                 } 
                 if (incomingData instanceof OutBidNotification) {
                     OutBidNotification notification = (OutBidNotification) incomingData;

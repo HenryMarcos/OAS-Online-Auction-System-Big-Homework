@@ -18,10 +18,6 @@ public class SignupResponse extends Response {
     public SignupResponse(boolean success, String message) {
         super(success, message);
     }
-
-    @Override
-    public String getType() { return "SIGNUP_RESULT"; }
-
     public User getUser() { return user; }
     public List<Category> getCategoryTree() { return categoryTree; }
 }

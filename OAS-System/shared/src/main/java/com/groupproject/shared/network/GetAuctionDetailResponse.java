@@ -15,9 +15,5 @@ public class GetAuctionDetailResponse extends Response  {
     public List<BidTransaction> getBidHistory() {
         return bidHistory;
     }
-    // Về sau thì thêm vào ;
-    @Override
-    public String getType() {
-        return "GET_AUCTION_DETAIL_RESULT";
-    }
+   
 }

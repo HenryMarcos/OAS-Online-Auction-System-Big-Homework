@@ -28,8 +28,5 @@ public class BidResponse extends Response implements Wallet {
     }
     // ĐỂ XỬ LÝ SAU 
 
-    @Override
-    public String getType() {
-        return "";
-    }
+    
 }
