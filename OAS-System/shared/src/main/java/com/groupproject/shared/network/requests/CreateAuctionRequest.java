@@ -1,5 +1,7 @@
 package com.groupproject.shared.network.requests;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 import com.groupproject.shared.model.categories.Category;
@@ -11,18 +13,30 @@ public class CreateAuctionRequest extends Request {
     private String description;
     private Category category;
     Map<Integer, Map<String, String>> categoryGroupedSpecs;
+    private byte[] mainImageBytes;
+    private List<byte[]> subImagesBytes;
     private double startingPrice;
-    private String endTime;
+    private long duration;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
     private AuctionStatus status;
 
     public CreateAuctionRequest(int sellerId, String title, String description, Category category, 
-                                Map<Integer, Map<String, String>> categoryGroupedSpecs, double startingPrice, String endTime, AuctionStatus status) {
+                                Map<Integer, Map<String, String>> categoryGroupedSpecs, 
+                                byte[] mainImageBytes, List<byte[]> subImagesBytes,
+                                double startingPrice, 
+                                Long duration, LocalDateTime startTime, LocalDateTime endTime, 
+                                AuctionStatus status) {
         this.sellerId = sellerId;
         this.title = title;
         this.description = description;
         this.category = category;
         this.categoryGroupedSpecs = categoryGroupedSpecs;
+        this.mainImageBytes = mainImageBytes;
+        this.subImagesBytes = subImagesBytes;
         this.startingPrice = startingPrice;
+        this.duration = duration;
+        this.startTime = startTime;
         this.endTime = endTime;
         this.status = status;
     }
@@ -34,7 +48,11 @@ public class CreateAuctionRequest extends Request {
     public String getDescription() { return description; }
     public Category getCategory() { return category; }
     public Map<Integer, Map<String, String>> getCategoryGroupedSpecs() { return categoryGroupedSpecs; }
+    public byte[] getMainImageBytes() { return mainImageBytes; }
+    public List<byte[]> getSubImagesBytes() { return subImagesBytes; }
     public double getStartingPrice() { return startingPrice; }
-    public String getEndTime() { return endTime; }
+    public long getDuration() { return duration; }
+    public LocalDateTime getStartTime() { return startTime; }
+    public LocalDateTime getEndTime() { return endTime; }
     public AuctionStatus getStatus() { return status; }
 }

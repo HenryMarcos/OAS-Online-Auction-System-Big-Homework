@@ -58,9 +58,11 @@ public enum DatabaseManager {
                                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                                 "seller_id INTEGER NOT NULL, " +
                                 "title TEXT NOT NULL," +
+                                "main_image_path TEXT, " +
                                 "description TEXT NOT NULL," +
                                 "category_id INTEGER NOT NULL," +
                                 "starting_price REAL NOT NULL," +
+                                "duration INT DEFAULT 0, " +
                                 "start_time DATETIME, " +
                                 "end_time DATETIME NOT NULL," +
                                 "current_bid REAL," +
@@ -70,6 +72,13 @@ public enum DatabaseManager {
                                 "FOREIGN KEY(current_bidder_id) REFERENCES users(id), " +
                                 "FOREIGN KEY(category_id) REFERENCES categories(id))";
             stmt.execute(auctionSql);
+
+            String auctionImagesSql = "CREATE TABLE IF NOT EXISTS auction_images (" +
+                                      "id INTEGER AUTO_INCREMENT PRIMARY KEY, " +
+                                      "auction_id INTEGER NOT NULL, " +
+                                      "image_path TEXT NOT NULL, " +
+                                      "FOREIGN KEY (auction_id) REFERENCES auctions(id) ON DELETE CASCADE)";
+            stmt.execute(auctionImagesSql);
 
             // Xóa trước khi tạo bảng để test(sau này sẽ không dùng)
             stmt.execute("DROP TABLE IF EXISTS category_fields");

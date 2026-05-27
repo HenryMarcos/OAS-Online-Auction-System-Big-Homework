@@ -2,6 +2,7 @@ module com.groupproject.client {
     requires javafx.controls;
     requires javafx.fxml;
     requires javafx.graphics;
+    requires java.desktop;
 
     // Thông báo Java rằng cần mô-đun từ shared
     requires com.groupproject.shared;

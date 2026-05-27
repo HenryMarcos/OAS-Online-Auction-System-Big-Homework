@@ -26,30 +26,83 @@
                      <Label text="Auction Title:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
                      <TextField fx:id="titleField" promptText="Enter item title..." GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-                     <Label text="Description:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                     <TextArea fx:id="descriptionArea" prefHeight="80" promptText="Describe your item..." GridPane.rowIndex="1" GridPane.columnIndex="1" wrapText="true"/>
-
-                     <Label text="Category:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-                     <ComboBox fx:id="categoryComboBox" promptText="Select a category" prefWidth="300" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-
-                     <Label text="Starting Price ($):" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-                     <TextField fx:id="startingPriceField" promptText="0.00" prefWidth="150" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
-
-                     <Label text="End Date:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-                     <HBox spacing="10" GridPane.rowIndex="4" GridPane.columnIndex="1">
+                     <Label text="Main Image:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                     <HBox spacing="10" alignment="CENTER_LEFT" GridPane.rowIndex="1" GridPane.columnIndex="1">
                         <children>
-                           <DatePicker fx:id="endDatePicker" promptText="Pick a date"/>
-                           <Label text="Hours:"/>
-                           <ComboBox fx:id="hoursComboBox" prefWidth="70"/>
+                           <Button text="Choose File" onAction="#handleChooseMainImage" style="-fx-background-color: #e0e0e0;"/>
+                           <Label fx:id="mainImageNameLabel" text="No file selected" style="-fx-text-fill: #777777;"/>
                         </children>
                      </HBox>
+
+                     <Label text="Gallery Images:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                     <HBox spacing="10" alignment="CENTER_LEFT" GridPane.rowIndex="2" GridPane.columnIndex="1">
+                        <children>
+                           <Button text="Choose Files" onAction="#handleChooseSubImages" style="-fx-background-color: #e0e0e0;"/>
+                           <Label fx:id="subImagesCountLabel" text="0 images selected" style="-fx-text-fill: #777777;"/>
+                        </children>
+                     </HBox>
+
+                     <Label text="Description:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                     <TextArea fx:id="descriptionArea" prefHeight="80" promptText="Describe your item..." GridPane.rowIndex="3" GridPane.columnIndex="1" wrapText="true"/>
+
+                     <Label text="Category:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                     <ComboBox fx:id="categoryComboBox" promptText="Select a category" prefWidth="300" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+                     <Label text="Starting Price ($):" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                     <TextField fx:id="startingPriceField" promptText="0.00" prefWidth="150" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+                     <Label text="Timing Mode:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                     <HBox spacing="20" alignment="CENTER_LEFT" GridPane.rowIndex="6" GridPane.columnIndex="1">
+                        <children>
+                           <RadioButton fx:id="durationRadio" text="Set Duration" selected="true">
+                              <toggleGroup>
+                                 <ToggleGroup fx:id="timingToggleGroup"/>
+                              </toggleGroup>
+                           </RadioButton>
+                           <RadioButton fx:id="dateRadio" text="Set Specific Dates" toggleGroup="$timingToggleGroup"/>
+                        </children>
+                     </HBox>
+
+                     <Label fx:id="durationLabel" text="Duration Layout:" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+                     <HBox fx:id="durationInputBox" spacing="15" alignment="CENTER_LEFT" GridPane.rowIndex="7" GridPane.columnIndex="1">
+                        <children>
+                           <Label text="Days:"/>
+                           <Spinner fx:id="daysSpinner" prefWidth="70" editable="true"/>
+                           <Label text="Hours:"/>
+                           <Spinner fx:id="hoursSpinner" prefWidth="70" editable="true"/>
+                           <Label text="Mins:"/>
+                           <Spinner fx:id="minsSpinner" prefWidth="70" editable="true"/>
+                        </children>
+                     </HBox>
+
+                     <Label fx:id="startDateLabel" text="Start Date/Time:" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+                     <HBox fx:id="startDateBox" spacing="10" alignment="CENTER_LEFT" GridPane.rowIndex="8" GridPane.columnIndex="1">
+                        <children>
+                           <DatePicker fx:id="startDatePicker" promptText="Pick start date"/>
+                           <Label text="Time:"/>
+                           <ComboBox fx:id="startHourCombo" prefWidth="65"/>
+                           <Label text=":"/>
+                           <ComboBox fx:id="startMinCombo" prefWidth="65"/>
+                        </children>
+                     </HBox>
+
+                     <Label fx:id="endDateLabel" text="End Date/Time:" GridPane.rowIndex="9" GridPane.columnIndex="0"/>
+                     <HBox fx:id="endDateBox" spacing="10" alignment="CENTER_LEFT" GridPane.rowIndex="9" GridPane.columnIndex="1">
+                        <children>
+                           <DatePicker fx:id="endDatePicker" promptText="Pick end date"/>
+                           <Label text="Time:"/>
+                           <ComboBox fx:id="endHourCombo" prefWidth="65"/>
+                           <Label text=":"/>
+                           <ComboBox fx:id="endMinCombo" prefWidth="65"/>
+                        </children>
+                     </HBox>
+
                   </children>
                </GridPane>
 
                <Separator />
 
                <Label text="Category Specifications" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #555;"/>
-               
                <VBox fx:id="dynamicFieldsContainer" spacing="10" />
 
             </VBox>

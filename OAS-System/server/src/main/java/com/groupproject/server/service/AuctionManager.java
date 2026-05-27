@@ -4,15 +4,19 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.groupproject.server.core.ClientManager;
 import com.groupproject.server.dao.AuctionDAO;
 import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.shared.model.transaction.Auction;
+import com.groupproject.shared.network.events.AuctionListUpdateEvent;
 import com.groupproject.shared.network.requests.PlaceBidRequest;
 
 public enum AuctionManager {
@@ -20,43 +24,74 @@ public enum AuctionManager {
     
     // Sử dụng ConcurrentSkipListMap để danh sách luôn tự động được sắp xếp theo Auction ID
     private final ConcurrentSkipListMap<Integer, Auction> activeAuctions = new ConcurrentSkipListMap<>();
+
+    // Tracks active auction scheduler tasks to prevent the Duplicate Scheduler Bug
+    private final Set<Integer> scheduledAuctionIds = ConcurrentHashMap.newKeySet();
+
     // Xử lý tất cả phần thời gian đấu giá của các phiên đấu giá
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
 
     private AuctionManager() {}
 
     public void refreshCache() {
+        ServerLogger.info("Refreshing AuctionManager Cache from Database...");
         loadActiveAuctionsFromDatabase();
+        broadcastAuctionListUpdate();
     }
 
-    // Lấy các phiên đấu giá đang hoạt động và đăng ký chúng
-    // -----------------------------------------------------
+    // Lấy các phiên đấu giá có đang hoạt động hoặc đang đặt lịch
+    // ----------------------------------------------------------
     private void loadActiveAuctionsFromDatabase() {
-        activeAuctions.clear();
-        List<Auction> activeAuctionList = AuctionDAO.getAuctionsByStatus(AuctionStatus.ACTIVATED);
+        try {
+            List<Auction> activeAuctionList = AuctionDAO.getAuctionsByStatus(AuctionStatus.ACTIVATED);
+            List<Auction> waitingAuctionList = AuctionDAO.getAuctionsByStatus(AuctionStatus.WAITING);
+            
+            List<Auction> allAuctions = new ArrayList<>();
+            if (activeAuctionList != null) allAuctions.addAll(activeAuctionList);
+            if (waitingAuctionList != null) allAuctions.addAll(waitingAuctionList);
 
-        for (Auction auction : activeAuctionList) {
-            registerAuction(auction);
+            List<Integer> fetchedIds = new ArrayList<>();
+
+            for (Auction auction : allAuctions) {
+                fetchedIds.add(auction.getId());
+                if (auction.getStatus() == AuctionStatus.ACTIVATED || auction.getStatus() == AuctionStatus.WAITING) {
+                    registerAuctionInternal(auction);
+                }
+            }
+
+            // Purge items from memory cache if they are no longer marked active in the database
+            activeAuctions.keySet().removeIf(id -> !fetchedIds.contains(id));
+            
+        } catch (Exception e) {
+            ServerLogger.error("Error loading active auctions from database: " + e.getMessage());
         }
     }
 
-    // Đăng ký phiên đấu giá
-    // ---------------------
-    public void registerAuction(Auction auction) {
+    // Đăng ký phiên đấu giá mới
+    // -------------------------
+    public synchronized void registerNewAuction(Auction auction) {
+        if (auction == null) return;
+        ServerLogger.info("Registering newly created auction ID: " + auction.getId());
+        registerAuctionInternal(auction);
+        broadcastAuctionListUpdate(); // 📢 Push real-time event
+    }
+
+    // Kết nối với hệ thống lập lịch mà không bị trùng lặp task
+    // --------------------------------------------------------
+    private void registerAuctionInternal(Auction auction) {
         activeAuctions.put(auction.getId(), auction);
 
-        // Kiểm tra xem phiên đấu giá có ngay lập tức bắt đầu đếm xuống luôn không
         if (auction.getStatus() == AuctionStatus.ACTIVATED) {
-            // Tính khoảng delay trước khi phiên đấu giá kết thúc
-            long delayInSeconds = Duration.between(LocalDateTime.now(), auction.getEndTime()).toSeconds();
-            if (delayInSeconds < 0) { delayInSeconds = 0; }
+            if (!scheduledAuctionIds.contains(auction.getId())) {
+                long delayInSeconds = Duration.between(LocalDateTime.now(), auction.getEndTime()).toSeconds();
+                if (delayInSeconds < 0) delayInSeconds = 0;
 
-            // Lên lịch cho nhiệm vụ đóng phiên đấu giá
-            scheduler.schedule(() -> { endAuction(auction.getId()); }, delayInSeconds, TimeUnit.SECONDS);
-
-            ServerLogger.info("Auction " + auction.getId() + " is ACTIVATED. Countdown timer started (" + delayInSeconds + "s).");
-        } else {
-            ServerLogger.info("Auction " + auction.getId() + " is WAITING. Timer will start once the seller activates it manually.");
+                int auctionId = auction.getId();
+                scheduledAuctionIds.add(auctionId);
+                
+                scheduler.schedule(() -> endAuction(auctionId), delayInSeconds, TimeUnit.SECONDS);
+                ServerLogger.info("Auction " + auctionId + " expiration countdown set for " + delayInSeconds + "s.");
+            }
         }
     }
 
@@ -99,6 +134,8 @@ public enum AuctionManager {
             ServerLogger.info("User " + bidderId + " successfully bid $" + bidAmount + " on Auction " + auctionId);
 
             // TODO: Broadcast NewBidEvent cho toàn bộ user trong phòng đấu giá
+            broadcastAuctionListUpdate();
+
             return true;
         } else {
             ServerLogger.error("Failed to save bid to DB for Auction " + auctionId);
@@ -109,6 +146,7 @@ public enum AuctionManager {
     // Xử lý việc đặt bid(Lấy dữ liệu dưới dạng PlaceBidRequest)
     // ---------------------------------------------------------
     public synchronized boolean placeBid(PlaceBidRequest request) {
+        if (request == null) return false;
         return placeBid(request.getAuctionId(), request.getBidderId(), request.getBidAmount());
     }
     
@@ -118,17 +156,25 @@ public enum AuctionManager {
 
     private void endAuction(int auctionId) {
         Auction auction = activeAuctions.remove(auctionId);
+        scheduledAuctionIds.remove(auctionId);
+        
         if (auction != null) {
-            ServerLogger.info("Auction " + auctionId + " has officially ended!");
-
-            // Cập nhật memory
+            ServerLogger.info("Auction " + auctionId + " reached deadline. Concluding automatically.");
             auction.setStatus(AuctionStatus.ENDED);
-            
-            // Gọi DAO để update database
             AuctionDAO.updateAuctionStatus(auctionId, AuctionStatus.ENDED);
             
-            // TODO: Broadcast "AUCTION_ENDED" notification to connected clients
+            // 📢 Broadcast update so the card vanishes or switches state on client feeds
+            broadcastAuctionListUpdate();
         }
+    }
+
+    public void broadcastAuctionListUpdate() {
+        List<Auction> currentAuctions = getActiveAuctionList();
+        AuctionListUpdateEvent updateEvent = new AuctionListUpdateEvent(currentAuctions);
+        
+        // Dispatches through your thread-safe systemic broadcast mechanism
+        ClientManager.INSTANCE.broadcastSystemEvent(updateEvent);
+        ServerLogger.info("Dispatched live AuctionListUpdateEvent to all connected users.");
     }
 
 }

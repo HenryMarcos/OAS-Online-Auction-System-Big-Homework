@@ -13,28 +13,31 @@ public class CreateAuctionHandler implements RequestHandler {
     @Override
     public Response handle(Request request) {
         ServerLogger.info("Handling " + request.getClass().getSimpleName());
-        boolean success;
+        
         if (!(request instanceof CreateAuctionRequest)) { 
-            success = false; // Nếu không phải loại request phù hợp thì thất bại
             ServerLogger.info("This request is not CreateAuctionRequest but " + request.getClass().getSimpleName());
             ServerLogger.error("Failed to create auction");
             return new CreateAuctionResponse(false, "Failed to create auction");
         }
 
-        Auction newlyCreatedAuction = AuctionDAO.createAuction((CreateAuctionRequest) request);
-
-        success = (newlyCreatedAuction != null);
-
-        if (success) {
-            ServerLogger.info("Create auction success");
-            // Đăng ký auction cho AuctionManager để quản lý thời gian trước khi kết thúc phiên đấu giá
-            AuctionManager.INSTANCE.registerAuction(newlyCreatedAuction);
+        CreateAuctionRequest req = (CreateAuctionRequest) request;
+    
+        // 1. Commit the item structure to the database layout
+        Auction newAuction = AuctionDAO.createAuction(
+            req.getSellerId(), req.getTitle(), req.getMainImageBytes(), req.getSubImagesBytes(),
+            req.getDescription(), req.getCategory(), req.getCategoryGroupedSpecs(),
+            req.getStartingPrice(), req.getDuration(), req.getStartTime(), req.getEndTime(), req.getStatus()
+        );
+        
+        if (newAuction != null) {
+            // 2. Insert into manager and push live broadcast automatically!
+            AuctionManager.INSTANCE.registerNewAuction(newAuction);
             
-            return new CreateAuctionResponse(true, newlyCreatedAuction, null);
+            ServerLogger.info("Create auction success");
+            return new CreateAuctionResponse(true, newAuction, "Auction successfully launched!");
         }
-        else {
-            ServerLogger.error("Failed to create auction");
-            return new CreateAuctionResponse(false, "Failed to create auction");
-        }
+
+        ServerLogger.error("Failed to create auction");
+        return new CreateAuctionResponse(false, "Database validation constraint failed.");
     }
 }
