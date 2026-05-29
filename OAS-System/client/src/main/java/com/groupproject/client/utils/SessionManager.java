@@ -2,8 +2,10 @@ package com.groupproject.client.utils;
 
 import java.util.List;
 
+import com.groupproject.client.MainController;
 import com.groupproject.shared.model.categories.Category;
 import com.groupproject.shared.model.transaction.Auction;
+import com.groupproject.shared.model.transaction.AuctionDetail;
 import com.groupproject.shared.model.transaction.BidDTO;
 import com.groupproject.shared.model.transaction.NotificationDTO;
 import com.groupproject.shared.model.user.User;
@@ -14,9 +16,18 @@ public enum SessionManager {
     private static User currentUser = null;
     private static List<Category> currentCategories;
     private static List<Auction> currentAuctionList;
+
+    private static List<Auction> myProductList;
+    private static List<Auction> joinedAuctions;
+
     private Auction currentViewingAuction;
     private List<BidDTO> currentAuctionBids;
+
     private List<NotificationDTO> notificationList;
+
+    private static AuctionDetail currentAuctionDetail;
+
+    private static MainController currentMainController;
 
     private SessionManager() {}
 
@@ -31,7 +42,8 @@ public enum SessionManager {
 
     public void logout() {
         currentUser = null;
-        ClientLogger.info("Session cleared: User logged out.");
+        currentAuctionDetail = null;
+        System.out.println("Session cleared: User logged out.");
     }
 
     public void setCurrentCategories(List<Category> categories) {
@@ -59,4 +71,15 @@ public enum SessionManager {
     public List<NotificationDTO> getNotificationList() { return notificationList; }
     public void setNotificationList(List<NotificationDTO> notificationList) { this.notificationList = notificationList; }
 
+    public MainController getCurrentMainController() { return currentMainController; }
+    public void setCurrentMainController(MainController mainController) { this.currentMainController = mainController; }
+
+    // SETTER AND GETTER
+    public void setCurrentAuctionDetail(AuctionDetail currentAuctionDetail) {
+        this.currentAuctionDetail= currentAuctionDetail;
+    }
+    public AuctionDetail getCurrentAuctionDetail() {
+        return currentAuctionDetail;
+    }
+    
 }

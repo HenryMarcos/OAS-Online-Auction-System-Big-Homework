@@ -56,7 +56,7 @@
             <HBox alignment="CENTER" prefHeight="6.0" prefWidth="230.0" spacing="10.0">
             <children>
                     <Label styleClass="plain-text" text="Didn't have an account ?"/>
-                    <Button styleClass="signup-button" text="Sign up" onAction="#switchtoSignup" />
+                    <Button styleClass="signup-button" text="Sign up" onAction="#handleSignup" />
             </children>
             <padding>
                 <Insets top="20.0" />

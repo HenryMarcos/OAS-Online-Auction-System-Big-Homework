@@ -1,19 +1,19 @@
 package com.groupproject.client;
 // giao dien, logic cua trang chu
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import com.groupproject.client.Data.Item;
-import com.groupproject.client.Data.ItemRespository;
+import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.ClientLogger;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.model.transaction.Auction;
+import com.groupproject.shared.network.requests.GetAuctionRequest;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.AnchorPane;
@@ -23,8 +23,10 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 
+
+
 // phan center cua mainscreen.fxml 
-public class HomeController implements  Initializable {
+public class HomeController extends BaseAuctionViewController {
    private static HomeController instance;
 
    @FXML private GridPane productgrid;
@@ -95,32 +97,21 @@ public class HomeController implements  Initializable {
         }
    }  
 
-   public void loadItems() {
-      productgrid.getChildren().clear();
-      
-      List<Item> items = ItemRespository.getAll();
-      for (int i=0; i< items.size();i++) {
-         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/groupproject/client/FXML/card.fxml"));
-            HBox card = (HBox) loader.load();
-            card.setMaxWidth(Double.MAX_VALUE);
-            GridPane.setFillWidth(card, true);
-            CardController controller = loader.getController();
-            controller.setItem(items.get(i));
-            productgrid.add(card,i % 2,i /2);
-
-         }
-         catch( IOException e) {
-            e.printStackTrace();
-         }
-      }
-   }
-   public static HomeController getInstance() {
-         return instance;
+   // hàm load những items có trong từng mục category
+   @Override
+   public boolean shouldInclude(Auction newItem) {
+      return true;
    }
 
-   // tao grid san pham dua vao cho gridproducts(flowpane)
-   
-   
-   
+   @Override
+   public void fetchInitialData() {
+      GetAuctionRequest request = GetAuctionRequest.getAll();
+      RequestSender.send(request);
+   }
+
+   @Override
+   public void fetchDataByCategory(int categoryId) {
+      GetAuctionRequest request = GetAuctionRequest.getByStatus(null, categoryId);
+      RequestSender.send(request);
+   }
 }

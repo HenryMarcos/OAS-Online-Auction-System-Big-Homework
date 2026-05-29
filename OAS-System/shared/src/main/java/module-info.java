@@ -11,6 +11,8 @@ module com.groupproject.shared {
     exports com.groupproject.shared.network.requests;
     exports com.groupproject.shared.network.responses;
     exports com.groupproject.shared.network.events;
+    exports com.groupproject.shared.network.AuctionEvent;
+    exports com.groupproject.shared.network;
 
     // 2. Export các nhóm Factory
     exports com.groupproject.shared.factory;

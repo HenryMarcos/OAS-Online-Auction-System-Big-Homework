@@ -1,0 +1,70 @@
+/* CONTAINER BỌC NGOÀI SIDEBAR */
+.sidebar-container {
+    -fx-background-color: #ffffff; /* Nền trắng tinh tế, sang trọng */
+    -fx-padding: 20 0 10 0;
+    -fx-border-color: transparent #e2e8f0 transparent transparent; /* Đường kẻ mờ bên phải ngăn cách với khu vực đấu giá */
+    -fx-border-width: 1;
+}
+
+/* TIÊU ĐỀ SIDEBAR */
+.sidebar-title {
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #64748b; /* Màu xám xanh hiện đại */
+    -fx-padding: 0 0 10 20;
+    -fx-letter-spacing: 1px;
+}
+
+/* CẤU HÌNH GENERAL TREEVIEW */
+.modern-tree-view {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+/* XÓA BỎ ĐƯỜNG VIỀN KHÓ CHỊU KHI ĐƯỢC FOCUS */
+.modern-tree-view:focused {
+    -fx-background-color: transparent;
+}
+
+/* THIẾT KẾ CHO TỪNG DÒNG (CELL) CỦA CÂY */
+.modern-tree-view .tree-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 10 15 10 20;
+    -fx-text-fill: #334155; /* Màu chữ xám tối dễ đọc */
+    -fx-font-size: 14px;
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+    -fx-cursor: hand; /* Biến con trỏ chuột thành hình bàn tay khi di chuyển vào */
+    -fx-background-insets: 0;
+}
+
+/* HIỆU ỨNG KHI ĐƯA CHUỘT VÀO (HOVER) */
+.modern-tree-view .tree-cell:hover {
+    -fx-background-color: #f1f5f9; /* Đổi nền xám nhạt nhẹ nhàng */
+    -fx-text-fill: #0f172a;
+}
+
+/* HIỆU ỨNG KHI MỤC ĐƯỢC CHỌN (SELECTED) */
+.modern-tree-view .tree-cell:selected {
+    -fx-background-color: #eff6ff; /* Nền xanh dương pastel cực nhẹ */
+    -fx-text-fill: #2563eb;        /* Chữ chuyển sang màu xanh thương hiệu xịn sò */
+    -fx-font-weight: bold;         /* Chữ đậm lên để tạo điểm nhấn */
+}
+
+/* TÙY CHỈNH NÚT MŨI TÊN (DISCLOSURE NODE) */
+.modern-tree-view .tree-cell .tree-disclosure-node {
+    -fx-padding: 4 8 4 4;
+    -fx-background-color: transparent;
+}
+
+/* BIẾN MŨI TÊN MẶC ĐỊNH THÀNH MŨI TÊN FLAT HIỆN ĐẠI */
+.modern-tree-view .tree-cell .tree-disclosure-node .arrow {
+    -fx-background-color: #94a3b8; /* Màu mũi tên mặc định */
+    -fx-shape: "M 0 0 L 4 4 L 0 8 Z"; /* Ép hình dáng hình mũi tên góc nhọn sang trọng */
+}
+
+/* ĐỔI MÀU MŨI TÊN KHI DÒNG ĐÓ ĐƯỢC CHỌN */
+.modern-tree-view .tree-cell:selected .tree-disclosure-node .arrow {
+    -fx-background-color: #2563eb;
+}

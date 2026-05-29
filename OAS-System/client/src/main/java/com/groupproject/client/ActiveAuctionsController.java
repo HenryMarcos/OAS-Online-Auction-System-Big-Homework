@@ -1,0 +1,25 @@
+package com.groupproject.client;
+import com.groupproject.client.network.RequestSender;
+import com.groupproject.shared.model.enums.AuctionStatus;
+import com.groupproject.shared.model.transaction.Auction;
+import com.groupproject.shared.network.requests.GetAuctionRequest;
+
+public class ActiveAuctionsController extends BaseAuctionViewController {
+   // hàm load những items có trong từng mục category
+   @Override
+   public boolean shouldInclude(Auction newItem) {
+      return newItem.getStatus()==AuctionStatus.ACTIVATED;
+   }
+   @Override
+   public void fetchInitialData() {
+      GetAuctionRequest request = GetAuctionRequest.getByStatus(AuctionStatus.ACTIVATED, null);
+      RequestSender.send(request);
+   }
+   @Override
+   public void fetchDataByCategory(int categoryId) {
+      GetAuctionRequest request = GetAuctionRequest.getByStatus(AuctionStatus.ACTIVATED, categoryId);
+      RequestSender.send(request);
+   }
+   
+}
+

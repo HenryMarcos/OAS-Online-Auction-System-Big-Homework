@@ -13,6 +13,7 @@ import com.groupproject.shared.network.responses.SignupResponse;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -28,7 +29,7 @@ public class SignupController implements LifecycleController {
     @FXML private PasswordField passwordField;
     @FXML private PasswordField repeatPasswordField;
     @FXML private Label statusLabel;
-
+    @FXML private Button signupButton;
     @FXML private Hyperlink hyperlinklogin;
 
     @FXML
@@ -37,13 +38,13 @@ public class SignupController implements LifecycleController {
     }
 
     @FXML
-    private void handleSignup() {
+    private void handleSignUp(ActionEvent event) {
         // Lấy string từ file fxml
         String username = usernameField.getText();
         String email = emailField.getText();
         String password = passwordField.getText();
         String repeatPassword = repeatPasswordField.getText();
-
+        signupButton.setDisable(true);
         if (username.isEmpty() || email.isEmpty() || 
             password.isEmpty() || repeatPassword.isEmpty()) {
             statusLabel.setText("Please enter all fields!");
@@ -76,6 +77,7 @@ public class SignupController implements LifecycleController {
     private void handleSignupResponse(SignupResponse response) {
         if (response.isSuccess()) { handleSuccessfulSignup(response); }
         else { handleFailedSignup(response); }
+        signupButton.setDisable(false);
     }
 
     private void handleSuccessfulSignup(SignupResponse response) {

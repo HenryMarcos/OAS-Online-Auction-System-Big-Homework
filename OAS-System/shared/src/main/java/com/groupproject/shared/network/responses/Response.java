@@ -2,7 +2,7 @@ package com.groupproject.shared.network.responses;
 
 import java.io.Serializable;
 
-public abstract class Response implements Serializable{
+public abstract class Response implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -20,4 +20,9 @@ public abstract class Response implements Serializable{
 
     public boolean isSuccess() { return success; }
     public String getMessage() {return message; }
+    /*
+    public List<Auction> getAuction() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    */
 }

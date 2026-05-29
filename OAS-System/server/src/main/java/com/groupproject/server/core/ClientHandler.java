@@ -63,22 +63,6 @@ public class ClientHandler implements Runnable {
 
 
         } catch (Throwable e) { // <-- Catch EVERYTHING
-            /* 
-            // 1. PRINT THE ERROR FIRST before doing anything else!
-            System.err.println("============== SERVER THREAD CRASHED ==============");
-            e.printStackTrace(); 
-            System.err.println("===================================================");
-            
-            // 2. Safely attempt to log it (Wrap in Platform.runLater if it touches UI)
-            try {
-                javafx.application.Platform.runLater(() -> {
-                    ServerApp.log("A client disconnected due to an error.");
-                });
-            } catch (Exception logEx) {
-                // Ignore if UI logging fails
-            }
-            */
-
             ServerLogger.error("Client disconnected or error occurred: " + e.getMessage());
 
         } finally {

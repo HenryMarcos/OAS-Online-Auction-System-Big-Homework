@@ -70,7 +70,7 @@ public class UserDAO {
             ResultSet rs = pstmt.getGeneratedKeys();
             if (rs.next()) {
                 int newId = rs.getInt(1); // 1 thay vì "id", vì rs không lấy tên cột
-                return new User(newId, username, password, email, noww); // Đăng ký thành công
+                return new User(newId, username, password, email, 10000, noww); // Đăng ký thành công
             } else {
                 System.err.println("Error: Can't get user's id for some reason");
             }
@@ -131,7 +131,7 @@ public class UserDAO {
                 LocalDateTime createdAt = rs.getObject("created_at", LocalDateTime.class);
                 ServerLogger.info(String.format("User's id: %s, email: %s, created at: %s", id, email, createdAt));
 
-                return new User(id, username, password, email, createdAt);
+                return new User(id, username, password, email, 10000, createdAt);
             }
         } catch (Exception e) {
             System.out.println("UserDAO:getUser: " + e.getMessage());

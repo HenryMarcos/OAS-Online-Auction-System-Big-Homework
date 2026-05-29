@@ -7,6 +7,7 @@ import java.util.ResourceBundle;
 import com.groupproject.client.network.ClientMessageRouter;
 import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.LifecycleController;
+import com.groupproject.client.utils.NotificationStore;
 import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.client.utils.TimeUtil;
@@ -16,6 +17,7 @@ import com.groupproject.shared.network.requests.LogOutRequest;
 import com.groupproject.shared.network.responses.JoinAuctionResponse;
 import com.groupproject.shared.network.responses.LogOutResponse;
 
+import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -23,10 +25,13 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
-public class MainController  implements Initializable {
+import javafx.stage.Stage;
+
+public class MainController extends Application implements Initializable {
 
     private Object currentSubController;
 
@@ -38,8 +43,29 @@ public class MainController  implements Initializable {
     @FXML private VBox inboxPane;
     @FXML private ListView<NotificationDTO> notificationList;
     
+    @FXML private Label username;
+    @FXML private Label wallet;
+    @FXML private Label redDotIndicator;
+    
+    @Override
+    public void start(Stage primarystage) throws IOException {
+        SceneNavigator.INSTANCE.setMainStage(primarystage);
+        SceneNavigator.INSTANCE.goTo("/com/groupproject/client/FXML/mainscreen.fxml");
+    }
+    @FXML 
+    private void switchtologin(ActionEvent event) throws IOException {
+        SceneNavigator.INSTANCE.goTo("/com/groupproject/client/FXML/login.fxml");
+        // set User == null;
+    } 
+
+    @FXML
+    private void switchtoCreateAuction() throws IOException {
+        loadViewIntoCenter("/com/groupproject/client/FXML/createauction.fxml");
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        loadViewIntoCenter("/com/groupproject/client/FXML/homecontent.fxml");
         // yêu cầu nhả ra các categories đã có sẵn trong máy.
         loadView("homecontent.fxml");
         // lắng nghe gọi GetCategoriesResponse 
@@ -65,6 +91,10 @@ public class MainController  implements Initializable {
             bellButton.setText("🔔 Inbox");
         }
         
+         // Thiết lập tên dựa vào username
+        updateUI();
+         // lắng nghe gọi GetCategoriesResponse 
+        redDotIndicator.visibleProperty().bind(NotificationStore.getInstance().unreadCountProperty().greaterThan(0));
     }
 
     @FXML
@@ -105,7 +135,47 @@ public class MainController  implements Initializable {
     }
     @FXML
     private void switchtoNotification() {
-        loadView("notification.fxml");
+        NotificationStore.getInstance().markAllReads();
+        loadViewIntoCenter("/com/groupproject/client/FXML/notification.fxml");
+        // ĐĂNG KÝ NGHE ĐỂ TRẢ VỀ THÔNG BÁO 
+    }
+    @FXML 
+    private void swichtoMyProducts() {
+        loadViewIntoCenter("/com/groupproject/client/FXML/yourauctions.fxml");
+    }
+    @FXML
+    private void switchtoActiveListings() {
+        loadViewIntoCenter("/com/groupproject/client/FXML/activeauctions.fxml");
+    }
+    @FXML
+    private void switchtoPersonalInfo() {
+        loadViewIntoCenter("/com/groupproject/client/FXML/profile.fxml");
+    }
+    private void updateUI() {
+        Platform.runLater(() -> {
+            String name= SessionManager.INSTANCE.getCurrentUser().getUsername();
+            username.setText(name);
+            updateWallet((SessionManager.INSTANCE.getCurrentUser() != null)? SessionManager.INSTANCE.getCurrentUser().getAccountBalance(): 0.0f);
+    
+        });
+    }
+    public void updateWallet(double availableBalance) {
+        wallet.setText(String.format("Wallet : %,.0f USD", availableBalance));
+    }
+    
+    private void loadViewIntoCenter(String fxmlPath) {
+        try {
+            // 1. Tải giao diện của màn hình con
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Node view = loader.load();
+            
+            // 2. Đặt giao diện vừa tải vào phần CENTER của BorderPane
+            mainBorderPane.setCenter(view);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Lỗi: Không thể tải giao diện " + fxmlPath);
+        }
     }
 
     @FXML

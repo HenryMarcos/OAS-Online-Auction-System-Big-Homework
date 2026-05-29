@@ -31,7 +31,6 @@ public class App extends Application {
         // Vào màn hình login
         SceneNavigator.INSTANCE.goTo("/com/groupproject/client/FXML/login.fxml");
     }
-
     public static void connectToServer() {
         try {
             // Dùng Google Cloud IP hoặc bất kỳ IP nào phù hợp
@@ -48,9 +47,7 @@ public class App extends Application {
         }
     }
 
-
     public static void main(String[] args) {
         launch();
     }
-
 }

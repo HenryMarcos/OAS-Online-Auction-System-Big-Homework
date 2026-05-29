@@ -21,15 +21,22 @@
                         <Font name="System Bold" size="24.0" />
                     </font>
                 </Label>
-                
-                <HBox alignment="CENTER_LEFT" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="0.0">
-                    <children>
-                        <Label text="Logged in as ">
-                            <font>
-                                <Font size="14.0" />
-                            </font>
-                        </Label>
-                        <Label text="Cuong" textOverrun="CENTER_WORD_ELLIPSIS">
+                <VBox spacing = "5.0" alignment="CENTER_LEFT"  AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="0.0">
+                        <HBox alignment="CENTER_LEFT" spacing="5.0">
+                            <children>
+                                <Label text="Logged in as ">
+                                    <font>
+                                        <Font size="14.0" />
+                                    </font>
+                                </Label>
+                                <Label fx:id="username"  textOverrun="CENTER_WORD_ELLIPSIS">
+                                    <font>
+                                        <Font name="System Bold" size="14.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </HBox>
+                        <Label fx:id="wallet"  >
                             <font>
                                 <Font name="System Bold" size="14.0" />
                             </font>
@@ -67,23 +74,23 @@
                 <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#switchtoHome" prefHeight="45.0" prefWidth="190.0" styleClass="button-left" text="HOME" />
                 <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Active Listings" />
                 
-                <Region prefHeight="1.0" prefWidth="190.0" styleClass="region" />
-                
-                <VBox spacing="4.0">
-                    <children>
-                        <Button fx:id="profilebtn" alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#toggleProfilemenu" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Profile ▼ " />
-                        <VBox fx:id="profilesubmenu" managed="true" spacing="2.0" visible="true">
-                            <padding>
-                                <Insets left="20.0" />
-                            </padding>
+                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Active Listings" onAction="#switchtoActiveListings"/>
+                <Region prefHeight="1.0" prefWidth="190.0" styleClass="region"/>
+                <VBox spacing="0" >
+                    <Button fx:id="profilebtn" alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Profile ▼ " onAction="#toggleProfilemenu"/>
+                    <VBox fx:id="profilesubmenu" visible="true" managed="true" spacing="0.0" >
+                        <padding >
+                            <Insets left="20.0"/>
+                        </padding>
+                        <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Personal Info" onAction="#switchtoPersonalInfo" />
+                        <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="My Products" onAction="#switchtoMyProducts"/>
+                        <HBox alignment="CENTER_LEFT" spacing="2.0" prefHeight="40.0" prefWidth="190.0">
                             <children>
-                                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="35.0" prefWidth="170.0" styleClass="button-left" text="Personal Info" />
-                                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="35.0" prefWidth="170.0" styleClass="button-left" text="Your Listings" />
-                                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="35.0" prefWidth="170.0" styleClass="button-left" text="Your Products" />
-                                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#switchtoNotification" prefHeight="35.0" prefWidth="170.0" styleClass="button-left" text="Notification" />
+                                <Label fx:id="redDotIndicator" styleClass="sidebar-badge" text="!" />
+                                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="184.0" styleClass="button-left" text="Notification" onAction="#switchtoNotification" />
                             </children>
-                        </VBox>
-                    </children>
+                        </HBox>
+                    </VBox>
                 </VBox>
                 
                 <Button fx:id="testCreateAuction" alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#switchToCreateAuction" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Create Auction(test)" />
@@ -93,7 +100,7 @@
                 
                 <HBox alignment="CENTER">
                     <children>
-                        <Button alignment="CENTER" mnemonicParsing="false" onAction="#switchtoAddItem" prefHeight="45.0" prefWidth="140.0" styleClass="sell-button" text="Sell" />
+                        <Button mnemonicParsing="false" prefHeight="45.0" prefWidth="140.0" styleClass="sell-button" text="Sell" alignment="CENTER" onAction="#switchtoCreateAuction" />
                     </children>
                 </HBox>
             </children>

@@ -31,3 +31,5 @@ OAS-System/client/target/
 OAS-System/client/OAS-App/
 OAS-System/server/target/
 OAS-System/shared/target/
+/OAS-System/server/target
+/OAS-System/server/target

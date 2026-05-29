@@ -37,7 +37,6 @@ public class LoginController implements LifecycleController {
 
         ClientMessageRouter.INSTANCE.onResponse(LoginResponse.class, this::handleLoginResponse);
         // mở lại nút login dù có thành công hay thất bại 
-        loginButton.setDisable(false);
     }
 
     // Hàm này được gọi khi bấm nút con mắt (Do đã set onAction="#togglePasswordVisibility" trong FXML)
@@ -129,6 +128,8 @@ public class LoginController implements LifecycleController {
         // errorLabel.setText(response.getMessage());
         statusLabel.setTextFill(Color.RED);
         statusLabel.setText(response.getMessage());
+        loginButton.setDisable(false);
+
     }
 
     @Override
