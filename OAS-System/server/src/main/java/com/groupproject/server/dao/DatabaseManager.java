@@ -214,13 +214,13 @@ public class DatabaseManager {
             // --- SEED DATA: TẠO ADMIN ĐỂ TEST ---
             try {
                 // 1. Tạo user 'admin' vào bảng users (nếu chưa tồn tại)
-                // Mình dùng ID 1 cho dễ nhớ
+                // Mình dùng ID 999999 cho dễ nhớ
                 String seedUser = "INSERT OR IGNORE INTO users (id, username, email, password, balance, created_at) " +
-                                "VALUES (1, 'admin', 'admin@test.com', 'admin123', 999999.0, '" + java.time.LocalDateTime.now() + "')";
+                                "VALUES (999999, 'admin', 'admin@test.com', 'admin123', 999999.0, '" + java.time.LocalDateTime.now() + "')";
                 stmt.execute(seedUser);
 
-                // 2. Thêm ID 1 vào bảng admin_list để xác nhận quyền Admin
-                String seedAdmin = "INSERT OR IGNORE INTO admin_list (user_id) VALUES (1)";
+                // 2. Thêm ID 999999 vào bảng admin_list để xác nhận quyền Admin
+                String seedAdmin = "INSERT OR IGNORE INTO admin_list (user_id) VALUES (999999)";
                 stmt.execute(seedAdmin);
                 
                 ServerLogger.info(">>> Seed Data: Tài khoản admin/admin123 đã sẵn sàng.");

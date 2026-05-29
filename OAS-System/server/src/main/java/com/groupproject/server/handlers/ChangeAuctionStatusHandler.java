@@ -17,6 +17,8 @@ import com.groupproject.shared.network.response.Response;
 
 public class ChangeAuctionStatusHandler implements RequestHandler {
 
+    private static final long MIN_SECONDS_BEFORE_END_TO_START = 30; // Ngưỡng tối thiểu để bắt đầu đấu giá
+
     @Override
     public Response handle(Request request) {
         if (!(request instanceof ChangeAuctionStatusRequest)) {
@@ -70,7 +72,7 @@ public class ChangeAuctionStatusHandler implements RequestHandler {
             long secondsRemaining = Duration.between(now, currentAuction.getEndTime()).toSeconds();
 
             // Nếu sát giờ hoặc lố giờ -> Ép kết thúc
-            if (secondsRemaining < 60) {
+            if (secondsRemaining < MIN_SECONDS_BEFORE_END_TO_START) {
                 ServerLogger.warning("Auction " + auctionId + " start request too close to end_time. Forcing ENDED.");
                 if (AuctionDAO.updateAuctionStatusOnly(auctionId, AuctionStatus.ENDED)) {
                     AuctionManager.getInstance().forceCancelWaitingAuction(auctionId); // Gỡ khỏi RAM
