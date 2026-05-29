@@ -15,6 +15,7 @@ import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.ClientLogger;
 import com.groupproject.client.utils.ImageOptimizer;
 import com.groupproject.client.utils.SessionManager;
+import com.groupproject.client.utils.TimeUtil;
 import com.groupproject.shared.model.categories.Category;
 import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.shared.network.requests.CreateAuctionRequest;
@@ -422,7 +423,7 @@ public class CreateAuctionTestController implements Initializable {
         long duration = 0;
 
         if (isStartNow) {
-            startTime = LocalDateTime.now();
+            startTime = TimeUtil.getNow();
             initialStatus = AuctionStatus.ACTIVATED;
 
             if (isDurationMode) {
@@ -502,12 +503,11 @@ public class CreateAuctionTestController implements Initializable {
         }
 
         // 3. Packages and submits to Server pipeline
-        int currentUserId = SessionManager.INSTANCE.getCurrentUser().getId();
         int categoryId = selectedCategory.getId();
 
         ClientLogger.info("Form validation successful. Transmitting new auction layout details...");
 
-        CreateAuctionRequest request = new CreateAuctionRequest(currentUserId, title, description, selectedCategory, categoryGroupedSpecs, 
+        CreateAuctionRequest request = new CreateAuctionRequest(title, description, selectedCategory, categoryGroupedSpecs, 
                                                                 mainImageBytes, subImageBytesList, startingPrice, 
                                                                 duration, startTime, endTime, initialStatus);
         RequestSender.send(request);

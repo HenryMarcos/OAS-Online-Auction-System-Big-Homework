@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.groupproject.shared.model.categories.Category;
 import com.groupproject.shared.model.transaction.Auction;
+import com.groupproject.shared.model.transaction.BidDTO;
+import com.groupproject.shared.model.transaction.NotificationDTO;
 import com.groupproject.shared.model.user.User;
 
 public enum SessionManager {
@@ -13,6 +15,8 @@ public enum SessionManager {
     private static List<Category> currentCategories;
     private static List<Auction> currentAuctionList;
     private Auction currentViewingAuction;
+    private List<BidDTO> currentAuctionBids;
+    private List<NotificationDTO> notificationList;
 
     private SessionManager() {}
 
@@ -48,5 +52,11 @@ public enum SessionManager {
 
     public void setCurrentViewingAuction(Auction auction) { this.currentViewingAuction = auction; }
     public Auction getCurrentViewingAuction() { return currentViewingAuction; }
+
+    public List<BidDTO> getCurrentAuctionBids() { return currentAuctionBids; }
+    public void setCurrentAuctionBids(List<BidDTO> bids) { this.currentAuctionBids = bids; }
+
+    public List<NotificationDTO> getNotificationList() { return notificationList; }
+    public void setNotificationList(List<NotificationDTO> notificationList) { this.notificationList = notificationList; }
 
 }

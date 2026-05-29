@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.groupproject.server.cache.CategoryManager;
+import com.groupproject.server.core.ClientHandler;
 import com.groupproject.server.utils.ImageStorageManager;
 import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.model.categories.Category;
@@ -152,7 +153,7 @@ public class AuctionDAO {
 
     // Tạo phiên đấu giá mới(nhận dữ liệu dưới dạng Request)
     // -----------------------------------------------------
-    public static synchronized Auction createAuction(CreateAuctionRequest request) {
+    public static synchronized Auction createAuction(CreateAuctionRequest request, ClientHandler clientContext) {
         AuctionStatus parsedStatus;
         // Đặt mặc định làm WAITING nếu không có
         parsedStatus = (request.getStatus() != null)? request.getStatus() : AuctionStatus.WAITING; 
@@ -161,7 +162,7 @@ public class AuctionDAO {
         } else { ServerLogger.info("Creating auction with ACTIVATED status"); }
 
 
-        return createAuction(request.getSellerId(), request.getTitle(), 
+        return createAuction(clientContext.getAuthenticatedUserId(), request.getTitle(), 
                              request.getMainImageBytes(), request.getSubImagesBytes(),
                              request.getDescription(), 
                              request.getCategory(), request.getCategoryGroupedSpecs(), request.getStartingPrice(), 

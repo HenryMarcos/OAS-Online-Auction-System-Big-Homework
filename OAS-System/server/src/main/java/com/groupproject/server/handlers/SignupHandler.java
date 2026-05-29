@@ -1,6 +1,10 @@
 package com.groupproject.server.handlers;
 
+import java.time.LocalDateTime;
+
 import com.groupproject.server.cache.CategoryManager;
+import com.groupproject.server.core.ClientHandler;
+import com.groupproject.server.core.ClientManager;
 import com.groupproject.server.dao.UserDAO;
 import com.groupproject.server.service.AuctionManager;
 import com.groupproject.shared.model.user.User;
@@ -11,7 +15,7 @@ import com.groupproject.shared.network.responses.SignupResponse;
 
 public class SignupHandler implements RequestHandler {
     @Override
-    public Response handle(Request request) {
+    public Response handle(Request request, ClientHandler clientContext) {
 
         SignupRequest signupReq = (SignupRequest) request;
 
@@ -24,7 +28,10 @@ public class SignupHandler implements RequestHandler {
         User newlyCreatedUser = UserDAO.registerUser(signupReq);
 
         if (newlyCreatedUser != null) {
-            return new SignupResponse(true, newlyCreatedUser, CategoryManager.INSTANCE.getMainCategories(), AuctionManager.INSTANCE.getActiveAuctionList(), "Account successfully created!");
+            clientContext.setAuthenticatedUserId(newlyCreatedUser.getId());
+            ClientManager.INSTANCE.registerUser(newlyCreatedUser.getId(), clientContext.getOut());
+
+            return new SignupResponse(true, newlyCreatedUser, CategoryManager.INSTANCE.getMainCategories(), AuctionManager.INSTANCE.getActiveAuctionList(), LocalDateTime.now(), "Account successfully created!");
         } else {
             return new SignupResponse(false, "Failed to create account. Please try again later.");
         }

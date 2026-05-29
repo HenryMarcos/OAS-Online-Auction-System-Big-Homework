@@ -7,6 +7,7 @@ import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.LifecycleController;
 import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
+import com.groupproject.client.utils.TimeUtil;
 import com.groupproject.shared.network.requests.SignupRequest;
 import com.groupproject.shared.network.responses.SignupResponse;
 
@@ -81,6 +82,9 @@ public class SignupController implements LifecycleController {
         // Thông báo cho client rằng đã thành công
         statusLabel.setTextFill(javafx.scene.paint.Color.GREEN);
         statusLabel.setText("Success! Loading chat...");
+
+        TimeUtil.syncWithServer(response.getServerTime());
+
         // Lưu user
         SessionManager.INSTANCE.setCurrentUser(response.getUser());
         SessionManager.INSTANCE.setCurrentCategories(response.getCategoryTree());

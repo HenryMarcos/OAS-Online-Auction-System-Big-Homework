@@ -6,7 +6,7 @@ import java.time.temporal.ChronoUnit;
 
 import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.LifecycleController;
-import com.groupproject.client.utils.SessionManager;
+import com.groupproject.client.utils.TimeUtil;
 import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.network.requests.JoinAuctionRequest;
 
@@ -54,13 +54,15 @@ public class TestCardController implements LifecycleController {
     public void updateCountDown() {
         if (auction.getEndTime() == null) return;
 
-        Duration remaining = Duration.between(LocalDateTime.now(), auction.getEndTime());
+        LocalDateTime syncedNow = TimeUtil.getNow();
+
+        Duration remaining = Duration.between(syncedNow, auction.getEndTime());
         
         if (remaining.isNegative() || remaining.isZero()) {
             timeleft.setText("ENDED");
             if (timeline != null) timeline.stop();
         } else {
-            long totalSeconds = ChronoUnit.SECONDS.between(LocalDateTime.now(), auction.getEndTime());
+            long totalSeconds = ChronoUnit.SECONDS.between(syncedNow, auction.getEndTime());
             long days    = totalSeconds / 86400;           
             long hours   = (totalSeconds % 86400) / 3600;  
             long minutes = (totalSeconds % 3600) / 60;     
@@ -72,10 +74,9 @@ public class TestCardController implements LifecycleController {
 
     @FXML 
     private void handleBid(ActionEvent event) {
-        int currentUserId = SessionManager.INSTANCE.getCurrentUser().getId();
         
         // Send the request to the server to join this specific auction
-        JoinAuctionRequest request = new JoinAuctionRequest(auction.getId(), currentUserId);
+        JoinAuctionRequest request = new JoinAuctionRequest(auction.getId());
         RequestSender.send(request);
         
         // We do NOT change screens here. We wait for the server to reply!

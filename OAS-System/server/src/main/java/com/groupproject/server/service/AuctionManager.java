@@ -11,12 +11,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.groupproject.server.core.ClientHandler;
 import com.groupproject.server.core.ClientManager;
 import com.groupproject.server.dao.AuctionDAO;
+import com.groupproject.server.dao.BidDAO;
+import com.groupproject.server.dao.NotificationDAO;
 import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.shared.model.transaction.Auction;
+import com.groupproject.shared.network.events.AuctionEndedEvent;
 import com.groupproject.shared.network.events.AuctionListUpdateEvent;
+import com.groupproject.shared.network.events.NewBidEvent;
 import com.groupproject.shared.network.requests.PlaceBidRequest;
 
 public enum AuctionManager {
@@ -114,18 +119,25 @@ public enum AuctionManager {
     public synchronized boolean placeBid(int auctionId, int bidderId, double bidAmount) {
         Auction auction = activeAuctions.get(auctionId);
 
+        // Kiểm tra tính hợp lệ
         if (auction == null || auction.getStatus() != AuctionStatus.ACTIVATED) {
             ServerLogger.warning("Bid rejected: Auction " + auctionId + " is not active.");
             return false;
         }
 
+        double minimalRequired = Math.max(auction.getCurrentBid(), auction.getStartingPrice());
+        if (bidAmount <= minimalRequired) {
+            ServerLogger.warning("Bid rejected: Amount $" + bidAmount + " is too low.");
+            return false;
+        }
+
         // Kiểm tra bid
-        if (bidAmount <= auction.getCurrentBid() || bidAmount < auction.getStartingPrice()) {
+        if (bidAmount <= auction.getCurrentBid()) {
             return false;
         }
 
         // Update bid trong database
-        boolean dbSuccess = AuctionDAO.updateBid(auctionId, bidderId, bidAmount);
+        boolean dbSuccess = BidDAO.insertBid(auctionId, bidderId, bidAmount);
 
         if (dbSuccess) {
             // Update bộ nhớ nếu thành công
@@ -133,7 +145,11 @@ public enum AuctionManager {
             auction.setHighestBidderId(bidderId);
             ServerLogger.info("User " + bidderId + " successfully bid $" + bidAmount + " on Auction " + auctionId);
 
-            // TODO: Broadcast NewBidEvent cho toàn bộ user trong phòng đấu giá
+            // 4. BROADCAST 1: Fast update to ONLY people inside the auction room
+            NewBidEvent roomUpdate = new NewBidEvent(auctionId, bidAmount, bidderId);
+            ClientManager.INSTANCE.broadcastEventToAuction(auctionId, roomUpdate);
+
+            // 5. BROADCAST 2: General update to everyone else for Home Screen cards
             broadcastAuctionListUpdate();
 
             return true;
@@ -145,9 +161,9 @@ public enum AuctionManager {
 
     // Xử lý việc đặt bid(Lấy dữ liệu dưới dạng PlaceBidRequest)
     // ---------------------------------------------------------
-    public synchronized boolean placeBid(PlaceBidRequest request) {
-        if (request == null) return false;
-        return placeBid(request.getAuctionId(), request.getBidderId(), request.getBidAmount());
+    public synchronized boolean placeBid(PlaceBidRequest request, ClientHandler clientContext) {
+        if (request == null || clientContext.getAuthenticatedUserId() == null) return false;
+        return placeBid(request.getAuctionId(), clientContext.getAuthenticatedUserId(), request.getBidAmount());
     }
     
     public Auction getAuction(int auctionId) {
@@ -163,14 +179,35 @@ public enum AuctionManager {
             auction.setStatus(AuctionStatus.ENDED);
             AuctionDAO.updateAuctionStatus(auctionId, AuctionStatus.ENDED);
             
-            // 📢 Broadcast update so the card vanishes or switches state on client feeds
+            // 1. DETERMINE THE WINNER
+            Integer winnerId = auction.getHighestBidderId();
+            double winningBid = auction.getCurrentBid();
+
+            // 2. BROADCAST TO THE ROOM SO THEIR UI LOCKS UP INSTANTLY
+            AuctionEndedEvent endedEvent = new AuctionEndedEvent(auctionId, winnerId, winningBid);
+            ClientManager.INSTANCE.broadcastEventToAuction(auctionId, endedEvent);
+
+            // 🌟 2. PERSISTENT INBOX: Save a notification for everyone who participated
+            List<Integer> participantIds = BidDAO.getUniqueBidders(auctionId);
+            for (Integer userId : participantIds) {
+                String message;
+                if (userId == auction.getHighestBidderId()) {
+                    message = "🏆 You WON the auction for '" + auction.getTitle() + "' with a bid of $" + auction.getCurrentBid() + "!";
+                } else {
+                    message = "❌ You lost the auction for '" + auction.getTitle() + "'. It sold for $" + auction.getCurrentBid() + ".";
+                }
+                // Save to database permanently!
+                NotificationDAO.createNotification(userId, message);
+            }
+
+            // 3. Broadcast global update so the card vanishes on the Home Screen
             broadcastAuctionListUpdate();
         }
     }
 
     public void broadcastAuctionListUpdate() {
         List<Auction> currentAuctions = getActiveAuctionList();
-        AuctionListUpdateEvent updateEvent = new AuctionListUpdateEvent(currentAuctions);
+        AuctionListUpdateEvent updateEvent = new AuctionListUpdateEvent(currentAuctions, LocalDateTime.now());
         
         // Dispatches through your thread-safe systemic broadcast mechanism
         ClientManager.INSTANCE.broadcastSystemEvent(updateEvent);

@@ -1,5 +1,6 @@
 package com.groupproject.server.handlers;
 
+import com.groupproject.server.core.ClientHandler;
 import com.groupproject.server.dao.AuctionDAO;
 import com.groupproject.server.service.AuctionManager;
 import com.groupproject.server.utils.ServerLogger;
@@ -11,7 +12,7 @@ import com.groupproject.shared.network.responses.Response;
 
 public class CreateAuctionHandler implements RequestHandler {
     @Override
-    public Response handle(Request request) {
+    public Response handle(Request request, ClientHandler clientContext) {
         ServerLogger.info("Handling " + request.getClass().getSimpleName());
         
         if (!(request instanceof CreateAuctionRequest)) { 
@@ -24,7 +25,7 @@ public class CreateAuctionHandler implements RequestHandler {
     
         // 1. Commit the item structure to the database layout
         Auction newAuction = AuctionDAO.createAuction(
-            req.getSellerId(), req.getTitle(), req.getMainImageBytes(), req.getSubImagesBytes(),
+            clientContext.getAuthenticatedUserId(), req.getTitle(), req.getMainImageBytes(), req.getSubImagesBytes(),
             req.getDescription(), req.getCategory(), req.getCategoryGroupedSpecs(),
             req.getStartingPrice(), req.getDuration(), req.getStartTime(), req.getEndTime(), req.getStatus()
         );

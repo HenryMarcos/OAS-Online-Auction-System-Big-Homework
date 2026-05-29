@@ -8,6 +8,7 @@ import com.groupproject.client.utils.ClientLogger;
 import com.groupproject.client.utils.LifecycleController;
 import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
+import com.groupproject.client.utils.TimeUtil;
 import com.groupproject.shared.network.requests.LoginRequest;
 import com.groupproject.shared.network.responses.LoginResponse;
 
@@ -105,6 +106,8 @@ public class LoginController implements LifecycleController {
         // Thông báo cho client rằng đã thành công
         statusLabel.setTextFill(javafx.scene.paint.Color.GREEN);
         statusLabel.setText("Success! Loading chat...");
+
+        TimeUtil.syncWithServer(response.getServerTime());
         // Lưu user
         SessionManager.INSTANCE.setCurrentUser(response.getUser());
         SessionManager.INSTANCE.setCurrentCategories(response.getCategoryTree());

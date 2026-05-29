@@ -8,7 +8,6 @@ import com.groupproject.shared.model.categories.Category;
 import com.groupproject.shared.model.enums.AuctionStatus;
 
 public class CreateAuctionRequest extends Request {
-    private int sellerId;
     private String title;
     private String description;
     private Category category;
@@ -21,13 +20,12 @@ public class CreateAuctionRequest extends Request {
     private LocalDateTime endTime;
     private AuctionStatus status;
 
-    public CreateAuctionRequest(int sellerId, String title, String description, Category category, 
+    public CreateAuctionRequest(String title, String description, Category category, 
                                 Map<Integer, Map<String, String>> categoryGroupedSpecs, 
                                 byte[] mainImageBytes, List<byte[]> subImagesBytes,
                                 double startingPrice, 
                                 Long duration, LocalDateTime startTime, LocalDateTime endTime, 
                                 AuctionStatus status) {
-        this.sellerId = sellerId;
         this.title = title;
         this.description = description;
         this.category = category;
@@ -43,7 +41,6 @@ public class CreateAuctionRequest extends Request {
     // Electronics: {condition: New, brand: Dell}
     // Laptop: {cpu: Intel Core i7, ram: 16GB, storage: 512GB SSD}
 
-    public int getSellerId() { return sellerId; }
     public String getTitle() { return title; }
     public String getDescription() { return description; }
     public Category getCategory() { return category; }

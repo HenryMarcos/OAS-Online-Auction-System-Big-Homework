@@ -16,6 +16,9 @@ public enum ClientManager {
     // Danh sách chứa tất cả client
     private final List<ObjectOutputStream> clients = new ArrayList<>();
 
+    // Bản đồ map trực tiếp UserID với Stream của họ để nhắn tin riêng!
+    private final Map<Integer, ObjectOutputStream> authenticatedUsers = new ConcurrentHashMap<>();
+
     // Bản đồ các phòng đấu giá (Key: Auction ID, Value: Tập hợp các clients trong phòng đó)
     private final Map<Integer, Set<ObjectOutputStream>> auctionRooms = new ConcurrentHashMap<>();
 
@@ -23,18 +26,30 @@ public enum ClientManager {
 
     // --- QUẢN LÝ CLIENT CHUNG ---
     public void addClient(ObjectOutputStream out) {
-        synchronized (clients) {
-            clients.add(out);
-        }
+        synchronized (clients) { clients.add(out); }
     }
 
     public void removeClient(ObjectOutputStream out) {
-        synchronized (clients) {
-            clients.remove(out);
-        }
+        synchronized (clients) { clients.remove(out); }
     }
 
     public List<ObjectOutputStream> getClients() { return clients; }
+
+    // --- QUẢN LÝ USER ĐĂNG NHẬP (DIRECT MESSAGING) ---
+    public void registerUser(int userId, ObjectOutputStream out) {
+        authenticatedUsers.put(userId, out);
+    }
+
+    public void unregisterUser(int userId) {
+        authenticatedUsers.remove(userId);
+    }
+
+    public void sendToUser(int userId, ServerEvent event) {
+        ObjectOutputStream out = authenticatedUsers.get(userId);
+        if (out != null) {
+            sendEventSafely(out, event);
+        }
+    }
 
     // --- QUẢN LÝ PHÒNG ĐẤU GIÁ ---
     public void subscribeToAuction(int auctionId, ObjectOutputStream clientOut) {

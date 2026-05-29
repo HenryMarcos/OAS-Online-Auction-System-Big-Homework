@@ -15,6 +15,8 @@ public class ClientHandler implements Runnable {
     private ObjectInputStream in;   
     private ObjectOutputStream out;
 
+    private Integer authenticatedUserId = null;
+
     public ClientHandler(Socket socket) {
         this.socket = socket;
     }
@@ -43,7 +45,7 @@ public class ClientHandler implements Runnable {
                     Request request = (Request) recievedData;
                     ServerLogger.info("User " + socket.getInetAddress() + " sent a " + request.getClass().getSimpleName());
                     // Nhận response sau khi xử lý xong request
-                    Response serverReply = dispatcher.dispatch(request);
+                    Response serverReply = dispatcher.dispatch(request, this);
 
                     if (serverReply != null) {
                         out.writeObject(serverReply);
@@ -84,6 +86,11 @@ public class ClientHandler implements Runnable {
             if (out != null) {
                 ClientManager.INSTANCE.removeClient(out);
             }
+
+            if (authenticatedUserId != null) {
+                ClientManager.INSTANCE.unregisterUser(authenticatedUserId);
+            }
+
             try { 
                 if (socket != null && !socket.isClosed()) {
                     ServerLogger.info("Cleaning up connection for " + socket.getInetAddress());
@@ -94,4 +101,9 @@ public class ClientHandler implements Runnable {
             }
         }
     }
+
+    public void setAuthenticatedUserId(Integer userId) { this.authenticatedUserId = userId; }
+    public Integer getAuthenticatedUserId() { return authenticatedUserId; }
+
+    public ObjectOutputStream getOut() { return out; }
 }

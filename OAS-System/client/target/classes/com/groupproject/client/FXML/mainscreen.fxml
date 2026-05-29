@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.layout.FlowPane?>
+
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.text.Font?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.geometry.Insets?>
-<BorderPane stylesheets="@../CSS/home.css" fx:id="mainBorderPane" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.MainController">
+<?import javafx.scene.text.Font?>
+
+<BorderPane fx:id="mainBorderPane" stylesheets="@../CSS/home.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.MainController">
+    
     <top>
         <AnchorPane prefHeight="80.0" BorderPane.alignment="CENTER">
             <children>
@@ -19,6 +21,7 @@
                         <Font name="System Bold" size="24.0" />
                     </font>
                 </Label>
+                
                 <HBox alignment="CENTER_LEFT" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="0.0">
                     <children>
                         <Label text="Logged in as ">
@@ -33,39 +36,72 @@
                         </Label>
                     </children>
                 </HBox>
-                <Button fx:id="logout" mnemonicParsing="false" onAction="#switchtologin" styleClass="logout-button" text="Log out" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="30.0" />
+                
+                <Button fx:id="bellButton" mnemonicParsing="false" onAction="#toggleInbox" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-color: transparent;" text="🔔 Inbox" AnchorPane.rightAnchor="100.0" AnchorPane.topAnchor="25.0" />
+                
+                <Button fx:id="logout" mnemonicParsing="false" onAction="#logout" styleClass="logout-button" text="Log out" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="25.0" />
+
+                <VBox fx:id="inboxPane" managed="false" maxHeight="400.0" prefWidth="320.0" style="-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-width: 1; -fx-border-radius: 5; -fx-background-radius: 5; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 4);" visible="false" AnchorPane.rightAnchor="100.0" AnchorPane.topAnchor="65.0">
+                    <children>
+                        <HBox alignment="CENTER_LEFT" style="-fx-padding: 8 12 8 12; -fx-background-color: #f5f5f5; -fx-background-radius: 5 5 0 0; -fx-border-color: transparent transparent #dddddd transparent; -fx-border-width: 0 0 1 0;">
+                            <children>
+                                <Label style="-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: #333333;" text="Notifications" />
+                                <Region HBox.hgrow="ALWAYS" />
+                                <Button onAction="#toggleInbox" style="-fx-background-color: transparent; -fx-text-fill: #e74c3c; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 0 4 0 4;" text="✕" />
+                            </children>
+                        </HBox>
+                        <ListView fx:id="notificationList" prefHeight="250.0" style="-fx-background-insets: 0; -fx-padding: 0;" />
+                    </children>
+                </VBox>
+
             </children>
         </AnchorPane>
     </top>
+
     <left>
-        <VBox prefWidth="220.0"  spacing="10.0" alignment="CENTER" styleClass="left_borderpane" >
+        <VBox alignment="TOP_CENTER" prefWidth="220.0" spacing="12.0" styleClass="left_borderpane">
+            <padding>
+                <Insets bottom="20.0" top="15.0" />
+            </padding>
             <children>
-                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="45.0" prefWidth="190.0" styleClass="button-left" text="HOME" onAction="#switchtoHome"/>
-                <Region prefHeight="5.0" />
+                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#switchtoHome" prefHeight="45.0" prefWidth="190.0" styleClass="button-left" text="HOME" />
+                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Active Listings" />
                 
-                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Active Listings"/>
-                <Region prefHeight="1.0" prefWidth="190.0" styleClass="region"/>
-                <VBox spacing="0" >
-                    <Button fx:id="profilebtn" alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Profile ▼ " onAction="#toggleProfilemenu"/>
-                    <VBox fx:id="profilesubmenu" visible="true" managed="true" spacing="0.0" >
-                        <padding >
-                            <Insets left="20.0"/>
-                        </padding>
-                        <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Personal Info" />
-                        <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Your Listings"/>
-                        <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Your Products"/>
-                        <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Notification" onAction="#switchtoNotification" />
-                    </VBox>
-                    <Button fx:id="testCreateAuction" alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Create Auction(test)" onAction="#switchToCreateAuction" />
+                <Region prefHeight="1.0" prefWidth="190.0" styleClass="region" />
+                
+                <VBox spacing="4.0">
+                    <children>
+                        <Button fx:id="profilebtn" alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#toggleProfilemenu" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Profile ▼ " />
+                        <VBox fx:id="profilesubmenu" managed="true" spacing="2.0" visible="true">
+                            <padding>
+                                <Insets left="20.0" />
+                            </padding>
+                            <children>
+                                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="35.0" prefWidth="170.0" styleClass="button-left" text="Personal Info" />
+                                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="35.0" prefWidth="170.0" styleClass="button-left" text="Your Listings" />
+                                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="35.0" prefWidth="170.0" styleClass="button-left" text="Your Products" />
+                                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#switchtoNotification" prefHeight="35.0" prefWidth="170.0" styleClass="button-left" text="Notification" />
+                            </children>
+                        </VBox>
+                    </children>
                 </VBox>
+                
+                <Button fx:id="testCreateAuction" alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#switchToCreateAuction" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Create Auction(test)" />
+                
                 <Region prefHeight="1.0" prefWidth="190.0" styleClass="region" />
                 <Region VBox.vgrow="ALWAYS" />
-                <HBox alignment="CENTER" >
+                
+                <HBox alignment="CENTER">
                     <children>
-                        <Button mnemonicParsing="false" prefHeight="45.0" prefWidth="140.0" styleClass="sell-button" text="Sell" alignment="CENTER" onAction="#switchtoAddItem" />
+                        <Button alignment="CENTER" mnemonicParsing="false" onAction="#switchtoAddItem" prefHeight="45.0" prefWidth="140.0" styleClass="sell-button" text="Sell" />
                     </children>
                 </HBox>
             </children>
         </VBox>
     </left>
+    
+    <center>
+        <AnchorPane prefHeight="20.0" prefWidth="20.0" BorderPane.alignment="CENTER" />
+    </center>
+    
 </BorderPane>
