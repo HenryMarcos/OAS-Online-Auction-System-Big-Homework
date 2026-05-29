@@ -18,7 +18,7 @@ public class BidDAO {
 
     public static boolean insertBid(int auctionId, int bidderId, double amount) {
         String checkSql = "SELECT a.status, a.current_bid, a.starting_price, u.balance " +
-                          "FROM auctions a, users u WHERE a.id = ? AND u.id = ?";
+                          "FROM auctions a, users u WHERE a.id = ? AND u.id = ? FOR UPDATE";
         
         String insertBidSql = "INSERT INTO bids (auction_id, bidder_id, amount, bid_time) VALUES (?, ?, ?, CURRENT_TIMESTAMP)";
         String updateAuctionSql = "UPDATE auctions SET current_bid = ?, current_bidder_id = ? WHERE id = ?";
