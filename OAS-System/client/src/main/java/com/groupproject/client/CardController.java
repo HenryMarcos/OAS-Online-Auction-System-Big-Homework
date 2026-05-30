@@ -12,16 +12,17 @@ import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.model.user.User;
 import com.groupproject.shared.network.AuctionEvent.AuctionCancelledEvent;
-import com.groupproject.shared.network.AuctionEvent.AuctionEndedEvent;
 import com.groupproject.shared.network.AuctionEvent.AuctionFinisedEvent;
 import com.groupproject.shared.network.AuctionEvent.AuctionListener;
 import com.groupproject.shared.network.AuctionEvent.AuctionStartedEvent;
 import com.groupproject.shared.network.AuctionEvent.BidUpdatedEvent;
+import com.groupproject.shared.network.events.AuctionEndedEvent;
 import com.groupproject.shared.network.requests.GetAuctionDetailRequest;
 import com.groupproject.shared.network.requests.JoinAuctionRequest;
 import com.groupproject.shared.network.responses.GetAuctionDetailResponse;
 import com.groupproject.shared.network.responses.JoinAuctionResponse;
 
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -30,32 +31,34 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 
 public class CardController implements AuctionListener { 
-    private Auction currentAuction;
-    @FXML
-    private Label productname;
-    @FXML
-    private Label currentprice;
-    @FXML
-    private Label timeleft;
+    private Auction auction;
+    private Timeline timeline;
+
+    @FXML private Label productname;
+    @FXML private Label currentprice;
+    @FXML private Label timeleft;
+
     @FXML private Label auctionStatus;
     @FXML private ToggleButton subscribeToggle;
     @FXML private Button cancelButton;
+
     @FXML
     public  void initialize() {
-        // ĐĂN KÝ VIỆC LẮNG NGHE TRẢ VỀ KẾT QUẢ
+        populateUI(auction);
+
+        // ĐĂNG KÝ VIỆC LẮNG NGHE TRẢ VỀ KẾT QUẢ
         ClientMessageRouter.INSTANCE.onResponse(GetAuctionDetailResponse.class, this::handleGetDetailAuction);
         ClientMessageRouter.INSTANCE.onResponse(JoinAuctionResponse.class,this::handleJoinAuctionResponse);
-        populateUI(currentAuction);
     }
     @FXML 
     private void handleBid(ActionEvent event) throws IOException {
         // Chỉ lưu ID vào session, AuctionController sẽ tự fetch từ Server khi initialize
-        GetAuctionDetailRequest request = new GetAuctionDetailRequest(currentAuction.getId());
+        GetAuctionDetailRequest request = new GetAuctionDetailRequest(auction.getId());
         RequestSender.send(request);
     }
     public void populateUI(Auction auction) {
         Platform.runLater(() -> {
-            this.currentAuction = auction;
+            this.auction = auction;
             productname.setText(auction.getTitle());
             currentprice.setText(String.valueOf(auction.getCurrentBid()));
             CountDownHelper countDownHelper = new CountDownHelper();
@@ -125,12 +128,12 @@ public class CardController implements AuctionListener {
             subscribeToggle.setText("UNFOLLOW");
             User user= SessionManager.INSTANCE.getCurrentUser();
             // GỬI THÔNG BÁO MUỐN NHẬN TIN CỦA PHIÊN ĐẤU GIÁ NÀY LÊN SERVER
-            RequestSender.send(new JoinAuctionRequest(currentAuction.getId().intValue()));
+            RequestSender.send(new JoinAuctionRequest(auction.getId()));
             // CLIENTLOGGER GHI LAI SU KIEN
         }
         else {
             subscribeToggle.setText("FOLLOW NOW !");
-            AuctionEventBus.getInstance().unsubscribe(currentAuction.getId().intValue(), this);
+            AuctionEventBus.getInstance().unsubscribe(auction.getId(), this);
             // XU LY KHI HO HUY THONG BAO
         }
     }
@@ -140,7 +143,7 @@ public class CardController implements AuctionListener {
     }
     private void handleJoinAuctionResponse(JoinAuctionResponse response) {
         if (response.isSuccess()) {
-            AuctionEventBus.getInstance().subscribe(currentAuction.getId().intValue(),this);
+            AuctionEventBus.getInstance().subscribe(auction.getId(), this);
         }
         else {
             // Thong bao cho khac hang la ho da dang ky that bai 

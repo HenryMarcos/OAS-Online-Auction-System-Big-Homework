@@ -1,63 +1,75 @@
 package com.groupproject.client;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import com.groupproject.client.network.AuctionIntegrationService;
+import com.groupproject.client.network.ClientMessageRouter;
 import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.AlertUtils;
 import com.groupproject.client.utils.ClientLogger;
-import com.groupproject.client.utils.CountDownHelper;
 import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
-import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.shared.model.transaction.Auction;
-import com.groupproject.shared.model.transaction.AuctionDetail;
-import com.groupproject.shared.model.transaction.BidTransaction;
+import com.groupproject.shared.model.transaction.BidDTO;
 import com.groupproject.shared.network.AuctionEvent.AuctionCancelledEvent;
-import com.groupproject.shared.network.AuctionEvent.AuctionEndedEvent;
 import com.groupproject.shared.network.AuctionEvent.AuctionFinisedEvent;
 import com.groupproject.shared.network.AuctionEvent.AuctionListener;
 import com.groupproject.shared.network.AuctionEvent.AuctionStartedEvent;
-import com.groupproject.shared.network.AuctionEvent.BidUpdatedEvent;
-import com.groupproject.shared.network.requests.BidRequest;
+import com.groupproject.shared.network.events.AuctionEndedEvent;
+import com.groupproject.shared.network.events.NewBidEvent;
+import com.groupproject.shared.network.requests.PlaceBidRequest;
+import com.groupproject.shared.network.responses.PlaceBidResponse;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.chart.AreaChart;
+import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
-import javafx.scene.chart.XYChart.Series;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
 // MAX_BIDS_TO_DISPLAY: có thể thêm nếu cần thiết bởi không cần thiết phải lấy hết tất cả mà chỉ cần lấy 10 người đứng đầu thôi chẳng hạn.
 public class AuctionController implements AuctionListener  {
-    private AuctionDetail currentAuctionDetail = SessionManager.INSTANCE.getCurrentAuctionDetail();
-    private final ObservableList<BidTransaction> bidDataList= FXCollections.observableArrayList();
+    private Auction currentAuction;
+    private Timeline timeline;
+
+    private final ObservableList<BidDTO> bidDataList= FXCollections.observableArrayList();
     private AuctionIntegrationService integrationService;
     private final int MAX_BIDS_TO_DISPLAY=20;
-    @FXML private AreaChart<String,Number> priceChart;
-    private Series<String, Number> priceSeries = new XYChart.Series<>() ;
-    @FXML private TableView<BidTransaction> bottomtable;
-    @FXML private TableColumn<BidTransaction, Double> pricecol;
-    @FXML private TableColumn<BidTransaction, String> timecol;
-    @FXML private TableColumn<BidTransaction,Integer> userIdcol;
-    @FXML private Button bidButton;
+
+    @FXML private Label auctionsession;       // The title header
+    @FXML private Label auctioncurrentprice;  // The right panel price
+    @FXML private Label auctiontimeleft;      // The right panel time
+
     @FXML private TextField enterprice;
+    @FXML private Button bidButton;
+
+    @FXML private TableView<BidDTO> bottomtable;
+    @FXML private TableColumn<BidDTO, String> usercol;
+    @FXML private TableColumn<BidDTO, Double> pricecol;
+    @FXML private TableColumn<BidDTO, String> timecol;
+    
+    @FXML private LineChart<String, Number> linechart;
+    private ObservableList<BidDTO> bidHistoryList;
+    private XYChart.Series<String, Number> bidGraphSeries;
+    
     @FXML private Label startprice;
     @FXML private ImageView productImageView;
-    @FXML private Label auctiontimeleft;
-    @FXML private Label auctioncurrentprice;
     @FXML private Label participant;
     @FXML private Label auctionproductname;
-    @FXML private Label auctionsession;
+
     @FXML 
     private void switchtoHome(ActionEvent event) throws IOException {
         SceneNavigator.INSTANCE.goTo("/com/groupproject/client/FXML/mainscreen.fxml");
@@ -68,19 +80,87 @@ public class AuctionController implements AuctionListener  {
     @FXML
     public  void initialize() {
         // cài đặt một cái được tích hợp để phát thông báo 
-        Auction currentAuction= currentAuctionDetail.getAuction();
-        int id = currentAuction.getId().intValue();
+        currentAuction = SessionManager.INSTANCE.getCurrentViewingAuction();
+        int id = currentAuction.getId();
         this.integrationService = new AuctionIntegrationService(id, this);
         this.integrationService.startListening();
-        setAuction(currentAuctionDetail.getAuction());
+        
         // Cài đặt bảng 
         setUpTableView();
-        // Cài đặt priceChart 
-        priceChart.setLegendVisible(false);
-        priceChart.getData().add(priceSeries);
-        // Nhận dữ liệu để load những dữ liệu cũ  
-        loadInitialData(currentAuctionDetail.getBidHistory());
+        // Linechart
+        setupLineChart();
+
+        // 3. Load basic auction data
+        // Retrieve the auction we just joined from the SessionManager
+        this.currentAuction = SessionManager.INSTANCE.getCurrentViewingAuction();
+        
+        if (this.currentAuction != null) {
+            setupUI();
+        }
+
+        // 2. REGISTER NETWORK LISTENERS
+        ClientMessageRouter.INSTANCE.onEvent(NewBidEvent.class, this::handleNewBidEvent);
+        ClientMessageRouter.INSTANCE.onEvent(AuctionEndedEvent.class, this::handleAuctionEndedEvent);
+        ClientMessageRouter.INSTANCE.onResponse(PlaceBidResponse.class, this::handlePlaceBidResponse);
     }
+
+    private void setUpTableView() {
+        // 1. Setup Table Columns (Matches variable names in BidDTO)
+        usercol.setCellValueFactory(new PropertyValueFactory<>("bidderName"));
+        pricecol.setCellValueFactory(new PropertyValueFactory<>("amount"));
+        timecol.setCellValueFactory(new PropertyValueFactory<>("timeString"));
+        
+        bidHistoryList = FXCollections.observableArrayList();
+        bottomtable.setItems(bidHistoryList);
+    }
+
+    private void setupLineChart() {
+        bidGraphSeries = new XYChart.Series<>();
+        bidGraphSeries.setName("Live Price History");
+        linechart.getData().add(bidGraphSeries);
+        linechart.setAnimated(false); // Prevents graphical glitches when spamming bid
+    }
+
+    private void setupUI() {
+        auctionsession.setText(currentAuction.getTitle());
+        
+        double displayPrice = (currentAuction.getCurrentBid() > 0) ? currentAuction.getCurrentBid() : currentAuction.getStartingPrice();
+        auctioncurrentprice.setText("Price: $" + displayPrice);        
+
+        // Setup timer
+        if (currentAuction.getEndTime() != null) {
+            timeline = new Timeline(new KeyFrame(javafx.util.Duration.seconds(1), event -> {
+                updateCountDown();
+            }));
+            timeline.setCycleCount(Timeline.INDEFINITE);
+            timeline.play();
+            updateCountDown(); // Run once immediately
+
+            // Plot the starting price on the graph at time 0
+            bidGraphSeries.getData().add(new XYChart.Data<>("Start", currentAuction.getStartingPrice()));
+            
+            // 4. LOAD HISTORICAL BIDS
+            List<BidDTO> pastBids = SessionManager.INSTANCE.getCurrentAuctionBids();
+            if (pastBids != null) {
+                for (BidDTO pastBid : pastBids) {
+                    // index 0 means it dynamically pushes the newest rows to the TOP of the table!
+                    bidHistoryList.add(0, pastBid); 
+                    
+                    // Add sequentially to graph so it draws left-to-right
+                    bidGraphSeries.getData().add(new XYChart.Data<>(pastBid.getTimeString(), pastBid.getAmount()));
+                }
+            }
+            
+            // Set final displayed price
+            displayPrice = currentAuction.getCurrentBid() > 0 ? currentAuction.getCurrentBid() : currentAuction.getStartingPrice();
+            updatePriceDisplay(displayPrice);
+
+        } else {
+            auctiontimeleft.setText("No End Time");
+        }
+
+    }
+    /* 
     @Override 
     public void onBidUpdated(BidUpdatedEvent event) {
         Platform.runLater(() -> {
@@ -94,54 +174,32 @@ public class AuctionController implements AuctionListener  {
             bidButton.setText("PLACE BID");
         });
     }
-    // ve sau se duoc thay the bang viec lay tren databse xuong ( thay the tu dong 90 - 150)
-    public void setAuction(Auction auction) {
-        Platform.runLater(() -> {
-            updateName();
-            updatePrice();
-            updateTime();
-            if (currentAuctionDetail.getAuction().getStatus() == AuctionStatus.ACTIVATED) {
-                bidButton.setDisable(false);
-            }
-            bidButton.setDisable(true);
-        });
-    }
-    private void updatePrice() {
-        String priceText = String.format("Current price : %.2f VND",currentAuctionDetail.getAuction().getCurrentBid());
-        auctioncurrentprice.setText(priceText);
-    }
-
-    private void updateName() {
-        String name = "Name : " + currentAuctionDetail.getAuction().getTitle();
-        auctionproductname.setText(name);
-        participant.setText(SessionManager.INSTANCE.getCurrentUser().getUsername());
-    }
-
-    private void updateTime() {
-        CountDownHelper countDownHelper = new CountDownHelper();
-        countDownHelper.start(currentAuctionDetail, () -> auctiontimeleft.setText("ENDED"), auctiontimeleft);
-    }
+    */
 
     @FXML
     private void handlePlaceBid() {
-        String text = enterprice.getText().trim();
-        if (text.isEmpty()) {
+        String priceText = enterprice.getText().trim();
+        if (priceText.isEmpty()) {
             AlertUtils.showError("Lỗi nhập liệu ! ","Vui lòng nhập số tiền mà bạn muốn");
             return;
         }
         try {
-            double price = Double.parseDouble(text);
-            if (price <= 0) {
+            double bidAmount = Double.parseDouble(priceText);
+
+            bidButton.setDisable(true); // Safeguard UI spamming
+            if (bidAmount <= 0) {
                 AlertUtils.showError("Lỗi logic","Số tiền đấu giá phải lớn hơn 0");
+                bidButton.setDisable(false);
                 return;
             }
             // Kiểm tra xem giá vừa nhập đang cao hơn giá hiện tại không ? 
-            if (price <= currentAuctionDetail.getAuction().getCurrentBid() ) {
+            if (bidAmount <= currentAuction.getCurrentBid() ) {
                 AlertUtils.showError("Lỗi logic","Giá đặt phải cao hơn giá hiện tại");
+                bidButton.setDisable(false);
                 return;
             }
-            String username= SessionManager.INSTANCE.getCurrentUser().getUsername();
-            BidRequest request = new BidRequest(currentAuctionDetail.getAuction().getId().intValue(), username, price);
+
+            PlaceBidRequest request = new PlaceBidRequest(currentAuction.getId(), bidAmount);
             RequestSender.send(request);
             enterprice.clear();
             bidButton.setDisable(true);
@@ -150,15 +208,10 @@ public class AuctionController implements AuctionListener  {
         }
         catch (NumberFormatException e ) {
             AlertUtils.showError("Lỗi định dạng", "Vui lòng chỉ nhập số");
+            ClientLogger.error("Invalid Price Input Format");
         }
     }
 
-    private void setUpTableView() {
-        userIdcol.setCellValueFactory(celldata -> new SimpleObjectProperty<>(celldata.getValue().getBidderId()));
-        pricecol.setCellValueFactory(celldata -> new SimpleObjectProperty<>(celldata.getValue().getBidAmount()));
-        timecol.setCellValueFactory(celldata -> new SimpleObjectProperty<>(celldata.getValue().getTimeStamp()));
-        bottomtable.setItems(bidDataList);
-    }
     // Vẫn chưa điền dữ liệu vào những bảng cần điền ( đang mới chỉ lưu dữ liệu mà thôi)
     private void updateAuctionUI( int auctionId,int bidderId,double bidAmount) {
         // CHÚ Ý: Vì gói tin mạng chạy ở luồng ngầm (Background Thread),
@@ -184,29 +237,6 @@ public class AuctionController implements AuctionListener  {
             // 3. Tự động cuộn bảng lên trên cùng để xem dòng mới nhất vừa nhảy vào
             bottomtable.scrollTo(0);
         }); 
-    }
-    public void loadInitialData(List<BidTransaction> serverHistory) {
-        if (serverHistory == null || serverHistory.isEmpty()) return;
-
-        bidDataList.clear();
-
-        // Kiểm tra tối ưu ngay từ lúc nạp dữ liệu ban đầu
-        if (serverHistory.size() > MAX_BIDS_TO_DISPLAY) {
-            // Nếu Server trả về quá nhiều (ví dụ 1000 dòng), ta chỉ cắt lấy 20 dòng mới nhất đưa vào UI
-            List<BidTransaction> truncatedList = serverHistory.subList(0, MAX_BIDS_TO_DISPLAY);
-            bidDataList.addAll(truncatedList);
-            for (int i = 0 ; i < truncatedList.size() ; i ++) {
-                BidTransaction bid = truncatedList.get(i);
-                priceSeries.getData().add(new XYChart.Data<>(bid.getTimeStamp(),bid.getBidAmount()));
-            }
-            ClientLogger.info("Đã cắt bớt lịch sử đấu giá ban đầu để tối ưu RAM.");
-        } else {
-            bidDataList.addAll(serverHistory);
-            for (int i = 0 ;  i < serverHistory.size(); i ++ ) { 
-                BidTransaction bid = serverHistory.get(i);
-                priceSeries.getData().add(new XYChart.Data<>(bid.getTimeStamp(),bid.getBidAmount()));
-            }
-        }
     }
 
     @Override 
@@ -239,6 +269,111 @@ public class AuctionController implements AuctionListener  {
             AlertUtils.showAlert(Alert.AlertType.INFORMATION,"THÔNG BÁO"," PHIÊN ĐẤU GIÁ KẾT THÚC ! CHỜ THANH TOÁN ");
             bidButton.setDisable(true);
         });
+    }
+
+    // --- REAL-TIME EVENT UPDATER ---
+    private void handleNewBidEvent(NewBidEvent event) {
+        // Double check if the incoming bid is for the auction we are currently looking at
+        if (currentAuction != null && currentAuction.getId() == event.getAuctionId()) {
+            Platform.runLater(() -> {
+                // Update underlying data object
+                currentAuction.setCurrentBid(event.getNewBidAmount());
+                currentAuction.setHighestBidderId(event.getHighestBidderId());
+                
+                // Instantly update the visual UI label 
+                updatePriceDisplay(event.getNewBidAmount());
+                
+                // Make the text pop visually so the user knows it changed!
+                auctioncurrentprice.setStyle("-fx-text-fill: #2ecc71; -fx-font-weight: bold;");
+                
+                // Optional: reset the style back to normal after 1 second
+                new Thread(() -> {
+                    try { Thread.sleep(1000); } catch (Exception e) {}
+                    Platform.runLater(() -> auctioncurrentprice.setStyle("-fx-text-fill: #000000; -fx-font-weight: normal;"));
+                }).start();
+
+                // 2. CREATE BID ENTRY FOR TABLE & GRAPH
+                String bidderStr = "User " + event.getHighestBidderId();
+                LocalDateTime now = LocalDateTime.now();
+                BidDTO newBid = new BidDTO(bidderStr, event.getNewBidAmount(), now);
+                
+                // Add to table (index 0 puts it at the very top of the table)
+                bidHistoryList.add(0, newBid); 
+                
+                // Add to graph
+                bidGraphSeries.getData().add(new XYChart.Data<>(newBid.getTimeString(), newBid.getAmount()));
+            });
+        }
+    }
+
+    private void handleAuctionEndedEvent(AuctionEndedEvent event) {
+        // Ensure the event is for the auction we are currently viewing
+        if (currentAuction != null && currentAuction.getId() == event.getAuctionId()) {
+            Platform.runLater(() -> {
+                // 1. Force the timer to stop
+                if (timeline != null) timeline.stop();
+                
+                auctiontimeleft.setText("OFFICIALLY CLOSED");
+                auctiontimeleft.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+
+                // 2. Lock the User Interface to prevent further bidding
+                bidButton.setDisable(true);
+                enterprice.setDisable(true);
+                enterprice.setPromptText("Auction Ended");
+
+                // 3. Display the Winner
+                if (event.getWinnerId() != null && event.getWinnerId() > 0) {
+                    auctioncurrentprice.setText(String.format("Winner: User %d ($%.2f)", event.getWinnerId(), event.getWinningBidAmount()));
+                    auctioncurrentprice.setStyle("-fx-text-fill: #e67e22; -fx-font-weight: bold;"); // Orange text for winner
+                } else {
+                    auctioncurrentprice.setText("Ended with no bids.");
+                    auctioncurrentprice.setStyle("-fx-text-fill: #7f8c8d;"); // Gray text for no winner
+                }
+            });
+        }
+    }
+
+    // --- RESPONSE HANDLER ---
+    private void handlePlaceBidResponse(PlaceBidResponse response) {
+        Platform.runLater(() -> {
+            bidButton.setDisable(false); // Re-enable button
+            
+            if (response.isSuccess()) {
+                enterprice.clear();
+            } else {
+                ClientLogger.warning("Bid failed: " + response.getMessage());
+            }
+        });
+    }
+
+    private void updatePriceDisplay(double price) {
+        ClientLogger.info("Updating price display");
+        auctioncurrentprice.setText(String.format("$%.2f", price));
+    }
+
+    public void updateCountDown() {
+        if (currentAuction.getEndTime() == null) return;
+
+        LocalDateTime syncedNow = com.groupproject.client.utils.TimeUtil.getNow();
+
+        Duration remaining = Duration.between(syncedNow, currentAuction.getEndTime());
+        
+        if (remaining.isNegative() || remaining.isZero()) {
+            auctiontimeleft.setText("ENDED");
+
+            bidButton.setDisable(true); 
+            enterprice.setDisable(true);
+
+            if (auctiontimeleft != null) timeline.stop();
+        } else {
+            long totalSeconds = ChronoUnit.SECONDS.between(syncedNow, currentAuction.getEndTime());
+            long days    = totalSeconds / 86400;           
+            long hours   = (totalSeconds % 86400) / 3600;  
+            long minutes = (totalSeconds % 3600) / 60;     
+            long seconds = totalSeconds % 60;              
+
+            auctiontimeleft.setText(String.format("Ending in: %dd : %02dh : %02dm : %02ds", days, hours, minutes, seconds));
+        }
     }
 
 }

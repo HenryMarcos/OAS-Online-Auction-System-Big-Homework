@@ -10,9 +10,9 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.control.ToggleButton?>
+
 <HBox stylesheets="@../CSS/card.css" fx:id="cardroot" spacing="10.0" maxWidth="Infinity" styleClass="product-card" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.CardController">
     <VBox alignment="TOP_CENTER" spacing="8.0" maxWidth="Infinity" prefWidth="150.0" >
-    
         <ImageView fx:id="image" fitHeight="150" fitWidth="150.0" preserveRatio="true" pickOnBounds="true" styleClass="image-container">
             <image>
                 <Image url="@../Image/sample.png" />
@@ -20,7 +20,7 @@
         </ImageView>
         <ToggleButton fx:id="subcribeToggle" text="FOLLOW NOW ! " onAction="#handleSubscribeToggle" styleClass="subscribe-toggle" />
     </VBox>
-    <!-- -->
+    
     <VBox spacing="6" styleClass="cardContent" maxWidth="Infinity">
         <padding>
             <Insets top="10" right="12" bottom="12" left="12" />
@@ -47,9 +47,9 @@
             </font>
         </Label>
         <Region VBox.vgrow="ALWAYS" />
+        
         <HBox alignment="BOTTOM_RIGHT" spacing="5.0" >
-            <Button  onAction="#handleBid" text="Bid Now" styleClass="bidbutton" maxWidth="Infinity" prefHeight="30" />
-            <Button fx:id="cancelButton" onAction="#handleCancelAuction" text="Cancel Auction" styleClass="cancel-button" visible="false" managed="false" />
+            <Button text="BID NOW" onAction="#handleBid" styleClass="bid-button"/>
         </HBox>
     </VBox>
 </HBox>

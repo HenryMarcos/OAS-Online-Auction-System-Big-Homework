@@ -1,5 +1,7 @@
 package com.groupproject.shared.network.AuctionEvent;
 
+import com.groupproject.shared.network.events.AuctionEndedEvent;
+
 public interface AuctionListener {
     // CÓ GIÁ MỚI CẬP NHẬT -> CẬP NHẬT LẠI UI
     default void onBidUpdated(BidUpdatedEvent event){}

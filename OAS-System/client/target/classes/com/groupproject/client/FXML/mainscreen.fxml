@@ -9,7 +9,9 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.Priority?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.layout.StackPane?>
 
 <BorderPane fx:id="mainBorderPane" stylesheets="@../CSS/home.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.MainController">
     
@@ -21,31 +23,39 @@
                         <Font name="System Bold" size="24.0" />
                     </font>
                 </Label>
-                <VBox spacing = "5.0" alignment="CENTER_LEFT"  AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="0.0">
-                        <HBox alignment="CENTER_LEFT" spacing="5.0">
-                            <children>
-                                <Label text="Logged in as ">
-                                    <font>
-                                        <Font size="14.0" />
-                                    </font>
-                                </Label>
-                                <Label fx:id="username"  textOverrun="CENTER_WORD_ELLIPSIS">
-                                    <font>
-                                        <Font name="System Bold" size="14.0" />
-                                    </font>
-                                </Label>
-                            </children>
-                        </HBox>
-                        <Label fx:id="wallet"  >
+                
+                <HBox alignment="CENTER_LEFT" spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="0.0">
+                    <children>
+                        <Label text="Logged in as ">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                        </Label>
+                        <Label fx:id="username" text="Cuong" textOverrun="CENTER_WORD_ELLIPSIS">
                             <font>
                                 <Font name="System Bold" size="14.0" />
                             </font>
                         </Label>
+                        
+                        <Label text=" | Balance: " />
+                        <Label fx:id="wallet" text="\$0.00" textFill="#27ae60">
+                            <font>
+                                <Font name="System Bold" size="14.0" />
+                            </font>
+                        </Label>
+
                     </children>
                 </HBox>
                 
-                <Button fx:id="bellButton" mnemonicParsing="false" onAction="#toggleInbox" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-color: transparent;" text="🔔 Inbox" AnchorPane.rightAnchor="100.0" AnchorPane.topAnchor="25.0" />
-                
+                <StackPane AnchorPane.rightAnchor="100.0" AnchorPane.topAnchor="25.0">
+                    <Button fx:id="bellButton" mnemonicParsing="false" onAction="#toggleInbox" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-color: transparent;" text="🔔 Inbox" />
+                    <Label fx:id="redDotIndicator" text="●" textFill="RED" visible="false" StackPane.alignment="TOP_RIGHT" style="-fx-font-size: 14px;">
+                        <StackPane.margin>
+                            <Insets top="-5.0" right="-5.0" />
+                        </StackPane.margin>
+                    </Label>
+                </StackPane>
+
                 <Button fx:id="logout" mnemonicParsing="false" onAction="#logout" styleClass="logout-button" text="Log out" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="25.0" />
 
                 <VBox fx:id="inboxPane" managed="false" maxHeight="400.0" prefWidth="320.0" style="-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-width: 1; -fx-border-radius: 5; -fx-background-radius: 5; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 4);" visible="false" AnchorPane.rightAnchor="100.0" AnchorPane.topAnchor="65.0">
@@ -74,33 +84,34 @@
                 <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#switchtoHome" prefHeight="45.0" prefWidth="190.0" styleClass="button-left" text="HOME" />
                 <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Active Listings" />
                 
-                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Active Listings" onAction="#switchtoActiveListings"/>
-                <Region prefHeight="1.0" prefWidth="190.0" styleClass="region"/>
-                <VBox spacing="0" >
-                    <Button fx:id="profilebtn" alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Profile ▼ " onAction="#toggleProfilemenu"/>
-                    <VBox fx:id="profilesubmenu" visible="true" managed="true" spacing="0.0" >
-                        <padding >
-                            <Insets left="20.0"/>
-                        </padding>
-                        <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Personal Info" onAction="#switchtoPersonalInfo" />
-                        <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="My Products" onAction="#switchtoMyProducts"/>
-                        <HBox alignment="CENTER_LEFT" spacing="2.0" prefHeight="40.0" prefWidth="190.0">
+                <Region prefHeight="1.0" prefWidth="190.0" styleClass="region" />
+                
+                <VBox spacing="4.0">
+                    <children>
+                        <Button fx:id="profilebtn" alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#toggleProfilemenu" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Profile ▼ " />
+                        <VBox fx:id="profilesubmenu" managed="true" spacing="2.0" visible="true">
+                            <padding>
+                                <Insets left="20.0" />
+                            </padding>
                             <children>
-                                <Label fx:id="redDotIndicator" styleClass="sidebar-badge" text="!" />
-                                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="184.0" styleClass="button-left" text="Notification" onAction="#switchtoNotification" />
+                                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="35.0" prefWidth="170.0" styleClass="button-left" text="Personal Info" />
+                                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="35.0" prefWidth="170.0" styleClass="button-left" text="Your Listings" />
+                                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="35.0" prefWidth="170.0" styleClass="button-left" text="Your Products" />
+                                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#switchtoNotification" prefHeight="35.0" prefWidth="170.0" styleClass="button-left" text="Notification" />
                             </children>
-                        </HBox>
-                    </VBox>
+                        </VBox>
+                    </children>
                 </VBox>
                 
                 <Button fx:id="testCreateAuction" alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#switchToCreateAuction" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Create Auction(test)" />
                 
                 <Region prefHeight="1.0" prefWidth="190.0" styleClass="region" />
+                
                 <Region VBox.vgrow="ALWAYS" />
                 
                 <HBox alignment="CENTER">
                     <children>
-                        <Button mnemonicParsing="false" prefHeight="45.0" prefWidth="140.0" styleClass="sell-button" text="Sell" alignment="CENTER" onAction="#switchtoCreateAuction" />
+                        <Button alignment="CENTER" mnemonicParsing="false" onAction="#switchtoAddItem" prefHeight="45.0" prefWidth="140.0" styleClass="sell-button" text="Sell" />
                     </children>
                 </HBox>
             </children>
