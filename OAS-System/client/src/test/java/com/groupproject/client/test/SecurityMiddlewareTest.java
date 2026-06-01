@@ -7,16 +7,16 @@ import java.time.LocalDateTime;
 
 import com.groupproject.shared.model.categories.Category;
 import com.groupproject.shared.model.enums.AuctionStatus;
-import com.groupproject.shared.network.request.ChangeAuctionStatusRequest;
-import com.groupproject.shared.network.request.CreateAuctionRequest;
-import com.groupproject.shared.network.request.GetMyAuctionsRequest;
-import com.groupproject.shared.network.request.LoginRequest;
-import com.groupproject.shared.network.request.SignupRequest;
-import com.groupproject.shared.network.response.ChangeAuctionStatusResponse;
-import com.groupproject.shared.network.response.CreateAuctionResponse;
-import com.groupproject.shared.network.response.LoginResponse;
-import com.groupproject.shared.network.response.Response;
-import com.groupproject.shared.network.response.SignupResponse;
+import com.groupproject.shared.network.requests.ChangeAuctionStatusRequest;
+import com.groupproject.shared.network.requests.CreateAuctionRequest;
+import com.groupproject.shared.network.requests.GetMyAuctionsRequest;
+import com.groupproject.shared.network.requests.LoginRequest;
+import com.groupproject.shared.network.requests.SignupRequest;
+import com.groupproject.shared.network.responses.ChangeAuctionStatusResponse;
+import com.groupproject.shared.network.responses.CreateAuctionResponse;
+import com.groupproject.shared.network.responses.LoginResponse;
+import com.groupproject.shared.network.responses.Response;
+import com.groupproject.shared.network.responses.SignupResponse;
 
 /**
  * Test Suite 06: Security & Middleware (SecurityMiddlewareTest)

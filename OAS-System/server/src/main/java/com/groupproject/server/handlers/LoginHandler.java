@@ -38,8 +38,8 @@ public class LoginHandler implements RequestHandler {
             ClientManager.INSTANCE.registerUser(loggedInUser.getId(), clientContext.getOut());
 
             List<Auction> auctionList;
-            // Admin có ID là 1 (như đã quy định)
-            if (loggedInUser.getId() == 1) { 
+            // Admin có ID là 999999
+            if (loggedInUser.getId() == 999999) { 
                 auctionList = AuctionDAO.getAuctions(); // Tất cả các phiên
             } else {
                 auctionList = AuctionManager.INSTANCE.getActiveAuctionList();

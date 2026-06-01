@@ -25,6 +25,7 @@ public class RequestDispatcher {
         handlers.put(CreateAuctionRequest.class, new CreateAuctionHandler());
         handlers.put(PlaceBidRequest.class, new PlaceBidHandler());
         handlers.put(JoinAuctionRequest.class, new JoinAuctionHandler());
+        handlers.put(com.groupproject.shared.network.requests.ChangeAuctionStatusRequest.class, new ChangeAuctionStatusHandler());
     }
 
     public Response dispatch(Request request, ClientHandler clientContext) {

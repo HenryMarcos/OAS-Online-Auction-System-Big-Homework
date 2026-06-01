@@ -49,7 +49,7 @@ public class AdminDashBoardController {
         filterConfigMap.put(btnWaiting, auction -> auction.getStatus() == AuctionStatus.WAITING);
         
         // 3. Nút "Đang diễn ra" -> Chỉ lấy các phiên ACTIVATED (hoặc ACTIVE tùy enum của bạn)
-        filterConfigMap.put(btnActived, auction -> auction.getStatus() == AuctionStatus.ACTIVATED);
+        filterConfigMap.put(btnActived, auction -> auction.getStatus() == AuctionStatus.ACTIVED);
         
         // 4. Nút "Đã kết thúc" -> Chỉ lấy các phiên 
         filterConfigMap.put(btnEnded, auction -> auction.getStatus() == AuctionStatus.ENDED);

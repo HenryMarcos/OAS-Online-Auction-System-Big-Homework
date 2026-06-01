@@ -19,13 +19,13 @@ import com.groupproject.server.dao.NotificationDAO;
 import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.shared.model.transaction.Auction;
-import com.groupproject.shared.network.events.AuctionCancelledEvent;
+import com.groupproject.shared.network.AuctionEvent.AuctionCancelledEvent;
 import com.groupproject.shared.network.events.AuctionEndedEvent;
-import com.groupproject.shared.network.events.AuctionFinishedEvent;
+import com.groupproject.shared.network.AuctionEvent.AuctionFinisedEvent;
 import com.groupproject.shared.network.events.AuctionListUpdateEvent;
-import com.groupproject.shared.network.events.AuctionStartedEvent;
+import com.groupproject.shared.network.AuctionEvent.AuctionStartedEvent;
 import com.groupproject.shared.network.events.NewBidEvent;
-import com.groupproject.shared.network.events.SystemNotificationEvent;
+import com.groupproject.shared.network.requests.PlaceBidRequest;
 import com.groupproject.shared.network.requests.PlaceBidRequest;
 
 public enum AuctionManager {
@@ -91,7 +91,7 @@ public enum AuctionManager {
 
     private void loadActiveAuctionsFromDatabase() {
         try {
-            List<Auction> activeAuctionList = AuctionDAO.getAuctionsByStatus(AuctionStatus.ACTIVATED);
+            List<Auction> activeAuctionList = AuctionDAO.getAuctionsByStatus(AuctionStatus.ACTIVED);
             List<Auction> waitingAuctionList = AuctionDAO.getAuctionsByStatus(AuctionStatus.WAITING);
             List<Auction> scheduledAuctionList = AuctionDAO.getAuctionsByStatus(AuctionStatus.SCHEDULED);
             
@@ -124,7 +124,7 @@ public enum AuctionManager {
     private void registerAuctionInternal(Auction auction) {
         activeAuctions.put(auction.getId(), auction);
 
-        if (auction.getStatus() == AuctionStatus.ACTIVATED) {
+        if (auction.getStatus() == AuctionStatus.ACTIVED) {
             if (!scheduledAuctionIds.contains(auction.getId())) {
                 long delayInSeconds = Duration.between(LocalDateTime.now(), auction.getEndTime()).toSeconds();
                 if (delayInSeconds < 0) delayInSeconds = 0;
@@ -160,10 +160,6 @@ public enum AuctionManager {
         AuctionStartedEvent event = new AuctionStartedEvent(updatedAuction.getId());
         ClientManager.INSTANCE.broadcastSystemEvent(event);
 
-        SystemNotificationEvent adminLog = new SystemNotificationEvent(
-            "Người bán đã kích hoạt thủ công phiên đấu giá ID: " + updatedAuction.getId(), "Hệ Thống"
-        );
-        ClientManager.INSTANCE.broadcastToAdmins(adminLog);
     }
 
     public void forceCancelWaitingAuction(int auctionId) {
@@ -179,10 +175,6 @@ public enum AuctionManager {
                 ClientManager.INSTANCE.broadcastSystemEvent(event);
                 ClientManager.INSTANCE.broadcastEventToAuction(auctionId, event);
                 
-                SystemNotificationEvent adminLog = new SystemNotificationEvent(
-                    "Hệ thống ép hủy phiên WAITING quá hạn (ID: " + auctionId + ")", "Hệ Thống"
-                );
-                ClientManager.INSTANCE.broadcastToAdmins(adminLog);
                 ClientManager.INSTANCE.removeAuctionRoom(auctionId);
             }
         }
@@ -201,10 +193,6 @@ public enum AuctionManager {
                 ClientManager.INSTANCE.broadcastSystemEvent(cancelledEvent);
                 ClientManager.INSTANCE.broadcastEventToAuction(auctionId, cancelledEvent);
                 
-                SystemNotificationEvent adminLog = new SystemNotificationEvent(
-                    "Phiên đấu giá ID " + auctionId + " bị hủy thủ công bởi người bán hoặc Admin.", "Hệ Thống"
-                );
-                ClientManager.INSTANCE.broadcastToAdmins(adminLog);
                 ClientManager.INSTANCE.removeAuctionRoom(auctionId);
             }
         }
@@ -215,9 +203,9 @@ public enum AuctionManager {
         scheduledAuctionIds.remove(auctionId);
         if (auction != null && auction.getStatus() == AuctionStatus.SCHEDULED) {
             LocalDateTime now = LocalDateTime.now();
-            boolean isUpdatedInDb = AuctionDAO.updateAuctionStatus(auctionId, AuctionStatus.ACTIVATED, now);
+            boolean isUpdatedInDb = AuctionDAO.updateAuctionStatus(auctionId, AuctionStatus.ACTIVED);
             if (isUpdatedInDb) {
-                auction.setStatus(AuctionStatus.ACTIVATED);
+                auction.setStatus(AuctionStatus.ACTIVED);
                 auction.setStartTime(now); 
                 
                 long delayEnd = Duration.between(now, auction.getEndTime()).toSeconds();
@@ -232,10 +220,6 @@ public enum AuctionManager {
                 ClientManager.INSTANCE.broadcastSystemEvent(event);
                 ClientManager.INSTANCE.broadcastEventToAuction(auctionId, event);
 
-                SystemNotificationEvent adminLog = new SystemNotificationEvent(
-                    "Hệ thống tự động kích hoạt phiên đấu giá lên lịch thành công (ID: " + auctionId + ")", "Hệ Thống"
-                );
-                ClientManager.INSTANCE.broadcastToAdmins(adminLog);
             } else {
                 ServerLogger.error("Failed to auto-start SCHEDULED auction " + auctionId + " in Database.");
             }
@@ -245,20 +229,16 @@ public enum AuctionManager {
     private void finishAuction(int auctionId) {
         Auction auction = activeAuctions.get(auctionId);
         scheduledAuctionIds.remove(auctionId);
-        if (auction == null || auction.getStatus() != AuctionStatus.ACTIVATED) return;
+        if (auction == null || auction.getStatus() != AuctionStatus.ACTIVED) return;
 
         if (AuctionDAO.updateAuctionStatusOnly(auctionId, AuctionStatus.FINISHED)) {
             auction.setStatus(AuctionStatus.FINISHED);
             ServerLogger.info("Auction " + auctionId + " time count end. Status changed to FINISHED.");
 
-            AuctionFinishedEvent finishedEvent = new AuctionFinishedEvent(auctionId);
+            AuctionFinisedEvent finishedEvent = new AuctionFinisedEvent(auctionId, auction.getHighestBidderId() != null ? auction.getHighestBidderId() : 0, auction.getCurrentBid());
             ClientManager.INSTANCE.broadcastEventToAuction(auctionId, finishedEvent);
             ClientManager.INSTANCE.broadcastSystemEvent(finishedEvent);
 
-            SystemNotificationEvent adminLog = new SystemNotificationEvent(
-                "Phiên ID " + auctionId + " đã hết giờ. Bắt đầu đối soát giao dịch ví...", "Hệ Thống"
-            );
-            ClientManager.INSTANCE.broadcastToAdmins(adminLog);
 
             double finalPrice = auction.getCurrentBid();
             Integer winnerId = auction.getHighestBidderId();
@@ -300,10 +280,6 @@ public enum AuctionManager {
                 ClientManager.INSTANCE.broadcastEventToAuction(auctionId, endedEvent);
                 ClientManager.INSTANCE.broadcastSystemEvent(endedEvent);
 
-                SystemNotificationEvent adminLog = new SystemNotificationEvent(
-                    "Phiên ID " + auctionId + " thành công. Winner ID: " + winnerId + " chốt giá " + finalPrice, "Hệ Thống"
-                );
-                ClientManager.INSTANCE.broadcastToAdmins(adminLog);
                 
                 List<Integer> participantIds = BidDAO.getUniqueBidders(auctionId);
                 for (Integer userId : participantIds) {
@@ -334,10 +310,6 @@ public enum AuctionManager {
                 ClientManager.INSTANCE.broadcastEventToAuction(auctionId, cancelledEvent);
                 ClientManager.INSTANCE.broadcastSystemEvent(cancelledEvent);
 
-                SystemNotificationEvent adminLog = new SystemNotificationEvent(
-                    "Phiên ID " + auctionId + " bị hệ thống hủy. Lý do: Không ai Bid hoặc ví của người thắng không đủ tiền.", "Hệ Thống"
-                );
-                ClientManager.INSTANCE.broadcastToAdmins(adminLog);
                 ClientManager.INSTANCE.removeAuctionRoom(auctionId);
             }
         }
@@ -356,7 +328,7 @@ public enum AuctionManager {
 
     public synchronized boolean placeBid(int auctionId, int bidderId, double bidAmount) {
         Auction auction = activeAuctions.get(auctionId);
-        if (auction == null || auction.getStatus() != AuctionStatus.ACTIVATED) {
+        if (auction == null || auction.getStatus() != AuctionStatus.ACTIVED) {
             ServerLogger.warning("Bid rejected: Auction " + auctionId + " is not active.");
             return false;
         }

@@ -8,16 +8,16 @@ public class ActiveAuctionsController extends BaseAuctionViewController {
    // hàm load những items có trong từng mục category
    @Override
    public boolean shouldInclude(Auction newItem) {
-      return newItem.getStatus()==AuctionStatus.ACTIVATED;
+      return newItem.getStatus()==AuctionStatus.ACTIVED;
    }
    @Override
    public void fetchInitialData() {
-      GetAuctionRequest request = GetAuctionRequest.getByStatus(AuctionStatus.ACTIVATED, null);
+      GetAuctionRequest request = GetAuctionRequest.getByStatus(AuctionStatus.ACTIVED, null);
       RequestSender.send(request);
    }
    @Override
    public void fetchDataByCategory(int categoryId) {
-      GetAuctionRequest request = GetAuctionRequest.getByStatus(AuctionStatus.ACTIVATED, categoryId);
+      GetAuctionRequest request = GetAuctionRequest.getByStatus(AuctionStatus.ACTIVED, categoryId);
       RequestSender.send(request);
    }
    

@@ -1,5 +1,4 @@
 com\groupproject\shared\network\Wallet.class
-com\groupproject\shared\AuctionUpdate.class
 com\groupproject\shared\model\item\Item.class
 com\groupproject\shared\model\transaction\AuctionDetail.class
 com\groupproject\shared\network\events\AuctionResultEvent.class
@@ -8,14 +7,15 @@ com\groupproject\shared\model\user\User.class
 com\groupproject\shared\network\responses\SignupResponse.class
 com\groupproject\shared\network\requests\GetAuctionDetailRequest.class
 com\groupproject\shared\network\requests\JoinAuctionRequest.class
+com\groupproject\shared\network\responses\ChangeAuctionStatusResponse.class
 com\groupproject\shared\network\responses\JoinAuctionResponse.class
 com\groupproject\shared\network\requests\PlaceBidRequest.class
 com\groupproject\shared\network\AuctionEvent\AuctionFinisedEvent.class
-com\groupproject\shared\factory\ItemFactory.class
 com\groupproject\shared\network\events\NewBidEvent.class
 com\groupproject\shared\network\requests\SignupRequest.class
 com\groupproject\shared\network\AuctionEvent\AuctionStartedEvent.class
 com\groupproject\shared\network\responses\GetCategoriesResponse.class
+com\groupproject\shared\network\requests\ChangeAuctionStatusRequest.class
 com\groupproject\shared\network\events\AuctionListUpdateEvent.class
 com\groupproject\shared\network\responses\GetAuctionResponse.class
 com\groupproject\shared\model\enums\AuctionStatus.class
@@ -46,7 +46,6 @@ com\groupproject\shared\network\responses\Response.class
 com\groupproject\shared\model\base\Entity.class
 com\groupproject\shared\network\requests\GetAuctionRequest.class
 com\groupproject\shared\model\categories\Category.class
-com\groupproject\shared\factory\ItemCreator.class
 com\groupproject\shared\network\requests\Request.class
 com\groupproject\shared\model\transaction\Auction.class
 com\groupproject\shared\network\AuctionWonNotification.class

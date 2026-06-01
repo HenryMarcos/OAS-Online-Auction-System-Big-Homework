@@ -153,8 +153,7 @@ public class AuctionDAO {
     // -----------------------------------------------------
     public static synchronized Auction createAuction(CreateAuctionRequest request, ClientHandler clientContext) {
         AuctionStatus parsedStatus;
-        // Đặt mặc định làm WAITING nếu không có
-        parsedStatus = (request.getStatus() != null)? request.getStatus() : AuctionStatus.WAITING; 
+        parsedStatus = request.getStatus() != null ? request.getStatus() : (request.getStartTime() != null ? AuctionStatus.SCHEDULED : AuctionStatus.WAITING); 
         if (parsedStatus == AuctionStatus.WAITING) {
             ServerLogger.info("Creating auction with WAITING status");
         } else { ServerLogger.info("Creating auction with ACTIVATED status"); }
@@ -365,5 +364,45 @@ public class AuctionDAO {
         } catch (SQLException e) {
             ServerLogger.error("Error updating status: " + e.getMessage());
             return false;        }
+    }
+
+    public static boolean updateAuctionStatusWithTime(int auctionId, AuctionStatus status, LocalDateTime startTime, LocalDateTime endTime) {
+        String sql = "UPDATE auctions SET status = ?, start_time = ?, end_time = ? WHERE id = ?";
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, status.name());
+            pstmt.setString(2, startTime.toString());
+            pstmt.setString(3, endTime.toString());
+            pstmt.setInt(4, auctionId);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            ServerLogger.error("Error updating status with time: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public static boolean updateAuctionStatusOnly(int auctionId, com.groupproject.shared.model.enums.AuctionStatus status) {
+        String sql = "UPDATE auctions SET status = ? WHERE id = ?";
+        try (java.sql.Connection conn = DatabaseManager.INSTANCE.getConnection();
+             java.sql.PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, status.name());
+            pstmt.setInt(2, auctionId);
+            return pstmt.executeUpdate() > 0;
+        } catch (java.sql.SQLException e) {
+            com.groupproject.server.utils.ServerLogger.error("AuctionDAO:updateAuctionStatusOnly: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    public static java.util.List<Integer> getExpiredWaitingAuctions(java.time.LocalDateTime time) {
+        return new java.util.ArrayList<>();
+    }
+    
+    public static java.util.List<Integer> getMissedScheduledAuctions(java.time.LocalDateTime time) {
+        return new java.util.ArrayList<>();
+    }
+    
+    public static java.util.List<Integer> getExpiredActiveAuctions(java.time.LocalDateTime time) {
+        return new java.util.ArrayList<>();
     }
 }

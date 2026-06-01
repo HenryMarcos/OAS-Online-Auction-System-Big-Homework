@@ -53,50 +53,9 @@ public class ClientHandler implements Runnable {
                         out.writeObject(serverReply);
                         out.flush();
                         out.reset();
-                        // ================================================================
-                        // SỬA ĐỔI: Đăng ký kênh nhận Log cho Admin sau khi Login/Signup
-                        // ================================================================
-                        if (request instanceof com.groupproject.shared.network.request.LoginRequest || 
-                            request instanceof com.groupproject.shared.network.request.SignupRequest) {
-                            
-                            var currentUser = ClientContext.currentUser.get();
-                            
-                            // Nếu User có tồn tại (đăng nhập/đăng ký thành công) và là Admin
-                            if (currentUser != null && currentUser.isAdmin()) {
-                                ClientManager.getInstance().addAdminClient(out);
-                            }
-                        }
-                        // ================================================================
-                    }
-                } else if (recievedData instanceof String) {
-                    String message = (String) recievedData;
-    
-                    // 1. Lấy thông tin user hiện tại từ ThreadLocal thông qua ClientContext
-                    var currentUser = ClientContext.currentUser.get();
-
-                    // 2. Kiểm tra xem người dùng có phải là Admin hay không
-                    if (currentUser != null && currentUser.isAdmin()) {
-                        ServerLogger.info("Admin [" + currentUser.getUsername() + "] phát thông báo hệ thống: " + message);
-                        
-                        // 3. Tạo một ServerEvent để bọc tin nhắn (Giúp Client dễ dàng phân loại và hiển thị)
-                        // Lưu ý: Bạn nên có một class SystemNotificationEvent kế thừa ServerEvent
-                        SystemNotificationEvent notification = new SystemNotificationEvent(message, "Hệ Thống");
-
-                        // 4. Gọi hàm broadcastSystemEvent từ ClientManager để gửi cho tất cả mọi người
-                        ClientManager.getInstance().broadcastSystemEvent(notification);
-                        
-                    } else {
-                        // Xử lý trường hợp User bình thường cố tình gửi tin nhắn broadcast
-                        String actor = (currentUser != null) ? currentUser.getUsername() : "Ẩn danh";
-                        ServerLogger.warning("Cảnh báo: Người dùng [" + actor + "] cố gắng dùng quyền Admin trái phép.");
-                        
-                        // (Tùy chọn) Gửi thông báo lỗi ngược lại cho người gửi
-                        // sendToClient(new ErrorResponse("Bạn không có quyền phát thông báo toàn hệ thống!"));
                     }
                 }
             }
-
-
         } catch (Throwable e) { // <-- Catch EVERYTHING
             ServerLogger.error("Client disconnected or error occurred: " + e.getMessage());
 

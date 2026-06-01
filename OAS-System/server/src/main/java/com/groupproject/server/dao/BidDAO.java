@@ -3,6 +3,7 @@ package com.groupproject.server.dao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,29 +15,13 @@ import com.groupproject.shared.network.requests.PlaceBidRequest;
 
 public class BidDAO {
 
-    // Returns true if successful, false if something failed
-    public static boolean insertBid(int auctionId, int bidderId, double amount) {
-        String sql = "INSERT INTO bids (auction_id, bidder_id, amount, bid_time) VALUES (?, ?, ?, ?)";
-        
-        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setInt(1, auctionId);
-            pstmt.setInt(2, bidderId);
-            pstmt.setDouble(3, amount);
-            pstmt.setString(4, LocalDateTime.now().toString());
-            
-            int rowsAffected = pstmt.executeUpdate();
-            
-            // Also, update the current_price in the auctions table!
-            if (rowsAffected > 0) {
-                updateAuctionPrice(conn, auctionId, amount);
-                return true;
-            }
-        } catch (Exception e) {
-            ServerLogger.error("Failed to insert bid: " + e.getMessage());
+    private static void updateAuctionPrice(Connection conn, int auctionId, double amount) throws SQLException {
+        String sql = "UPDATE auctions SET current_bid = ? WHERE id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setDouble(1, amount);
+            pstmt.setInt(2, auctionId);
+            pstmt.executeUpdate();
         }
-        return false;
     }
 
     public static boolean insertBid(PlaceBidRequest request, ClientHandler clientContext) {
@@ -49,7 +34,7 @@ public class BidDAO {
         String insertBidSql = "INSERT INTO bids (auction_id, bidder_id, amount, bid_time) VALUES (?, ?, ?, CURRENT_TIMESTAMP)";
         String updateAuctionSql = "UPDATE auctions SET current_bid = ?, current_bidder_id = ? WHERE id = ?";
 
-        try (Connection conn = DatabaseManager.getInstance().getConnection()) {
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection()) {
             conn.setAutoCommit(false); // Bắt đầu Transaction an toàn
 
             try {
@@ -168,5 +153,45 @@ public class BidDAO {
             ServerLogger.error("Failed to fetch unique bidders: " + e.getMessage());
         }
         return bidderIds;
+    }
+
+    public static boolean executeDirectTransfer(int buyerId, int sellerId, double amount) {
+        java.sql.Connection conn = null;
+        try {
+            conn = DatabaseManager.INSTANCE.getConnection();
+            conn.setAutoCommit(false);
+            
+            String checkSql = "SELECT balance FROM users WHERE id = ?";
+            try (java.sql.PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+                checkStmt.setInt(1, buyerId);
+                java.sql.ResultSet rs = checkStmt.executeQuery();
+                if (!rs.next() || rs.getDouble("balance") < amount) {
+                    conn.rollback();
+                    return false;
+                }
+            }
+            
+            String deductSql = "UPDATE users SET balance = balance - ? WHERE id = ?";
+            try (java.sql.PreparedStatement deductStmt = conn.prepareStatement(deductSql)) {
+                deductStmt.setDouble(1, amount);
+                deductStmt.setInt(2, buyerId);
+                deductStmt.executeUpdate();
+            }
+            
+            String addSql = "UPDATE users SET balance = balance + ? WHERE id = ?";
+            try (java.sql.PreparedStatement addStmt = conn.prepareStatement(addSql)) {
+                addStmt.setDouble(1, amount);
+                addStmt.setInt(2, sellerId);
+                addStmt.executeUpdate();
+            }
+            
+            conn.commit();
+            return true;
+        } catch (java.sql.SQLException e) {
+            if (conn != null) try { conn.rollback(); } catch(java.sql.SQLException ex) {}
+            return false;
+        } finally {
+            if (conn != null) try { conn.setAutoCommit(true); conn.close(); } catch(java.sql.SQLException ex) {}
+        }
     }
 }

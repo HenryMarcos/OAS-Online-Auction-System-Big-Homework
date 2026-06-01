@@ -7,20 +7,20 @@ import java.time.LocalDateTime;
 
 import com.groupproject.shared.model.categories.Category;
 import com.groupproject.shared.model.enums.AuctionStatus;
-import com.groupproject.shared.network.request.ChangeAuctionStatusRequest;
-import com.groupproject.shared.network.request.CreateAuctionRequest;
-import com.groupproject.shared.network.request.JoinAuctionRoomRequest;
-import com.groupproject.shared.network.request.LoginRequest;
-import com.groupproject.shared.network.request.PlaceBidRequest;
-import com.groupproject.shared.network.request.SignupRequest;
-import com.groupproject.shared.network.request.TopUpRequest;
-import com.groupproject.shared.network.response.ChangeAuctionStatusResponse;
-import com.groupproject.shared.network.response.CreateAuctionResponse;
-import com.groupproject.shared.network.response.JoinAuctionRoomResponse;
-import com.groupproject.shared.network.response.LoginResponse;
-import com.groupproject.shared.network.response.PlaceBidResponse;
-import com.groupproject.shared.network.response.SignupResponse;
-import com.groupproject.shared.network.response.TopUpResponse;
+import com.groupproject.shared.network.requests.ChangeAuctionStatusRequest;
+import com.groupproject.shared.network.requests.CreateAuctionRequest;
+import com.groupproject.shared.network.requests.JoinAuctionRoomRequest;
+import com.groupproject.shared.network.requests.LoginRequest;
+import com.groupproject.shared.network.requests.PlaceBidRequest;
+import com.groupproject.shared.network.requests.SignupRequest;
+import com.groupproject.shared.network.requests.TopUpRequest;
+import com.groupproject.shared.network.responses.ChangeAuctionStatusResponse;
+import com.groupproject.shared.network.responses.CreateAuctionResponse;
+import com.groupproject.shared.network.responses.JoinAuctionRoomResponse;
+import com.groupproject.shared.network.responses.LoginResponse;
+import com.groupproject.shared.network.responses.PlaceBidResponse;
+import com.groupproject.shared.network.responses.SignupResponse;
+import com.groupproject.shared.network.responses.TopUpResponse;
 
 /**
  * Test Suite 04: Bidding Logic (BiddingTest)

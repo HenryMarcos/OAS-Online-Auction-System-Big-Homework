@@ -37,7 +37,7 @@ public class ServerListener implements Runnable {
                     if (incomingData instanceof Wallet) {
                         Wallet wallet = (Wallet) incomingData;
                         if(wallet.hasWalletUpdated()) {
-                            SessionManager.INSTANCE.getCurrentUser().setAccountBalance(wallet.getAvailableBalance());
+                            SessionManager.INSTANCE.getCurrentUser().setBalance(wallet.getAvailableBalance());
                             SessionManager.INSTANCE.getCurrentMainController().updateWallet(wallet.getAvailableBalance());
                             ProfileController.getInstance().updateWallet(wallet.getAvailableBalance());
                         }

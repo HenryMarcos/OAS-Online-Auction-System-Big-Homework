@@ -424,7 +424,7 @@ public class CreateAuctionController implements Initializable {
 
         if (isStartNow) {
             startTime = TimeUtil.getNow();
-            initialStatus = AuctionStatus.ACTIVATED;
+            initialStatus = AuctionStatus.ACTIVED;
 
             if (isDurationMode) {
                 try {

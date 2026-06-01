@@ -97,7 +97,7 @@ public class CardController implements AuctionListener {
     @Override
     public void onAuctionStarted(AuctionStartedEvent event) {
         Platform.runLater(() -> {
-            applyAuctionStatus(AuctionStatus.ACTIVATED);
+            applyAuctionStatus(AuctionStatus.ACTIVED);
         });
     }
 

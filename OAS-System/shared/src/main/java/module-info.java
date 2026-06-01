@@ -10,6 +10,7 @@ module com.groupproject.shared { // Đổi tên ở đây cho chuẩn
     exports com.groupproject.shared.network.events;
     exports com.groupproject.shared.network.requests;
     exports com.groupproject.shared.network.responses;
+    exports com.groupproject.shared.network.AuctionEvent;
 
     // Cho phép Java Serialization làm việc (Quan trọng cho Socket)
     opens com.groupproject.shared.model.user;
@@ -19,4 +20,5 @@ module com.groupproject.shared { // Đổi tên ở đây cho chuẩn
     opens com.groupproject.shared.network.events;
     opens com.groupproject.shared.network.requests;
     opens com.groupproject.shared.network.responses;
+    opens com.groupproject.shared.network.AuctionEvent;
 }

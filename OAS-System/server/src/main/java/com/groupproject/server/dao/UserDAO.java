@@ -16,7 +16,7 @@ public class UserDAO {
     public static synchronized boolean isAdmin(int userId) {
         String sql = "SELECT 1 FROM admin_list WHERE user_id = ?";
         
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setInt(1, userId);
@@ -88,7 +88,8 @@ public class UserDAO {
             ResultSet rs = pstmt.getGeneratedKeys();
             if (rs.next()) {
                 int newId = rs.getInt(1); // 1 thay vì "id", vì rs không lấy tên cột
-                return new User(newId, username, password, email, 10000, noww); // Đăng ký thành công            } else {
+                return new User(newId, username, password, email, 10000, noww); // Đăng ký thành công
+            } else {
                 System.err.println("Error: Can't get user's id for some reason");
             }
         } catch (SQLException e) {
@@ -127,27 +128,20 @@ public class UserDAO {
 
     public static synchronized User getUserById(int userId) {
         String sql = "SELECT * FROM users WHERE id = ?";
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, userId);
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
-                // Xử lý LocalDateTime tương tự hàm getUser để tránh lỗi parse
-                String createdAtStr = rs.getString("created_at");
-                LocalDateTime createdAt = (createdAtStr != null) 
-                    ? LocalDateTime.parse(createdAtStr.replace(" ", "T")) 
-                    : LocalDateTime.now();
-
                 return new User(
                     rs.getInt("id"),
                     rs.getString("username"),
-                    rs.getString("password"),
                     rs.getString("email"),
+                    rs.getString("password"),
                     rs.getDouble("balance"),
-                    isAdmin(userId), 
-                    createdAt
+                    rs.getObject("created_at", LocalDateTime.class)
                 );
             }
         } catch (Exception e) {
@@ -158,7 +152,7 @@ public class UserDAO {
 
     public static synchronized boolean updateBalance(int userId, double newBalance) {
         String sql = "UPDATE users SET balance = ? WHERE id = ?";
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setDouble(1, newBalance);
@@ -196,7 +190,8 @@ public class UserDAO {
                 // KIỂM TRA QUYỀN ADMIN
                 boolean isUserAdmin = isAdmin(id);
 
-                return new User(id, username, password, email, 10000, createdAt);            }
+                return new User(id, username, password, email, 10000, createdAt);
+            }
         } catch (Exception e) {
             ServerLogger.error("UserDAO:getUser: " + e.getMessage());
             return null;
@@ -215,7 +210,7 @@ public class UserDAO {
 
     public static boolean addBalance(int userId, double amount) {
         String sql = "UPDATE users SET balance = balance + ? WHERE id = ?";
-        try (java.sql.Connection conn = DatabaseManager.getInstance().getConnection();
+        try (java.sql.Connection conn = DatabaseManager.INSTANCE.getConnection();
              java.sql.PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setDouble(1, amount);

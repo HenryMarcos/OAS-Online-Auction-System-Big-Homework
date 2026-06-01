@@ -4,11 +4,11 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-import com.groupproject.shared.network.request.GetMyAuctionsRequest;
-import com.groupproject.shared.network.request.LoginRequest;
-import com.groupproject.shared.network.request.SignupRequest;
-import com.groupproject.shared.network.response.LoginResponse;
-import com.groupproject.shared.network.response.SignupResponse;
+import com.groupproject.shared.network.requests.GetMyAuctionsRequest;
+import com.groupproject.shared.network.requests.LoginRequest;
+import com.groupproject.shared.network.requests.SignupRequest;
+import com.groupproject.shared.network.responses.LoginResponse;
+import com.groupproject.shared.network.responses.SignupResponse;
 
 /**
  * Test Suite 01: Authentication & Authorization (AuthTest)

@@ -33,7 +33,7 @@ public class CreateAuctionRequest extends Request {
         this.mainImageBytes = mainImageBytes;
         this.subImagesBytes = subImagesBytes;
         this.startingPrice = startingPrice;
-        this.duration = duration;
+        this.duration = duration != null ? duration : 0L;
         this.startTime = startTime;
         this.endTime = endTime;
         this.status = status;

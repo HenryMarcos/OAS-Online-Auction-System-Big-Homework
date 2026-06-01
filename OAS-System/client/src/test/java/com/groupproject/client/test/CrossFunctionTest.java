@@ -9,21 +9,21 @@ import java.util.concurrent.TimeUnit;
 
 import com.groupproject.shared.model.categories.Category;
 import com.groupproject.shared.model.enums.AuctionStatus;
-import com.groupproject.shared.network.event.AuctionCancelledEvent;
-import com.groupproject.shared.network.event.AuctionStartedEvent;
-import com.groupproject.shared.network.event.NewBidEvent;
-import com.groupproject.shared.network.event.SystemNotificationEvent;
-import com.groupproject.shared.network.request.ChangeAuctionStatusRequest;
-import com.groupproject.shared.network.request.CreateAuctionRequest;
-import com.groupproject.shared.network.request.JoinAuctionRoomRequest;
-import com.groupproject.shared.network.request.LoginRequest;
-import com.groupproject.shared.network.request.PlaceBidRequest;
-import com.groupproject.shared.network.request.SignupRequest;
-import com.groupproject.shared.network.request.TopUpRequest;
-import com.groupproject.shared.network.response.ChangeAuctionStatusResponse;
-import com.groupproject.shared.network.response.CreateAuctionResponse;
-import com.groupproject.shared.network.response.JoinAuctionRoomResponse;
-import com.groupproject.shared.network.response.PlaceBidResponse;
+import com.groupproject.shared.network.events.AuctionCancelledEvent;
+import com.groupproject.shared.network.events.AuctionStartedEvent;
+import com.groupproject.shared.network.events.NewBidEvent;
+import com.groupproject.shared.network.events.SystemNotificationEvent;
+import com.groupproject.shared.network.requests.ChangeAuctionStatusRequest;
+import com.groupproject.shared.network.requests.CreateAuctionRequest;
+import com.groupproject.shared.network.requests.JoinAuctionRoomRequest;
+import com.groupproject.shared.network.requests.LoginRequest;
+import com.groupproject.shared.network.requests.PlaceBidRequest;
+import com.groupproject.shared.network.requests.SignupRequest;
+import com.groupproject.shared.network.requests.TopUpRequest;
+import com.groupproject.shared.network.responses.ChangeAuctionStatusResponse;
+import com.groupproject.shared.network.responses.CreateAuctionResponse;
+import com.groupproject.shared.network.responses.JoinAuctionRoomResponse;
+import com.groupproject.shared.network.responses.PlaceBidResponse;
 
 /**
  * Test Suite 07: Kịch bản Mô phỏng Toàn diện (CrossFunctionTest)

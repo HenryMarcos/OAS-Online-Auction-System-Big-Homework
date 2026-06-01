@@ -155,7 +155,7 @@ public class MainController extends Application implements Initializable {
         Platform.runLater(() -> {
             String name= SessionManager.INSTANCE.getCurrentUser().getUsername();
             username.setText(name);
-            updateWallet((SessionManager.INSTANCE.getCurrentUser() != null)? SessionManager.INSTANCE.getCurrentUser().getAccountBalance(): 0.0f);
+            updateWallet((SessionManager.INSTANCE.getCurrentUser() != null)? SessionManager.INSTANCE.getCurrentUser().getBalance(): 0.0f);
     
         });
     }

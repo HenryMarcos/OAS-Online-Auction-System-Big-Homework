@@ -7,12 +7,12 @@ import java.time.LocalDateTime;
 
 import com.groupproject.shared.model.categories.Category;
 import com.groupproject.shared.model.enums.AuctionStatus;
-import com.groupproject.shared.network.request.CreateAuctionRequest;
-import com.groupproject.shared.network.request.GetMyAuctionsRequest;
-import com.groupproject.shared.network.request.LoginRequest;
-import com.groupproject.shared.network.request.SignupRequest;
-import com.groupproject.shared.network.response.CreateAuctionResponse;
-import com.groupproject.shared.network.response.GetMyAuctionsResponse;
+import com.groupproject.shared.network.requests.CreateAuctionRequest;
+import com.groupproject.shared.network.requests.GetMyAuctionsRequest;
+import com.groupproject.shared.network.requests.LoginRequest;
+import com.groupproject.shared.network.requests.SignupRequest;
+import com.groupproject.shared.network.responses.CreateAuctionResponse;
+import com.groupproject.shared.network.responses.GetMyAuctionsResponse;
 
 /**
  * Test Suite 02: Auction CRUD & Data Isolation (AuctionCRUDTest)

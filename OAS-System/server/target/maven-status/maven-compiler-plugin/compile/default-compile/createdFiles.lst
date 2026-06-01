@@ -10,6 +10,7 @@ com\groupproject\server\handlers\LoginHandler.class
 com\groupproject\server\utils\Config.class
 com\groupproject\server\dao\BidDAO.class
 com\groupproject\server\dao\CategoryDAO.class
+com\groupproject\server\utils\ClientContext.class
 com\groupproject\server\handlers\RequestHandler.class
 com\groupproject\server\dao\NotificationDAO.class
 com\groupproject\server\handlers\PlaceBidHandler.class
@@ -19,6 +20,7 @@ com\groupproject\server\handlers\LogOutHandler.class
 com\groupproject\server\core\ServerApp.class
 com\groupproject\server\handlers\JoinAuctionHandler.class
 com\groupproject\server\handlers\SignupHandler.class
+com\groupproject\server\handlers\ChangeAuctionStatusHandler.class
 com\groupproject\server\core\ClientHandler.class
 com\groupproject\server\dao\UserDAO.class
 com\groupproject\server\handlers\CreateAuctionHandler.class

@@ -18,11 +18,16 @@ public enum ClientManager {
     // Bản đồ map trực tiếp UserID với Stream của họ để nhắn tin riêng!
     private final Map<Integer, ObjectOutputStream> authenticatedUsers = new ConcurrentHashMap<>();
 
-    // Bản đồ các phòng đấu giá (Key: Auction ID, Value: Tập hợp các clients trong phòng đó)    private final Map<Integer, Set<ObjectOutputStream>> auctionRooms = new ConcurrentHashMap<>();
+    // Bản đồ các phòng đấu giá (Key: Auction ID, Value: Tập hợp các clients trong phòng đó)
+    private final Map<Integer, Set<ObjectOutputStream>> auctionRooms = new ConcurrentHashMap<>();
+
+    // Danh sách các luồng của admin
+    private final List<ObjectOutputStream> adminClients = new ArrayList<>();
 
     private ClientManager() {}
 
-    // --- QUẢN LÝ CLIENT CHUNG ---    public void addClient(ObjectOutputStream out) {
+    // --- QUẢN LÝ CLIENT CHUNG ---
+    public void addClient(ObjectOutputStream out) {
         synchronized (clients) { clients.add(out); }
     }
 
@@ -33,7 +38,8 @@ public enum ClientManager {
     }
 
     public void removeClient(ObjectOutputStream out) {
-        synchronized (clients) { clients.remove(out); }    }
+        synchronized (clients) { clients.remove(out); }
+    }
 
     public List<ObjectOutputStream> getClients() { return clients; }
 
@@ -53,7 +59,8 @@ public enum ClientManager {
         }
     }
 
-    // --- QUẢN LÝ PHÒNG ĐẤU GIÁ ---    public void subscribeToAuction(int auctionId, ObjectOutputStream clientOut) {
+    // --- QUẢN LÝ PHÒNG ĐẤU GIÁ ---
+    public void subscribeToAuction(int auctionId, ObjectOutputStream clientOut) {
         auctionRooms.putIfAbsent(auctionId, ConcurrentHashMap.newKeySet());
         auctionRooms.get(auctionId).add(clientOut);
         ServerLogger.info("A client joined auction room: " + auctionId);
