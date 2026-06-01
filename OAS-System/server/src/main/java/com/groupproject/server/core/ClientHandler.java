@@ -6,7 +6,9 @@ import java.net.Socket;
 
 import com.groupproject.server.handlers.RequestDispatcher;
 import com.groupproject.server.utils.ServerLogger;
+import com.groupproject.shared.network.requests.LoginRequest;
 import com.groupproject.shared.network.requests.Request;
+import com.groupproject.shared.network.requests.SignupRequest;
 import com.groupproject.shared.network.responses.Response;
 
 // --- NỘI HÀM: CHUÕI RIÊNG CHO MỖI CLIENT ---
@@ -40,7 +42,7 @@ public class ClientHandler implements Runnable {
                 Object recievedData = in.readObject();
 
                 // Xử lý trường hợp client gửi yêu cầu
-                // Có 3 yêu cầu: CreateAuctionRequest, LoginRequest, SignupRequest
+                // Có 5 yêu cầu: CreateAuctionRequest, LoginRequest, SignupRequest, ChangeAuctionStatusHandle, GetMyAuctionHandler
                 if (recievedData instanceof Request) {
                     Request request = (Request) recievedData;
                     ServerLogger.info("User " + socket.getInetAddress() + " sent a " + request.getClass().getSimpleName());
@@ -51,13 +53,25 @@ public class ClientHandler implements Runnable {
                         out.writeObject(serverReply);
                         out.flush();
                         out.reset();
+                        // ================================================================
+                        // SỬA ĐỔI: Đăng ký kênh nhận Log cho Admin sau khi Login/Signup
+                        // ================================================================
+                        if (request instanceof LoginRequest || 
+                            request instanceof SignupRequest) {
+                            
+                            int currentUserId = getAuthenticatedUserId();
+                            
+                            // Nếu User có tồn tại (đăng nhập/đăng ký thành công) và là Admin
+                            /* 
+                            if (currentUser != null && currentUser.isAdmin()) {
+                                ClientManager.getInstance().addAdminClient(out);
+                            }
+                            */
+                        }
+                        // ================================================================
                     }
                 } else if (recievedData instanceof String) {
                     String message = (String) recievedData;
-                    ServerLogger.info("Broadcast Request: " + message);
-
-                    // Gửi thông báo cho tất cả mọi người
-                    ServerApp.broadcast(message, out);
                 }
             }
 
@@ -66,7 +80,7 @@ public class ClientHandler implements Runnable {
             ServerLogger.error("Client disconnected or error occurred: " + e.getMessage());
 
         } finally {
-            // CLEANUP: Khi client rời, xóa client trong danh sách đi
+            // CLEANUP: Khi client rời, xóa client trong danh sách các client và các phòng đấu giá
             if (out != null) {
                 ClientManager.INSTANCE.removeClient(out);
             }

@@ -7,7 +7,7 @@ import com.groupproject.shared.model.base.Entity;
 public class User extends Entity {
 
     private String username;
-    private String password; // Mật khẩu sẽ được mã hóa trước khi lưu trữ hoặc truyền qua mạng
+    private String password; 
     private String email;
     private double accountBalance;
 
@@ -18,6 +18,8 @@ public class User extends Entity {
         this.email = email;
         this.accountBalance = accountBalance;
     }
+
+    // --- GETTERS & SETTERS ---
 
     public void setUsername(String username) { this.username = username; }
     public String getUsername() { return username; }

@@ -1,6 +1,7 @@
 package com.groupproject.server.cache;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,6 +22,7 @@ public enum CategoryManager {
     // nhưng việc đọc chỉ bị chặn trong tích tắc khi bộ nhớ đệm đang được cập nhật
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
+    // 3. Khởi tạo riêng tư (Private Constructor)
     private CategoryManager() {
         this.categoryMap = new ConcurrentHashMap<>();
         this.mainCategoryList = new ArrayList<>();
@@ -31,45 +33,44 @@ public enum CategoryManager {
     Gọi hàm này mỗi khi server chạy, hoặc khi admin chỉnh sửa category trong database
     */
     public void refreshCache() {
-        lock.writeLock().lock();
         try {
-            ServerLogger.info("Refreshing Category Cache from database...");
+            ServerLogger.info("Refreshing Category Cache từ Database (HikariCP)...");
 
+            // Lấy dữ liệu từ DAO (Thực hiện nhanh để giải phóng Connection cho HikariCP)
             Map<Integer, Category> categories = CategoryDAO.getCategories();
             List<Category> mainCategories = CategoryDAO.getMainCategories(categories);
 
-            this.categoryMap.clear();
-            this.categoryMap.putAll(categories);
+            if (categories != null && !categories.isEmpty()) {
+                // Thay đổi dữ liệu một cách an toàn bằng việc clear và putAll
+                this.categoryMap.clear();
+                this.categoryMap.putAll(categories);
 
-            this.mainCategoryList.clear();
-            this.mainCategoryList.addAll(mainCategories);
+                this.mainCategoryList.clear();
+                this.mainCategoryList.addAll(mainCategories);
 
-            ServerLogger.info("Category Cache refreshed successfully.");
+                ServerLogger.info("Category Cache đã được cập nhật thành công.");
+            }
         } catch (Exception e) {
-            ServerLogger.error("Failed to refresh category cache: " + e.getMessage());
-        } finally {
-            lock.writeLock().unlock();
+            ServerLogger.error("Lỗi khi làm mới category cache: " + e.getMessage());
         }
     }
 
+    // Lấy 1 category theo ID: An toàn, không cần lock vì Map là Concurrent
     public Category getCategory(int id) {
-        lock.readLock().lock();
-        try {
-            return categoryMap.get(id);
-        } finally {
-            lock.readLock().unlock();
-        }
+        return categoryMap.get(id);
     }
 
+    /**
+     * Bọc unmodifiableMap để ngăn các Handler hoặc luồng khác từ bên ngoài 
+     * vô tình thực hiện thao tác xóa/sửa dữ liệu gốc của Cache.
+     */
     public Map<Integer, Category> getCategories() {
-        lock.readLock().lock();
-        try {
-            return categoryMap;
-        } finally {
-            lock.readLock().unlock();
-        }
+        return Collections.unmodifiableMap(categoryMap);
     }
 
+    /**
+     * Trả về danh sách main categories không thể chỉnh sửa từ bên ngoài
+     */
     public List<Category> getMainCategories() {
         lock.readLock().lock();
         try {

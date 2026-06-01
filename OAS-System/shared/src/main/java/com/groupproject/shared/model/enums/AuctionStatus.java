@@ -2,6 +2,7 @@ package com.groupproject.shared.model.enums;
 
 // shared/model/enums/AuctionStatus.java
 public enum AuctionStatus {
+    SCHEDULED, // Trạng thái đã lên lịch, người bán đã tạo đấu giá và đặt lịch bắt đầu nhưng chưa bắt đầu
     WAITING, // Trạng thái chờ bắt đầu, người bán đã tạo đấu giá nhưng chưa bắt đầu
     ACTIVATED, // Trạng thái đang diễn ra, người bán đã bắt đầu đấu giá và người mua có thể đặt giá thầu
     ENDED, // Trạng thái đã kết thúc, thời gian đấu giá đã hết nhưng chưa được xử lý để xác định người thắng cuộc hoặc hủy bỏ đấu giá

@@ -72,7 +72,7 @@
          <!--Bỏ luôn cả đoạn này-->
          <HBox alignment="BOTTOM_RIGHT">
             <children>
-               <Button fx:id="saveButton" mnemonicParsing="false" onAction="#handleSave" style="-fx-background-color: #ffaa00; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 25; -fx-background-radius: 5;" text="Save" />
+               <Button fx:id="saveButton" mnemonicParsing="false" style="-fx-background-color: #ffaa00; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 25; -fx-background-radius: 5;" text="Save" />
             </children>
          </HBox>
       </children>

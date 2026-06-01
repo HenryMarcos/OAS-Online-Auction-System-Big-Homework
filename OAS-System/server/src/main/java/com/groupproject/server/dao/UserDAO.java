@@ -13,6 +13,23 @@ import com.groupproject.shared.network.requests.SignupRequest;
 
 public class UserDAO {
 
+    // --- KIỂM TRA QUYỀN ADMIN TỪ BẢNG admin_list ---
+    public static synchronized boolean isAdmin(int userId) {
+        String sql = "SELECT 1 FROM admin_list WHERE user_id = ?";
+        
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, userId);
+            ResultSet rs = pstmt.executeQuery();
+            
+            return rs.next(); // Nếu có kết quả tức là user này nằm trong bảng admin
+        } catch (Exception e) {
+            System.err.println("UserDAO:isAdmin: " + e.getMessage());
+            return false;
+        }
+    }
+
     public static synchronized String checkDuplicates(String username, String email) {
         String sql = "SELECT username, email FROM users WHERE username = ? OR email = ?";
         
@@ -32,23 +49,26 @@ public class UserDAO {
                 boolean emailMatch = foundEmail.equalsIgnoreCase(email);
 
                 if (usernameMatch && emailMatch) {
-                    System.out.println("Username and email already exists.");
+                    ServerLogger.info("Username and email already exists.");
                     return "Username and email already exists.";
                 } else if (usernameMatch) {
-                    System.out.println("Username is already exists");
+                    ServerLogger.info("Username is already exists");
                     return "Username is already exists";
                 } else if (emailMatch) {
-                    System.out.println("An account with that email already exists.");
+                    ServerLogger.info("An account with that email already exists.");
                     return "An account with that email already exists.";
                 }
             }
             
-        } 
-        catch (SQLException e) {} 
-        catch (Exception e) {}
+        } catch (SQLException e) {
+            ServerLogger.error("UserDAO:checkDuplicates: " + e.getMessage());
+        } catch (Exception e) {
+            ServerLogger.error("UserDAO:checkDuplicates: " + e.getMessage());
+        }
 
         return null; // Trả về null tức là không có tài khoản nào trùng cả
     }
+
     public static synchronized String checkDuplicates(SignupRequest request) {
         return checkDuplicates(request.getUsername(), request.getEmail());
     }
@@ -75,7 +95,7 @@ public class UserDAO {
                 System.err.println("Error: Can't get user's id for some reason");
             }
         } catch (SQLException e) {
-            System.err.println("Database error during registration: " + e.getMessage());
+            ServerLogger.error("UserDAO:registerUser: " + e.getMessage());
         }
         return null; // Lưu thất bại
     }
@@ -86,7 +106,7 @@ public class UserDAO {
 
     public static synchronized boolean checkUser(String username, String password) {
         // Câu lệnh SQL tìm user có username và password khớp
-        String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
+        String sql = "SELECT 1 FROM users WHERE username = ? AND password = ?";
         
 
         try (Connection conn = DatabaseManager.INSTANCE.getConnection();
@@ -100,13 +120,58 @@ public class UserDAO {
             // Nếu rs.next() là true, nghĩa là tìm thấy ít nhất 1 dòng khớp -> Đăng nhập thành công
             return rs.next();
         } catch (Exception e) {
-            System.out.println("UserDAO:checkUser: " + e.getMessage());
+            ServerLogger.error("UserDAO:checkUser: " + e.getMessage());
             return false;
         }
     }
 
     public static synchronized boolean checkUser(LoginRequest request) {
         return checkUser(request.getUsername(), request.getPassword());
+    }
+
+    public static synchronized User getUserById(int userId) {
+        String sql = "SELECT * FROM users WHERE id = ?";
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, userId);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                ServerLogger.info("Found user with the same detail");
+                // username và password đã có sẵn
+                int id = rs.getInt("id");
+                String username = rs.getString("username");
+                String email = rs.getString("email");
+                String password = rs.getString("password");
+                double balance = rs.getDouble("balance");
+                String createdAtStr = rs.getString("created_at");
+                LocalDateTime createdAt = (createdAtStr != null) ? LocalDateTime.parse(createdAtStr.replace(" ", "T")) : LocalDateTime.now();
+                
+                // KIỂM TRA QUYỀN ADMIN
+                boolean isUserAdmin = isAdmin(id);
+
+                return new User(id, username, password, email, balance, createdAt);
+            }
+        } catch (Exception e) {
+            ServerLogger.error("UserDAO:getUserById: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public static synchronized boolean updateBalance(int userId, double newBalance) {
+        String sql = "UPDATE users SET balance = ? WHERE id = ?";
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setDouble(1, newBalance);
+            pstmt.setInt(2, userId);
+            
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            ServerLogger.error("UserDAO:updateBalance: " + e.getMessage());
+            return false;
+        }
     }
 
     public static synchronized User getUser(String username, String password) {
@@ -128,13 +193,17 @@ public class UserDAO {
                 // username và password đã có sẵn
                 int id = rs.getInt("id");
                 String email = rs.getString("email");
-                LocalDateTime createdAt = rs.getObject("created_at", LocalDateTime.class);
-                ServerLogger.info(String.format("User's id: %s, email: %s, created at: %s", id, email, createdAt));
+                double balance = rs.getDouble("balance");
+                String createdAtStr = rs.getString("created_at");
+                LocalDateTime createdAt = (createdAtStr != null) ? LocalDateTime.parse(createdAtStr.replace(" ", "T")) : LocalDateTime.now();
+                
+                // KIỂM TRA QUYỀN ADMIN
+                boolean isUserAdmin = isAdmin(id);
 
                 return new User(id, username, password, email, 10000, createdAt);
             }
         } catch (Exception e) {
-            System.out.println("UserDAO:getUser: " + e.getMessage());
+            ServerLogger.error("UserDAO:getUser: " + e.getMessage());
             return null;
         }
 
@@ -147,5 +216,21 @@ public class UserDAO {
 
     public static synchronized User getUser(SignupRequest request) {
         return getUser(request.getUsername(), request.getPassword());
+    }
+
+    public static boolean addBalance(int userId, double amount) {
+        String sql = "UPDATE users SET balance = balance + ? WHERE id = ?";
+        try (java.sql.Connection conn = DatabaseManager.INSTANCE.getConnection();
+             java.sql.PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setDouble(1, amount);
+            pstmt.setInt(2, userId);
+            
+            return pstmt.executeUpdate() > 0;
+            
+        } catch (java.sql.SQLException e) {
+            ServerLogger.error("Lỗi cập nhật số dư khi nạp tiền: " + e.getMessage());
+            return false;
+        }
     }
 }

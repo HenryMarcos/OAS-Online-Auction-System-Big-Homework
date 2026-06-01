@@ -34,8 +34,7 @@ public enum DatabaseManager {
 
             ServerLogger.info("HikariCP Connection Pool successfully initialized!");
         } catch (Exception e) {
-            ServerLogger.info("[FATAL ERROR] Could not connect to the database.");
-            e.printStackTrace();
+            ServerLogger.info("[FATAL ERROR] Could not connect to the database: " + e.getMessage());
             // Optional: System.exit(1); // Kill the server if DB fails
         }
     }
@@ -64,6 +63,13 @@ public enum DatabaseManager {
                                       ");";
             stmt.execute(notificationsSql);
             
+
+            // Tao bảng admin_list để lưu danh sách các user có quyền admin (chỉ chứa id của user, liên kết với bảng users)
+            String sqlAdmin = "CREATE TABLE IF NOT EXISTS admin_list (" +
+                              "user_id INTEGER PRIMARY KEY," +
+                            "FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE)";
+            stmt.execute(sqlAdmin);
+
             // Tạo bảng chứa các phiên đấu giá
             String auctionSql = "CREATE TABLE IF NOT EXISTS auctions (" +
                                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -213,13 +219,27 @@ public enum DatabaseManager {
             stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (41, 'Sport');");
             stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (41, 'Player / Athlete');");
             stmt.execute("INSERT OR IGNORE INTO category_fields (category_id, field_name) VALUES (41, 'Graded (Yes/No)');");
-
-            
-
             
             CategoryDAO.getMainCategories();
             
             ServerLogger.info("Database initialized successfully!");
+
+            // --- SEED DATA: TẠO ADMIN ĐỂ TEST ---
+            try {
+                // 1. Tạo user 'admin' vào bảng users (nếu chưa tồn tại)
+                // Mình dùng ID 999999 cho dễ nhớ
+                String seedUser = "INSERT OR IGNORE INTO users (id, username, email, password, balance, created_at) " +
+                                "VALUES (999999, 'admin', 'admin@test.com', 'admin123', 999999.0, '" + java.time.LocalDateTime.now() + "')";
+                stmt.execute(seedUser);
+
+                // 2. Thêm ID 999999 vào bảng admin_list để xác nhận quyền Admin
+                String seedAdmin = "INSERT OR IGNORE INTO admin_list (user_id) VALUES (999999)";
+                stmt.execute(seedAdmin);
+                
+                ServerLogger.info(">>> Seed Data: Tài khoản admin/admin123 đã sẵn sàng.");
+            } catch (Exception e) {
+                ServerLogger.error("Lỗi khi tạo dữ liệu mẫu: " + e.getMessage());
+            }
         } catch (Exception e) {
             ServerLogger.error(e.getMessage());
         }

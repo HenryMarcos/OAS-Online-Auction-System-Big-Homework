@@ -4,7 +4,8 @@ public class PlaceBidRequest extends Request {
     private int auctionId;
     private double bidAmount;
 
-    public PlaceBidRequest(int auctionId, double bidAmount) {
+    // Đã sửa lại lỗi int bidAmount -> double bidAmount
+    public PlaceBidRequest(int auctionId, double bidAmount) { 
         this.auctionId = auctionId;
         this.bidAmount = bidAmount;
     }

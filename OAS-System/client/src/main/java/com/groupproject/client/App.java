@@ -20,8 +20,6 @@ public class App extends Application {
     // Các biến tĩnh để dùng chung cho toàn bộ app
     private static Scene scene;
 
-    
-
     @Override
     public void start(Stage stage) throws IOException {
         // Kết nối với server 1 lần duy nhất khi bắt đầu

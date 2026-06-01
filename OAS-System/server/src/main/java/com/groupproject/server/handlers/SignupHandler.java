@@ -18,15 +18,13 @@ public class SignupHandler implements RequestHandler {
     public Response handle(Request request, ClientHandler clientContext) {
 
         SignupRequest signupReq = (SignupRequest) request;
-
         String duplicateError = UserDAO.checkDuplicates(signupReq);
 
-        if (duplicateError != null /* Tìm được user trùng dữ liệu */) {
+        if (duplicateError != null) {
             return new SignupResponse(false, duplicateError);
         }
 
         User newlyCreatedUser = UserDAO.registerUser(signupReq);
-
         if (newlyCreatedUser != null) {
             clientContext.setAuthenticatedUserId(newlyCreatedUser.getId());
             ClientManager.INSTANCE.registerUser(newlyCreatedUser.getId(), clientContext.getOut());
