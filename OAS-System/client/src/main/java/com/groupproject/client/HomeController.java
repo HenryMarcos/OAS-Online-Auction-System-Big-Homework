@@ -4,9 +4,6 @@ package com.groupproject.client;
 import com.groupproject.client.network.RequestSender;
 import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.network.GetAuctionRequest;
-import com.groupproject.shared.network.Request;
-
-import javafx.fxml.FXML;
 
 
 
@@ -23,9 +20,11 @@ public class HomeController extends BaseAuctionViewController  {
       GetAuctionRequest request = GetAuctionRequest.getAll();
       RequestSender.send(request);
    }
+   // TODO : PHẦN NÀY SẼ XỬ LÝ SAU 
    @Override
    public void fetchDataByCategory(int categoryId) {
       GetAuctionRequest request = GetAuctionRequest.getByStatus(null, categoryId);
       RequestSender.send(request);
    }
+   
 }

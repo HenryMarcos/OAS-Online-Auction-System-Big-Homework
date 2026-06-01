@@ -133,7 +133,7 @@ public abstract class BaseAuctionViewController implements Initializable {
     public void drawCategoryTreeUI(List<Category> serverCategories) {
         // Tạo một Node Gốc ảo có tên là "Tất cả danh mục" để người dùng click khi muốn xem lại hết sản phẩm
         // Chỗ này sẽ xử lý sau 
-        Category allCategoryMarker = new Category(-1, "Tất cả danh mục",null);
+        Category allCategoryMarker = new Category(-1, "ALL",null);
         TreeItem<Category> rootItem = new TreeItem<>(allCategoryMarker);
         rootItem.setExpanded(true); // Luôn mở bung nút gốc này ra
 

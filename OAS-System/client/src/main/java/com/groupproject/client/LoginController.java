@@ -1,17 +1,17 @@
 package com.groupproject.client;
-
 import java.io.IOException;
-import com.groupproject.client.utils.SceneNavigator;
+
 import com.groupproject.client.network.EventRouter;
 import com.groupproject.client.network.RequestSender;
+import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.network.LoginRequest;
 import com.groupproject.shared.network.LoginResponse;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
@@ -111,7 +111,5 @@ public class LoginController {
         statusLabel.setTextFill(Color.RED);
         statusLabel.setText(response.getMessage());
         loginButton.setDisable(false);
-
     }
-
 }
