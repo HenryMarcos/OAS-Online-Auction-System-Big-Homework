@@ -14,6 +14,9 @@ cd client
 
 mvn javafx:jlink
 
+Tạo file portable exe:
+jpackage --type app-image --name OAS-Portable (tutua)
+
 Để tạo file exe chạy luôn:
 jpackage --type app-image --name OAS-App --runtime-image target/image --module com.groupproject.client/com.groupproject.client.App --icon logo.ico
 

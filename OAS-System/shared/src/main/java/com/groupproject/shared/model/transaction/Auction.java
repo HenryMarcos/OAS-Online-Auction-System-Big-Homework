@@ -1,6 +1,8 @@
     package com.groupproject.shared.model.transaction;
 
     import java.time.LocalDateTime;
+    import java.util.ArrayList;
+    import java.util.List;
     import java.util.Map;
 
     import com.groupproject.shared.model.base.Entity;
@@ -12,12 +14,15 @@
 
         private int sellerId; // ID của người bán
         private String title; // Tên sản phẩm
+        private String mainImagePath;
+        private List<String> subImagePaths = new ArrayList<>();
         private String description; // Mô tả sản phẩm
         private Category category; // Danh mục sản phẩm
         private double startingPrice;
         Map<Integer, Map<String, String>> categoryGroupedSpecs;
         private double currentBid; // Giá hiện tại của sản phẩm trong phiên đấu giá
         private Integer highestBidderId; // ID của người đang có giá cao nhất
+        private long duration;
         private LocalDateTime startTime; // Ngày bắt đầu của phiên đấu giá
         private LocalDateTime endTime; // Ngày kết thúc của phiên đấu giá
         private AuctionStatus status; // Trạng thái của phiên đấu giá (ví dụ: "active", "closed", "cancelled", ...)
@@ -26,24 +31,33 @@
          * Constructor chính - Sử dụng cho tất cả các trường hợp 
          * (Tạo mới từ Request hoặc Load từ Database)
          */
-        public Auction(int id, int sellerId, String title, String description, Category category, 
+        public Auction(int id, int sellerId, String title, String mainImagePath, List<String> subImagePaths, String description, Category category, 
                     Map<Integer, Map<String, String>> categoryGroupedSpecs, double startingPrice, 
-                    LocalDateTime startTime, LocalDateTime endTime, AuctionStatus status) {
+                    long duration, LocalDateTime startTime, LocalDateTime endTime, AuctionStatus status) {
             super(id); 
             this.sellerId = sellerId;
             this.title = title;
+            this.mainImagePath = mainImagePath;
+            this.subImagePaths = subImagePaths;
             this.description = description;
             this.category = category;
             this.categoryGroupedSpecs = categoryGroupedSpecs;
             this.startingPrice = startingPrice;
-            this.startTime = startTime; // Có thể null nếu là WAITING [cite: 112]
+            this.duration = duration;
+            this.startTime = startTime; // Có thể null nếu là WAITING
             this.endTime = endTime;
-            this.status = status; // Nhận trực tiếp từ tham số [cite: 114]
+            this.status = status; // Nhận trực tiếp từ tham số
         }
 
         public int getSellerId() { return sellerId; }
 
         public String getTitle() { return title;}
+
+        public String getMainImagePath() { return mainImagePath; }
+        public void setMainImagePath(String path) { this.mainImagePath = path; }
+
+        public List<String> getSubImagePaths() { return subImagePaths; }
+        public void setSubImagePaths(List<String> paths) { this.subImagePaths = paths; }
 
         public String getDescription() { return description; }
 
@@ -58,6 +72,9 @@
         public void setHighestBidderId(Integer highestBidderId) { this.highestBidderId = highestBidderId; }
 
         public double getStartingPrice() { return startingPrice; }
+
+        public long getDuration() { return duration; }
+        public void setDuration(long duration) { this.duration = duration; }
 
         // Chỉ cho phép setStartTime khi chuyển từ WAITING -> ACTIVED, hoặc khi Manager kích hoạt SCHEDULED
         public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }

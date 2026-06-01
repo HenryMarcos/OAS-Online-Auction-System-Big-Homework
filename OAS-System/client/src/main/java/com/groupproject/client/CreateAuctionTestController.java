@@ -1,4 +1,6 @@
 package com.groupproject.client;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -11,11 +13,13 @@ import java.util.ResourceBundle;
 import com.groupproject.client.network.ClientMessageRouter;
 import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.ClientLogger;
+import com.groupproject.client.utils.ImageOptimizer;
 import com.groupproject.client.utils.SessionManager;
+import com.groupproject.client.utils.TimeUtil;
 import com.groupproject.shared.model.categories.Category;
 import com.groupproject.shared.model.enums.AuctionStatus;
-import com.groupproject.shared.network.request.CreateAuctionRequest;
-import com.groupproject.shared.network.response.CreateAuctionResponse;
+import com.groupproject.shared.network.requests.CreateAuctionRequest;
+import com.groupproject.shared.network.responses.CreateAuctionResponse;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -23,23 +27,59 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 
 public class CreateAuctionTestController implements Initializable {
+    // Các thuộc tính cơ bản
+    // ---------------------
     @FXML private TextField titleField;
     @FXML private TextArea descriptionArea;
+    @FXML private Label mainImageNameLabel;
+    @FXML private Label subImagesCountLabel;
     @FXML private ComboBox<Category> categoryComboBox;
     @FXML private TextField startingPriceField;
-    @FXML private DatePicker endDatePicker;
-    @FXML private ComboBox<Integer> hoursComboBox;
     @FXML private VBox dynamicFieldsContainer;
     @FXML private Label statusLabel;
 
+    // Nút start now để cho phiên đấu giá tạo ra bắt đầu luôn
     @FXML private CheckBox startNowCheckBox;
+
+    // Lựa chọn đổi giữa chọn thời gian và chọn ngày
+    @FXML private ToggleGroup timingToggleGroup;
+    @FXML private RadioButton durationRadio;
+    @FXML private RadioButton dateRadio;
+
+    // Chế độ chọn thời lượng buổi đấu giá
+    @FXML private Label durationLabel;
+    @FXML private HBox durationInputBox;
+    @FXML private Spinner<Integer> daysSpinner;
+    @FXML private Spinner<Integer> hoursSpinner;
+    @FXML private Spinner<Integer> minsSpinner;
+
+    // Chế độ chọn theo ngày
+    @FXML private Label startDateLabel;
+    @FXML private HBox startDateBox;
+    @FXML private DatePicker startDatePicker;
+    @FXML private ComboBox<Integer> startHourCombo;
+    @FXML private ComboBox<Integer> startMinCombo;
+
+    @FXML private Label endDateLabel;
+    @FXML private HBox endDateBox;
+    @FXML private DatePicker endDatePicker;
+    @FXML private ComboBox<Integer> endHourCombo;
+    @FXML private ComboBox<Integer> endMinCombo;
+
+    private File mainImageFile = null;
+    private List<File> subImageFiles = new ArrayList<>();
 
     private final Map<Integer, Category> allCategoriesMap = new HashMap<>();
 
@@ -48,17 +88,13 @@ public class CreateAuctionTestController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Nối response với hàm tương ứng
-        ClientMessageRouter.getInstance().onResponse(CreateAuctionResponse.class, this::handleCreateAuctionResponse);
-
-        // Thêm lựa chọn giờ(từ 0 đến 23, 24 tính là 1 ngày nên không cần thêm)
-        for (int i = 0; i < 24; i++) hoursComboBox.getItems().add(i);
-        hoursComboBox.setValue(12); // Tạm đặt mặc định là 12h
+        ClientMessageRouter.INSTANCE.onResponse(CreateAuctionResponse.class, this::handleCreateAuctionResponse);
 
         // Setup cách categories hiển thị trong ComboBox
         setupCategoryComboBoxFormatting();
 
         // Lấy categories
-        List<Category> mainCategories = SessionManager.getInstance().getCurrentCategories();
+        List<Category> mainCategories = SessionManager.INSTANCE.getCurrentCategories();
         if (mainCategories != null) {
             populateCategoryData(mainCategories);
         }
@@ -69,7 +105,78 @@ public class CreateAuctionTestController implements Initializable {
                 generateDynamicFields(newValue);
             }
         });
+
+        setupSpinnersAndCombos();
+        setupTimingVisibilityListeners();
+        updateTimingFieldsLayout(); // Initial trigger layout execution
     }
+
+    private void setupTimingVisibilityListeners() {
+        // Trigger rearrangement when switching Radio Button options
+        timingToggleGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> updateTimingFieldsLayout());
+        
+        // Trigger structural rearrangement when checking/unchecking "Start Now"
+        startNowCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> updateTimingFieldsLayout());
+    }
+
+    private void setupSpinnersAndCombos() {
+        // Initialize Duration Spinners
+        daysSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 365, 0));
+        hoursSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 23, 1));
+        minsSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 59, 0));
+
+        // Populate Time Dropdowns
+        for (int i = 0; i < 24; i++) {
+            startHourCombo.getItems().add(i);
+            endHourCombo.getItems().add(i);
+        }
+        for (int i = 0; i < 60; i += 5) { // Intervals of 5 mins
+            startMinCombo.getItems().add(i);
+            endMinCombo.getItems().add(i);
+        }
+
+        // Default Dropdown Pick selections
+        startHourCombo.getSelectionModel().select(12);
+        startMinCombo.getSelectionModel().select(0);
+        endHourCombo.getSelectionModel().select(12);
+        endMinCombo.getSelectionModel().select(0);
+    }
+
+    private void updateTimingFieldsLayout() {
+        boolean isDurationMode = durationRadio.isSelected();
+        boolean isStartNow = startNowCheckBox.isSelected();
+
+        // 1. Handle Duration Mode Row Items Visibility
+        durationLabel.setVisible(isDurationMode);
+        durationLabel.setManaged(isDurationMode);
+        durationInputBox.setVisible(isDurationMode);
+        durationInputBox.setManaged(isDurationMode);
+
+        // 2. Handle Date Mode Row Items Visibility
+        startDateLabel.setVisible(!isDurationMode);
+        startDateLabel.setManaged(!isDurationMode);
+        startDateBox.setVisible(!isDurationMode);
+        startDateBox.setManaged(!isDurationMode);
+
+        endDateLabel.setVisible(!isDurationMode);
+        endDateLabel.setManaged(!isDurationMode);
+        endDateBox.setVisible(!isDurationMode);
+        endDateBox.setManaged(!isDurationMode);
+
+        // 3. Conditional state rules for 'Start Now' selection
+        if (!isDurationMode) {
+            // If starting instantly, manual calculation of target start picker is locked out
+            startDatePicker.setDisable(isStartNow);
+            startHourCombo.setDisable(isStartNow);
+            startMinCombo.setDisable(isStartNow);
+            if (isStartNow) {
+                startDatePicker.setValue(LocalDateTime.now().toLocalDate());
+                startHourCombo.getSelectionModel().select(Integer.valueOf(LocalDateTime.now().getHour()));
+                startMinCombo.getSelectionModel().select(Integer.valueOf(LocalDateTime.now().getMinute() - (LocalDateTime.now().getMinute() % 5)));
+            }
+        }
+    }
+
 
     // Thêm các category vào cho người dùng lựa chọn
     private void populateCategoryData(List<Category> mainCategories) {
@@ -119,16 +226,20 @@ public class CreateAuctionTestController implements Initializable {
         ClientLogger.info("Finish setting up category ComboxBox formatting");
     }
 
+    // Lấy các field mà category hiện tại có cùng các field cần thiết của category cha
+    // -------------------------------------------------------------------------------
     private void generateDynamicFields(Category selectedCategory) {
         ClientLogger.info("Generating dynamic fields for Scroll UI");
         
-        // 1. Clear old fields
+        // 1. Dọn sạch các field cũ đi
+        // ---------------------------
         dynamicFieldsContainer.getChildren().clear();
         dynamicTextFieldsMap.clear();
 
-        if (selectedCategory == null) return;
+        if (selectedCategory == null) return; // Nếu mà category ko tồn tại thì trả về null
 
-        // 2. Get lineage (Child up to Root Parent)
+        // 2. Lấy các category từ child đến parent
+        // ---------------------------------------
         List<Category> categoryLineage = new ArrayList<>();
         Category current = selectedCategory;
 
@@ -141,7 +252,8 @@ public class CreateAuctionTestController implements Initializable {
             }
         }
 
-        // 3. Reverse to print Parent first, then Child
+        // 3. Đảo ngược lại để in các field của parent trước rồi mới đến child
+        // -------------------------------------------------------------------
         java.util.Collections.reverse(categoryLineage);
 
         boolean hasAnyFields = false;
@@ -199,6 +311,41 @@ public class CreateAuctionTestController implements Initializable {
 
         ClientLogger.info("Finished generating dynamic fields");
     }
+
+    @FXML
+    private void handleChooseMainImage() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select Main Image");
+        fileChooser.getExtensionFilters().add(
+            new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg")
+        );
+        
+        // Open the dialog. We use titleField.getScene().getWindow() to tie the dialog to the current window
+        File selectedFile = fileChooser.showOpenDialog(titleField.getScene().getWindow());
+        
+        if (selectedFile != null) {
+            mainImageFile = selectedFile;
+            mainImageNameLabel.setText(selectedFile.getName());
+        }
+    }
+
+    @FXML
+    private void handleChooseSubImages() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select Gallery Images");
+        fileChooser.getExtensionFilters().add(
+            new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg")
+        );
+        
+        // Note: showOpenMultipleDialog allows selecting multiple files at once
+        List<File> selectedFiles = fileChooser.showOpenMultipleDialog(titleField.getScene().getWindow());
+        
+        if (selectedFiles != null && !selectedFiles.isEmpty()) {
+            subImageFiles.clear();
+            subImageFiles.addAll(selectedFiles);
+            subImagesCountLabel.setText(subImageFiles.size() + " images selected");
+        }
+    }
     
     @FXML
     private void handleSubmitAuction() {
@@ -210,14 +357,14 @@ public class CreateAuctionTestController implements Initializable {
         String description = descriptionArea.getText().trim();
         Category selectedCategory = categoryComboBox.getValue();
         String priceText = startingPriceField.getText().trim();
-        java.time.LocalDate date = endDatePicker.getValue();
 
-        if (title.isEmpty() || description.isEmpty() || selectedCategory == null || priceText.isEmpty() || date == null) {
+        if (title.isEmpty() || description.isEmpty() || selectedCategory == null || priceText.isEmpty()) {
             statusLabel.setText("Please fill out all basic auction fields.");
             return;
         }
 
         double startingPrice;
+
         try {
             startingPrice = Double.parseDouble(priceText);
         } catch (NumberFormatException e) {
@@ -225,9 +372,27 @@ public class CreateAuctionTestController implements Initializable {
             return;
         }
 
-        // Compute local timestamp
-        int hours = hoursComboBox.getValue();
-        LocalDateTime endTime = LocalDateTime.of(date, LocalTime.of(hours, 0));
+        // Xử lý hình ảnh
+        byte[] mainImageBytes = null;
+        List<byte[]> subImageBytesList = new ArrayList<>();
+
+        try {
+            // Compress Main Image
+            if (mainImageFile != null) {
+                mainImageBytes = ImageOptimizer.optimizeImage(mainImageFile); 
+            }
+            // Compress Sub Images
+            for (File file : subImageFiles) {
+                subImageBytesList.add(ImageOptimizer.optimizeImage(file));
+            }
+        } catch (IOException e) {
+            statusLabel.setText("Error processing image files!");
+            return;
+        }
+
+        LocalDateTime startTime = null;
+        LocalDateTime endTime = null;
+        AuctionStatus initialStatus;
 
         // Lưu các field của từng category theo category id
         Map<Integer, Map<String, String>> categoryGroupedSpecs = new HashMap<>();
@@ -252,29 +417,99 @@ public class CreateAuctionTestController implements Initializable {
             categoryGroupedSpecs.computeIfAbsent(fieldCategoryId, k -> new HashMap<>()).put(specName, specValue);
         }
 
+        boolean isStartNow = startNowCheckBox.isSelected();
+        boolean isDurationMode = durationRadio.isSelected();
+
+        long duration = 0;
+
+        if (isStartNow) {
+            startTime = TimeUtil.getNow();
+            initialStatus = AuctionStatus.ACTIVATED;
+
+            if (isDurationMode) {
+                try {
+                    daysSpinner.commitValue();
+                    hoursSpinner.commitValue();
+                    minsSpinner.commitValue();
+                } catch (Exception e) {
+                    statusLabel.setText("Invalid duration format!");
+                    return;
+                }
+
+                int days = daysSpinner.getValue();
+                int hours = hoursSpinner.getValue();
+                int mins = minsSpinner.getValue();
+
+                ClientLogger.info(String.format("Auction have duration: %d days, %d hours, %d mins", days, hours, mins));
+
+                if (days == 0 && hours == 0 && mins == 0) {
+                    statusLabel.setText("Duration cannot be 0!");
+                    return;
+                }
+
+                duration = (days * 86400L) + (hours * 3600L) + (mins * 60L);
+
+                endTime = startTime.plusSeconds(duration);
+
+                ClientLogger.info("Start date: " + startTime + ", End date: " + endTime);
+            } else {
+                // Explicit End Date Calculation Mode
+                if (endDatePicker.getValue() == null) {
+                    statusLabel.setText("Please select an End Date!");
+                    return;
+                }
+                int hour = endHourCombo.getValue() != null ? endHourCombo.getValue() : 0;
+                int min = endMinCombo.getValue() != null ? endMinCombo.getValue() : 0;
+                endTime = LocalDateTime.of(endDatePicker.getValue(), LocalTime.of(hour, min));
+
+                if (endTime.isBefore(startTime)) {
+                    statusLabel.setText("End time must be after right now!");
+                    return;
+                }
+            }
+        } else {
+            // "Start Now" is false -> System stays in WAITING phase
+            initialStatus = AuctionStatus.WAITING;
+
+            if (isDurationMode) {
+                int days = daysSpinner.getValue();
+                int hours = hoursSpinner.getValue();
+                int mins = minsSpinner.getValue();
+
+                duration = (days * 86400L) + (hours * 3600L) + (mins * 60L);
+
+                // Wait until manually activated on Server to run real calculation timestamps
+                startTime = null;
+                endTime = null;
+            } else {
+                // explicit date options provided for the future activation point
+                if (startDatePicker.getValue() == null || endDatePicker.getValue() == null) {
+                    statusLabel.setText("Please pick both Start and End Dates!");
+                    return;
+                }
+                int sHour = startHourCombo.getValue() != null ? startHourCombo.getValue() : 0;
+                int sMin = startMinCombo.getValue() != null ? startMinCombo.getValue() : 0;
+                startTime = LocalDateTime.of(startDatePicker.getValue(), LocalTime.of(sHour, sMin));
+
+                int eHour = endHourCombo.getValue() != null ? endHourCombo.getValue() : 0;
+                int eMin = endMinCombo.getValue() != null ? endMinCombo.getValue() : 0;
+                endTime = LocalDateTime.of(endDatePicker.getValue(), LocalTime.of(eHour, eMin));
+
+                if (endTime.isBefore(startTime)) {
+                    statusLabel.setText("End Date cannot be scheduled before the Start Date!");
+                    return;
+                }
+            }
+        }
+
         // 3. Packages and submits to Server pipeline
-        int currentUserId = SessionManager.getInstance().getCurrentUser().getId();
         int categoryId = selectedCategory.getId();
 
         ClientLogger.info("Form validation successful. Transmitting new auction layout details...");
 
-        AuctionStatus initialStatus = (startNowCheckBox != null && startNowCheckBox.isSelected())? 
-                                       AuctionStatus.ACTIVED : AuctionStatus.WAITING;
-
-        if (initialStatus == AuctionStatus.WAITING) {
-            ClientLogger.info("Created auction with WAITING status");
-        } else { ClientLogger.info("Created auction with ACTIVED status"); }
-
-        CreateAuctionRequest request = new CreateAuctionRequest(
-            title,                  // 1. title
-            description,            // 2. description
-            selectedCategory,       // 3. category
-            categoryGroupedSpecs,   // 4. categoryGroupedSpecs
-            startingPrice,          // 5. startingPrice
-            null,                   // 6. startTime (Bạn đang thiếu cái này, để null nếu tạo ngay)
-            endTime.toString(),     // 7. endTime
-            initialStatus           // 8. status
-        );
+        CreateAuctionRequest request = new CreateAuctionRequest(title, description, selectedCategory, categoryGroupedSpecs, 
+                                                                mainImageBytes, subImageBytesList, startingPrice, 
+                                                                duration, startTime, endTime, initialStatus);
         RequestSender.send(request);
 
         ClientLogger.info("Finish handling submit auction");

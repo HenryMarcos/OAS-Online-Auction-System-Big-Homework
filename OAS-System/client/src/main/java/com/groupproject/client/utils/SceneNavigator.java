@@ -8,9 +8,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-public class SceneNavigator {
-
-    private static SceneNavigator instance;
+public enum SceneNavigator {
+    INSTANCE;
 
     // Một màn hình window duy nhất
     private static Stage mainStage;
@@ -19,11 +18,6 @@ public class SceneNavigator {
     private Object currentController;
 
     private SceneNavigator() {}
-
-    public static SceneNavigator getInstance() {
-        if (instance == null) { instance = new SceneNavigator(); }
-        return instance;
-    }
 
     // Dùng 1 lần khi mở app
     public void setMainStage(Stage stage) { mainStage = stage; }

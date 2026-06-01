@@ -9,9 +9,9 @@ import com.groupproject.server.utils.ServerLogger;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
-public class DatabaseManager {
+public enum DatabaseManager {
+    INSTANCE;
 
-    private static DatabaseManager instance;
     private HikariDataSource dataSource;
 
     private DatabaseManager() {
@@ -40,13 +40,6 @@ public class DatabaseManager {
         }
     }
 
-    public static DatabaseManager getInstance() {
-        if (instance == null) {
-            instance = new DatabaseManager();
-        }
-        return instance;
-    }
-
     public void initDatabse() {
         try (Statement stmt = getConnection().createStatement()) {
 
@@ -56,33 +49,38 @@ public class DatabaseManager {
                          "username TEXT UNIQUE NOT NULL," + 
                          "email TEXT UNIQUE NOT NULL," +
                          "password TEXT NOT NULL," +
-                         "balance REAL DEFAULT 0.0," +
+                         "balance REAL DEFAULT 10000," +
                          "created_at DATETIME NOT NULL)";
             stmt.execute(sql);
 
-            // Tao bảng admin_list để lưu danh sách các user có quyền admin (chỉ chứa id của user, liên kết với bảng users)
-            String sqlAdmin = "CREATE TABLE IF NOT EXISTS admin_list (" +
-                              "user_id INTEGER PRIMARY KEY," +
-                            "FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE)";
-            stmt.execute(sqlAdmin);
-
-            // Tạo bảng chứa các phiên đấu giá
+            // Tạo bảng chứa các thông báo
+            String notificationsSql = "CREATE TABLE notifications (" + //
+                                      "    id INTEGER PRIMARY KEY AUTOINCREMENT," + //
+                                      "    user_id INTEGER NOT NULL," + //
+                                      "    message TEXT NOT NULL," + //
+                                      "    is_read BOOLEAN DEFAULT 0," + //
+                                      "    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " + //
+                                      "    FOREIGN KEY(user_id) REFERENCES users(id) " +
+                                      ");";
+            stmt.execute(notificationsSql);
+                        // Tạo bảng chứa các phiên đấu giá
             String auctionSql = "CREATE TABLE IF NOT EXISTS auctions (" +
                                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                                 "seller_id INTEGER NOT NULL, " +
                                 "title TEXT NOT NULL," +
+                                "main_image_path TEXT, " +
                                 "description TEXT NOT NULL," +
                                 "category_id INTEGER NOT NULL," +
                                 "starting_price REAL NOT NULL," +
-                                "start_time DATETIME, " +
-                                "end_time DATETIME NOT NULL," +
-                                "current_bid REAL," + 
-                                "current_bidder_id INTEGER, " +
-                                "status TEXT NOT NULL, " + 
-                                "FOREIGN KEY(seller_id) REFERENCES users(id), " +
-                                "FOREIGN KEY(current_bidder_id) REFERENCES users(id), " + 
-                                "FOREIGN KEY(category_id) REFERENCES categories(id))";
+                                "FOREIGN KEY(current_bidder_id) REFERENCES users(id), " +                                "FOREIGN KEY(category_id) REFERENCES categories(id))";
             stmt.execute(auctionSql);
+
+            String auctionImagesSql = "CREATE TABLE IF NOT EXISTS auction_images (" +
+                                      "id INTEGER AUTO_INCREMENT PRIMARY KEY, " +
+                                      "auction_id INTEGER NOT NULL, " +
+                                      "image_path TEXT NOT NULL, " +
+                                      "FOREIGN KEY (auction_id) REFERENCES auctions(id) ON DELETE CASCADE)";
+            stmt.execute(auctionImagesSql);
 
             // Xóa trước khi tạo bảng để test(sau này sẽ không dùng)
             stmt.execute("DROP TABLE IF EXISTS category_fields");

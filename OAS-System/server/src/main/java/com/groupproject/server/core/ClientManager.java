@@ -8,33 +8,22 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.groupproject.server.utils.ServerLogger;
-import com.groupproject.shared.network.event.ServerEvent;
-
-public class ClientManager {
-    private static ClientManager instance;
+import com.groupproject.shared.network.events.ServerEvent;
+public enum ClientManager {
+    INSTANCE;
 
     // Danh sách chứa TẤT CẢ client (Luồng 1)
     private final List<ObjectOutputStream> clients = new ArrayList<>();
 
-    // Danh sách chứa CHỈ CÁC ADMIN (Luồng 3 - MỚI)
-    private final Set<ObjectOutputStream> adminClients = ConcurrentHashMap.newKeySet();
+    // Bản đồ map trực tiếp UserID với Stream của họ để nhắn tin riêng!
+    private final Map<Integer, ObjectOutputStream> authenticatedUsers = new ConcurrentHashMap<>();
 
-    // Bản đồ các phòng đấu giá (Luồng 2 - Key: Auction ID, Value: Tập hợp các clients trong phòng đó)
-    private final Map<Integer, Set<ObjectOutputStream>> auctionRooms = new ConcurrentHashMap<>();
+    // Bản đồ các phòng đấu giá (Key: Auction ID, Value: Tập hợp các clients trong phòng đó)    private final Map<Integer, Set<ObjectOutputStream>> auctionRooms = new ConcurrentHashMap<>();
 
     private ClientManager() {}
 
-    public static synchronized ClientManager getInstance() {
-        if (instance == null) { instance = new ClientManager(); }
-        return instance;
-    }
-
-    // --- 1. QUẢN LÝ CLIENT CHUNG & ADMIN ---
-    
-    public void addClient(ObjectOutputStream out) {
-        synchronized (clients) {
-            clients.add(out);
-        }
+    // --- QUẢN LÝ CLIENT CHUNG ---    public void addClient(ObjectOutputStream out) {
+        synchronized (clients) { clients.add(out); }
     }
 
     // MỚI: Đăng ký một luồng kết nối là Admin
@@ -44,17 +33,27 @@ public class ClientManager {
     }
 
     public void removeClient(ObjectOutputStream out) {
-        synchronized (clients) {
-            clients.remove(out);
-        }
-        adminClients.remove(out); // Xóa khỏi danh sách Admin nếu có
-    }
+        synchronized (clients) { clients.remove(out); }    }
 
     public List<ObjectOutputStream> getClients() { return clients; }
 
-    // --- 2. QUẢN LÝ PHÒNG ĐẤU GIÁ ---
-    
-    public void subscribeToAuction(int auctionId, ObjectOutputStream clientOut) {
+    // --- QUẢN LÝ USER ĐĂNG NHẬP (DIRECT MESSAGING) ---
+    public void registerUser(int userId, ObjectOutputStream out) {
+        authenticatedUsers.put(userId, out);
+    }
+
+    public void unregisterUser(int userId) {
+        authenticatedUsers.remove(userId);
+    }
+
+    public void sendToUser(int userId, ServerEvent event) {
+        ObjectOutputStream out = authenticatedUsers.get(userId);
+        if (out != null) {
+            sendEventSafely(out, event);
+        }
+    }
+
+    // --- QUẢN LÝ PHÒNG ĐẤU GIÁ ---    public void subscribeToAuction(int auctionId, ObjectOutputStream clientOut) {
         auctionRooms.putIfAbsent(auctionId, ConcurrentHashMap.newKeySet());
         auctionRooms.get(auctionId).add(clientOut);
         ServerLogger.info("A client joined auction room: " + auctionId);

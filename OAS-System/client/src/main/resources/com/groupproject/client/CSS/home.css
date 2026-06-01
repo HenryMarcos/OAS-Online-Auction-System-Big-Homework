@@ -71,3 +71,14 @@
     -fx-background-radius:10;
     -fx-cursor:hand;
 }
+.sidebar-badge{
+    -fx-background-color: #ff3b30; /* Màu đỏ nổi bật */
+    -fx-text-fill: white;          /* Chữ số màu trắng */
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10px;   /* Bo tròn */
+    -fx-padding: 2px 6px 2px 6px;  /* Tạo hình viên thuốc dẹt ngang */
+    -fx-min-width: 18px;
+    -fx-alignment: center;
+
+}

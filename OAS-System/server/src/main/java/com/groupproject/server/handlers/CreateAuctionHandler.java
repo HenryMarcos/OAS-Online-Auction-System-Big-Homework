@@ -1,62 +1,42 @@
 package com.groupproject.server.handlers;
 
+import com.groupproject.server.core.ClientHandler;
 import com.groupproject.server.dao.AuctionDAO;
 import com.groupproject.server.service.AuctionManager;
 import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.model.transaction.Auction;
-import com.groupproject.shared.network.request.CreateAuctionRequest;
-import com.groupproject.shared.network.request.Request;
-import com.groupproject.shared.network.response.CreateAuctionResponse;
-import com.groupproject.shared.network.response.Response;
-
+import com.groupproject.shared.network.requests.CreateAuctionRequest;
+import com.groupproject.shared.network.requests.Request;
+import com.groupproject.shared.network.responses.CreateAuctionResponse;
+import com.groupproject.shared.network.responses.Response;
 public class CreateAuctionHandler implements RequestHandler {
     @Override
-    public Response handle(Request request) {
+    public Response handle(Request request, ClientHandler clientContext) {
         ServerLogger.info("Handling " + request.getClass().getSimpleName());
         
-        // 1. Kiểm tra an toàn kiểu dữ liệu (Ngăn chặn ClassCastException)
         if (!(request instanceof CreateAuctionRequest)) { 
-            ServerLogger.error("This request is not CreateAuctionRequest but " + request.getClass().getSimpleName());
-            return new CreateAuctionResponse(false, "Invalid request type");
-        }
+            ServerLogger.info("This request is not CreateAuctionRequest but " + request.getClass().getSimpleName());
+            ServerLogger.error("Failed to create auction");
+            return new CreateAuctionResponse(false, "Failed to create auction");        }
 
-        // 2. Ép kiểu an toàn sau khi đã check
-        CreateAuctionRequest createRequest = (CreateAuctionRequest) request;
-
-        // =====================================================================
-        // TRẠM KIỂM TRA BẢO VỆ (DATA VALIDATION)
-        // =====================================================================
-        if (createRequest.getTitle() == null || createRequest.getTitle().trim().isEmpty()) {
-            ServerLogger.warning("Yêu cầu tạo đấu giá thất bại: Tiêu đề trống.");
-            return new CreateAuctionResponse(false, "Tiêu đề đấu giá không được để trống!");
-        }
-
-        if (createRequest.getCategory() == null) {
-            ServerLogger.warning("Yêu cầu tạo đấu giá thất bại: Danh mục (Category) bị null.");
-            return new CreateAuctionResponse(false, "Yêu cầu phải cung cấp danh mục (Category) hợp lệ!");
-        }
-
-        if (createRequest.getEndTime() == null) {
-            ServerLogger.warning("Yêu cầu tạo đấu giá thất bại: Thời gian kết thúc bị null.");
-            return new CreateAuctionResponse(false, "Thời gian kết thúc không được để trống!");
-        }
-        // =====================================================================
-
-        // 3. Gọi Database (DAO lúc này đã lo toàn bộ việc gán status WAITING hay SCHEDULED)
-        Auction newlyCreatedAuction = AuctionDAO.createAuction(createRequest);
-
-        // 4. Xử lý kết quả trả về
-        if (newlyCreatedAuction != null) {
-            ServerLogger.info("Create auction success. ID: " + newlyCreatedAuction.getId() + " - Status: " + newlyCreatedAuction.getStatus());
+        CreateAuctionRequest req = (CreateAuctionRequest) request;
+    
+        // 1. Commit the item structure to the database layout
+        Auction newAuction = AuctionDAO.createAuction(
+            clientContext.getAuthenticatedUserId(), req.getTitle(), req.getMainImageBytes(), req.getSubImagesBytes(),
+            req.getDescription(), req.getCategory(), req.getCategoryGroupedSpecs(),
+            req.getStartingPrice(), req.getDuration(), req.getStartTime(), req.getEndTime(), req.getStatus()
+        );
+        
+        if (newAuction != null) {
+            // 2. Insert into manager and push live broadcast automatically!
+            AuctionManager.INSTANCE.registerNewAuction(newAuction);
             
-            // Đăng ký cho AuctionManager. 
-            // Manager sẽ tự biết phải làm gì với WAITING và SCHEDULED
-            AuctionManager.getInstance().registerAuction(newlyCreatedAuction);
-            
-            return new CreateAuctionResponse(true, newlyCreatedAuction, "Auction created successfully!");
-        } else {
-            ServerLogger.error("Failed to create auction in database");
-            return new CreateAuctionResponse(false, "Failed to create auction in database");
+            ServerLogger.info("Create auction success");
+            return new CreateAuctionResponse(true, newAuction, "Auction successfully launched!");
         }
+
+        ServerLogger.error("Failed to create auction");
+        return new CreateAuctionResponse(false, "Database validation constraint failed.");
     }
 }

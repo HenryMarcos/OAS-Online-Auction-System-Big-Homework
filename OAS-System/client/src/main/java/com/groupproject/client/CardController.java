@@ -1,94 +1,152 @@
 package com.groupproject.client;
-import com.groupproject.client.Data.*;
-
-import javafx.scene.Parent;
-import javafx.scene.layout.VBox;
 import java.io.IOException;
-import java.time.*;
-import java.time.temporal.ChronoUnit;
-import java.net.URL;
-import java.util.ResourceBundle;
-import javafx.scene.image.ImageView;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
-import javafx.animation.KeyFrame;
+
+import com.groupproject.client.network.AuctionEventBus;
+import com.groupproject.client.network.ClientMessageRouter;
+import com.groupproject.client.network.RequestSender;
+import com.groupproject.client.utils.AlertUtils;
+import com.groupproject.client.utils.CountDownHelper;
+import com.groupproject.client.utils.SceneNavigator;
+import com.groupproject.client.utils.SessionManager;
+import com.groupproject.shared.model.enums.AuctionStatus;
+import com.groupproject.shared.model.transaction.Auction;
+import com.groupproject.shared.model.user.User;
+import com.groupproject.shared.network.AuctionEvent.AuctionCancelledEvent;
+import com.groupproject.shared.network.AuctionEvent.AuctionFinisedEvent;
+import com.groupproject.shared.network.AuctionEvent.AuctionListener;
+import com.groupproject.shared.network.AuctionEvent.AuctionStartedEvent;
+import com.groupproject.shared.network.AuctionEvent.BidUpdatedEvent;
+import com.groupproject.shared.network.events.AuctionEndedEvent;
+import com.groupproject.shared.network.requests.GetAuctionDetailRequest;
+import com.groupproject.shared.network.requests.JoinAuctionRequest;
+import com.groupproject.shared.network.responses.GetAuctionDetailResponse;
+import com.groupproject.shared.network.responses.JoinAuctionResponse;
+
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.scene.Scene;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.stage.Stage;
-public class CardController { 
-    private Item item;
+import javafx.scene.control.ToggleButton;
+
+public class CardController implements AuctionListener { 
+    private Auction auction;
     private Timeline timeline;
+
+    @FXML private Label productname;
+    @FXML private Label currentprice;
+    @FXML private Label timeleft;
+
+    @FXML private Label auctionStatus;
+    @FXML private ToggleButton subscribeToggle;
+    @FXML private Button cancelButton;
+
     @FXML
-    private ImageView image;
-    @FXML
-    private Label productname;
-    @FXML
-    private Label currentprice;
-    @FXML
-    private Label timeleft;
+    public  void initialize() {
+        populateUI(auction);
+
+        // ĐĂNG KÝ VIỆC LẮNG NGHE TRẢ VỀ KẾT QUẢ
+        ClientMessageRouter.INSTANCE.onResponse(GetAuctionDetailResponse.class, this::handleGetDetailAuction);
+        ClientMessageRouter.INSTANCE.onResponse(JoinAuctionResponse.class,this::handleJoinAuctionResponse);
+    }
     @FXML 
     private void handleBid(ActionEvent event) throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("FXML/auctionscreen.fxml"));
-        Parent root = (Parent) loader.load();
-        AuctionController auctioncontroller= loader.getController();
-        auctioncontroller.setItem(item,currentprice,timeleft,productname);
-        Scene scene = new Scene(root,1000,700);
-        scene.getStylesheets().add(getClass().getResource("/com/groupproject/client/CSS/auctionscreen.css").toExternalForm());
-        Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        currentStage.setTitle("Auction Screen | Auction System");
-        // Bước 4: Kéo rèm! Gắn Cảnh mới lên Sân khấu và hiển thị
-        currentStage.setScene(scene);
-        currentStage.show();
+        // Chỉ lưu ID vào session, AuctionController sẽ tự fetch từ Server khi initialize
+        GetAuctionDetailRequest request = new GetAuctionDetailRequest(auction.getId());
+        RequestSender.send(request);
     }
-    public void setItem(Item item) {
-        this.item=item;
-        productname.setText("Name: " + item.getName());
-        currentprice.setText("Current price: " + item.getCurrentPrice());
-        startCountDown();
+    public void populateUI(Auction auction) {
+        Platform.runLater(() -> {
+            this.auction = auction;
+            productname.setText(auction.getTitle());
+            currentprice.setText(String.valueOf(auction.getCurrentBid()));
+            CountDownHelper countDownHelper = new CountDownHelper();
+            countDownHelper.start(auction, () -> timeleft.setText("ENDED"), timeleft);
+            applyAuctionStatus(auction.getStatus());
+
+            // NGHIỆP VỤ ĐỂ HIỂN THỊ NÚT HỦY PHIÊN 
+            if (auction.getStatus()==AuctionStatus.WAITING) {
+                cancelButton.setVisible(true);
+                cancelButton.setManaged(true);
+            }
+        });
     }
-    public void startCountDown() {
-        if (timeline != null) {
-            timeline.stop();
+    private void handleGetDetailAuction(GetAuctionDetailResponse response) {
+        if (response.isSuccess()) {
+            Platform.runLater(() ->{
+                SessionManager.INSTANCE.setCurrentAuctionDetail(response.getAuctionDetail());
+                SceneNavigator.INSTANCE.goTo("/com/groupproject/client/FXML/auctionscreen.fxml");
+            });
         }
         else {
-            timeline= new Timeline(new KeyFrame(javafx.util.Duration.seconds(1), event -> {
-                updateCountDown();
-            }));
-            timeline.setCycleCount(Timeline.INDEFINITE);
-            timeline.play();
-            updateCountDown();
+            Platform.runLater(() -> {
+                AlertUtils.showError("Error !" , "Can't enter the auction now ");
+            });
         }
     }
-    public void updateCountDown() {
-        if( item.getEndDate() == null ) {
-            return;
+    public void applyAuctionStatus(AuctionStatus status) {
+        auctionStatus.setText("State : " + status );
+    }
+    @Override 
+    public void onBidUpdated(BidUpdatedEvent event) {
+        Platform.runLater(() -> {
+            currentprice.setText(String.valueOf(event.getBidAmount())+"USD");
+        });
+    }
+    @Override
+    public void onAuctionStarted(AuctionStartedEvent event) {
+        Platform.runLater(() -> {
+            applyAuctionStatus(AuctionStatus.ACTIVATED);
+        });
+    }
+
+    @Override
+    public void onAuctionCancelled(AuctionCancelledEvent event) {
+        Platform.runLater(() -> {
+            applyAuctionStatus(AuctionStatus.CANCELLED);
+        });
+    }
+
+    @Override
+    public void onAuctionEnded(AuctionEndedEvent event) {
+        Platform.runLater(() -> {
+            applyAuctionStatus(AuctionStatus.ENDED);
+        });
+    }
+
+    @Override
+    public void onAuctionFinished(AuctionFinisedEvent event) {
+        // Tương tự như Ended, có thể thêm logic hiển thị người chiến thắng
+        Platform.runLater(() -> {
+            applyAuctionStatus(AuctionStatus.FINISHED);
+        });
+    }
+    @FXML
+    private void handleSubscribeToggle(ActionEvent event) {
+        if (subscribeToggle.isSelected()) {
+            subscribeToggle.setText("UNFOLLOW");
+            User user= SessionManager.INSTANCE.getCurrentUser();
+            // GỬI THÔNG BÁO MUỐN NHẬN TIN CỦA PHIÊN ĐẤU GIÁ NÀY LÊN SERVER
+            RequestSender.send(new JoinAuctionRequest(auction.getId()));
+            // CLIENTLOGGER GHI LAI SU KIEN
         }
         else {
-            Duration remaining= Duration.between(LocalDateTime.now(),item.getEndDate());
-            if (remaining.isNegative() || remaining.isZero()) {
-                timeleft.setText("ENDED");
-                timeline.stop();
-                return;
-            }
-            else {
-                LocalDateTime now = LocalDateTime.now();
-                LocalDateTime end = item.getEndDate();
-                long totalSeconds = ChronoUnit.SECONDS.between(now, end);
-
-    // Tách ra từng đơn vị bằng cách chia lấy dư
-                long days    = totalSeconds / 86400;           // 1 ngày = 86400 giây
-                long hours   = (totalSeconds % 86400) / 3600;  // Phần dư sau ngày / 3600
-                long minutes = (totalSeconds % 3600) / 60;     // Phần dư sau giờ / 60
-                long seconds = totalSeconds % 60;              // Phần dư sau phút
-
-                timeleft.setText(String.format("Ending in: %dd : %02dh : %02dm : %02ds",
-                                                days, hours, minutes, seconds));
-            }
+            subscribeToggle.setText("FOLLOW NOW !");
+            AuctionEventBus.getInstance().unsubscribe(auction.getId(), this);
+            // XU LY KHI HO HUY THONG BAO
         }
     }
-    
+    @FXML
+    private void handleCancelAuction(ActionEvent event) {
+
+    }
+    private void handleJoinAuctionResponse(JoinAuctionResponse response) {
+        if (response.isSuccess()) {
+            AuctionEventBus.getInstance().subscribe(auction.getId(), this);
+        }
+        else {
+            // Thong bao cho khac hang la ho da dang ky that bai 
+        }
+    }
 }

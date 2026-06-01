@@ -7,15 +7,15 @@ import java.net.Socket;
 import com.groupproject.server.handlers.RequestDispatcher;
 import com.groupproject.server.utils.ClientContext;
 import com.groupproject.server.utils.ServerLogger;
-import com.groupproject.shared.network.event.SystemNotificationEvent;
-import com.groupproject.shared.network.request.Request;
-import com.groupproject.shared.network.response.Response;
-
+import com.groupproject.shared.network.requests.Request;
+import com.groupproject.shared.network.responses.Response;
 // --- NỘI HÀM: CHUÕI RIÊNG CHO MỖI CLIENT ---
 public class ClientHandler implements Runnable {
     private Socket socket;
     private ObjectInputStream in;   
     private ObjectOutputStream out;
+
+    private Integer authenticatedUserId = null;
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
@@ -33,7 +33,7 @@ public class ClientHandler implements Runnable {
             ClientContext.currentOut.set(out);
 
             // Thêm client vào danh sách báo tin chính 1 cách an toàn 
-            ClientManager.getInstance().addClient(out);
+            ClientManager.INSTANCE.addClient(out);
             RequestDispatcher dispatcher = new RequestDispatcher();
 
             // Vòng lặp vô hạn riêng cho client này
@@ -47,7 +47,7 @@ public class ClientHandler implements Runnable {
                     Request request = (Request) recievedData;
                     ServerLogger.info("User " + socket.getInetAddress() + " sent a " + request.getClass().getSimpleName());
                     // Nhận response sau khi xử lý xong request
-                    Response serverReply = dispatcher.dispatch(request);
+                    Response serverReply = dispatcher.dispatch(request, this);
 
                     if (serverReply != null) {
                         out.writeObject(serverReply);
@@ -98,30 +98,17 @@ public class ClientHandler implements Runnable {
 
 
         } catch (Throwable e) { // <-- Catch EVERYTHING
-            /* 
-            // 1. PRINT THE ERROR FIRST before doing anything else!
-            System.err.println("============== SERVER THREAD CRASHED ==============");
-            e.printStackTrace(); 
-            System.err.println("===================================================");
-            
-            // 2. Safely attempt to log it (Wrap in Platform.runLater if it touches UI)
-            try {
-                javafx.application.Platform.runLater(() -> {
-                    ServerApp.log("A client disconnected due to an error.");
-                });
-            } catch (Exception logEx) {
-                // Ignore if UI logging fails
-            }
-            */
-
             ServerLogger.error("Client disconnected or error occurred: " + e.getMessage());
 
         } finally {
             // CLEANUP: Khi client rời, xóa client trong danh sách các client và các phòng đấu giá
             if (out != null) {
-                ClientManager.getInstance().removeClientCompletely(out);
+                ClientManager.INSTANCE.removeClient(out);
             }
-            ClientContext.clear(); // Dọn dẹp ThreadLocal
+
+            if (authenticatedUserId != null) {
+                ClientManager.INSTANCE.unregisterUser(authenticatedUserId);
+            }
             try { 
                 if (socket != null && !socket.isClosed()) {
                     ServerLogger.info("Cleaning up connection for " + socket.getInetAddress());
@@ -132,4 +119,9 @@ public class ClientHandler implements Runnable {
             }
         }
     }
+
+    public void setAuthenticatedUserId(Integer userId) { this.authenticatedUserId = userId; }
+    public Integer getAuthenticatedUserId() { return authenticatedUserId; }
+
+    public ObjectOutputStream getOut() { return out; }
 }

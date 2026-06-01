@@ -8,9 +8,8 @@ import java.time.LocalDateTime;
 
 import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.model.user.User;
-import com.groupproject.shared.network.request.LoginRequest;
-import com.groupproject.shared.network.request.SignupRequest;
-
+import com.groupproject.shared.network.requests.LoginRequest;
+import com.groupproject.shared.network.requests.SignupRequest;
 public class UserDAO {
 
     // --- KIỂM TRA QUYỀN ADMIN TỪ BẢNG admin_list ---
@@ -33,8 +32,8 @@ public class UserDAO {
     public static synchronized String checkDuplicates(String username, String email) {
         String sql = "SELECT username, email FROM users WHERE username = ? OR email = ?";
         
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, username);
             pstmt.setString(2, email);
@@ -76,7 +75,7 @@ public class UserDAO {
         // Câu lệnh sql để chèn user mới
         String sql = "INSERT INTO users (username, email, password, created_at) VALUES (?, ?, ?, ?)";
         
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
             
             pstmt.setString(1, username);
@@ -89,9 +88,7 @@ public class UserDAO {
             ResultSet rs = pstmt.getGeneratedKeys();
             if (rs.next()) {
                 int newId = rs.getInt(1); // 1 thay vì "id", vì rs không lấy tên cột
-                // Đăng ký thành công - trả về User mặc định (0.0 balance, ko phải admin)
-                return new User(newId, username, password, email, 0.0, false, noww); 
-            } else {
+                return new User(newId, username, password, email, 10000, noww); // Đăng ký thành công            } else {
                 System.err.println("Error: Can't get user's id for some reason");
             }
         } catch (SQLException e) {
@@ -108,8 +105,8 @@ public class UserDAO {
         // Câu lệnh SQL tìm user có username và password khớp
         String sql = "SELECT 1 FROM users WHERE username = ? AND password = ?";
         
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, username);
             pstmt.setString(2, password);
@@ -178,8 +175,8 @@ public class UserDAO {
         ServerLogger.info(String.format("Getting user by username: %s and password: %s", username, password));
         String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
         
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, username);
             pstmt.setString(2, password);
@@ -199,11 +196,7 @@ public class UserDAO {
                 // KIỂM TRA QUYỀN ADMIN
                 boolean isUserAdmin = isAdmin(id);
 
-                ServerLogger.info(String.format("User's id: %s, email: %s, balance: %s, isAdmin: %s, created at: %s", 
-                                                id, email, balance, isUserAdmin, createdAt));
-
-                return new User(id, username, password, email, balance, isUserAdmin, createdAt);
-            }
+                return new User(id, username, password, email, 10000, createdAt);            }
         } catch (Exception e) {
             ServerLogger.error("UserDAO:getUser: " + e.getMessage());
             return null;

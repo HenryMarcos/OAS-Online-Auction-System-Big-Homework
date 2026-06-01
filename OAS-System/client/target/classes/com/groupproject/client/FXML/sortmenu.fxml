@@ -24,7 +24,7 @@
       <RadioButton fx:id="radio2" layoutX="48.0" layoutY="130.0" text="Price (Low to High)" toggleGroup="$sort" />
       <RadioButton fx:id="radio5" layoutX="307.0" layoutY="90.0" text="Ending Soon" toggleGroup="$sort" />
       <RadioButton fx:id="radio6" layoutX="307.0" layoutY="130.0" text="Ending Later" toggleGroup="$sort" />
-      <Button fx:id="okButton" layoutX="377.0" layoutY="170.0" prefHeight="37.0" prefWidth="63.0" styleClass="myButtons" stylesheets="@../CSS/additem.css" text="Sort" />
+      <Button fx:id="okButton" layoutX="377.0" layoutY="170.0" prefHeight="37.0" prefWidth="63.0" styleClass="myButtons" text="Sort" />
       <ImageView fx:id="closeButton" fitHeight="26.0" fitWidth="25.0" layoutX="410.0" layoutY="20.0" pickOnBounds="true" onMouseClicked="#closeSortmenu">
          <image>
             <Image url="@../Image/cross-circle.png" />

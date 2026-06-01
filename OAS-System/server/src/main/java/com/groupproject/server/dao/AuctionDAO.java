@@ -13,272 +13,357 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.groupproject.server.utils.ClientContext;
-import com.groupproject.server.utils.ServerLogger;
+import com.groupproject.server.cache.CategoryManager;
+import com.groupproject.server.core.ClientHandler;
+import com.groupproject.server.utils.ImageStorageManager;import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.model.categories.Category;
 import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.shared.model.transaction.Auction;
-import com.groupproject.shared.network.request.CreateAuctionRequest;
+import com.groupproject.shared.network.requests.CreateAuctionRequest;
 
 public class AuctionDAO {
 
-    // =========================================================================
-    // 1. NHÓM TẠO MỚI (CREATE ACTIONS)
-    // =========================================================================
+    // Lấy thông tin nhận được từ database và tạo thành phiên đấu giá
+    // --------------------------------------------------------------
+    private static Auction extractAuctionFromResultSet(ResultSet rs, Map<Integer, Category> categoryMap) throws SQLException {
+        int id = rs.getInt("id");
+        int sellerId = rs.getInt("seller_id");
+        String title = rs.getString("title");
+        String description = rs.getString("description");
+        int categoryId = rs.getInt("category_id");
+        double startingPrice = rs.getDouble("starting_price");
+        double currentBid = rs.getDouble("current_bid");
+        Integer highestBidderId = (Integer) rs.getObject("current_bidder_id"); 
+        String mainImagePath = rs.getString("main_image_path"); 
+        AuctionStatus status = AuctionStatus.valueOf(rs.getString("status"));
 
-    /**
-     * Chuyển đổi Request từ Client thành đối tượng Auction và lưu vào DB
-     */
-    public static synchronized Auction createAuction(CreateAuctionRequest request) {
-        int sellerId = ClientContext.currentUser.get().getId();
-        AuctionStatus status = (request.getStatus() != null) ? request.getStatus() : AuctionStatus.WAITING;
+        LocalDateTime startTime = rs.getString("start_time") != null ? LocalDateTime.parse(rs.getString("start_time")) : null;
+        LocalDateTime endTime = rs.getString("end_time") != null ? LocalDateTime.parse(rs.getString("end_time")) : null;
+        long duration = rs.getLong("duration");
 
-        return createAuction(
-            sellerId, request.getTitle(), request.getDescription(), 
-            request.getCategory(), request.getCategoryGroupedSpecs(), 
-            request.getStartingPrice(), 
-            parseDateTimeSafely(request.getStartTime()), 
-            parseDateTimeSafely(request.getEndTime()), 
-            status
-        );
+        Category category = categoryMap.get(categoryId);
+        
+        Auction auction = new Auction(id, sellerId, title, mainImagePath, new ArrayList<>(), description, category, new HashMap<>(), startingPrice, duration, startTime, endTime, status);
+        auction.setCurrentBid(currentBid);
+        auction.setHighestBidderId(highestBidderId);
+
+        return auction;
     }
 
-    /**
-     * Hàm lõi thực hiện INSERT vào bảng auctions và auction_specifications (Dùng Transaction)
-     */
-    public static synchronized Auction createAuction(int sellerId, String title, String description, Category category, 
-                                                     Map<Integer, Map<String, String>> categoryGroupedSpecs, 
-                                                     double startingPrice, LocalDateTime startTime, LocalDateTime endTime, AuctionStatus status) {
-        
-        String auctionSql = "INSERT INTO auctions (seller_id, title, description, category_id, starting_price, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        String specSql = "INSERT INTO auction_specifications (auction_id, category_id, field_name, field_value) VALUES (?, ?, ?, ?)";
-        
-        try (Connection conn = DatabaseManager.getInstance().getConnection()) {
-            if (conn == null) return null;
+    // Tạo phiên đấu giá mới(Lưu dữ liệu và các hình ảnh vào database)
+    // ---------------------------------------------------------------
+    public static synchronized Auction createAuction(int sellerId, String title, byte[] mainImageBytes, List<byte[]> subImagesBytes, 
+                                                     String description, Category category, Map<Integer, Map<String, String>> categoryGroupedSpecs, 
+                                                     double startingPrice, 
+                                                     long duration, LocalDateTime startTime, LocalDateTime endTime, AuctionStatus status) {
+        ServerLogger.info("Creating new auction");
 
-            boolean originalAutoCommit = conn.getAutoCommit();
-            conn.setAutoCommit(false); // Bắt đầu Transaction
+        String auctionSql = "INSERT INTO auctions (seller_id, title, main_image_path, description, category_id, starting_price, duration, start_time, end_time, status) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        
 
-            try (PreparedStatement pstmt = conn.prepareStatement(auctionSql, Statement.RETURN_GENERATED_KEYS);
-                 PreparedStatement specPstmt = conn.prepareStatement(specSql)) {
-                
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection(); ) {
+            if (conn == null) {
+                ServerLogger.error("Could not obtain a database connection from the pool.");
+                return null;
+            }
+            // Bắt đầu giao dịch để duy trì tính toàn vẹn của cơ sở dữ liệu
+            conn.setAutoCommit(false);
+
+
+            // 1. Lưu file ảnh chính
+            String mainImageFileName = null;
+            if (mainImageBytes != null && mainImageBytes.length > 0) {
+                mainImageFileName = ImageStorageManager.saveImage(mainImageBytes); // e.g., "a5b2-32cf.jpg"
+            }
+
+            int newAuctionId = -1;
+
+            // 2. Thêm các thông tin cốt lõi của phiên đấu giá
+            try (PreparedStatement pstmt = conn.prepareStatement(auctionSql, Statement.RETURN_GENERATED_KEYS)) {
                 pstmt.setInt(1, sellerId);
                 pstmt.setString(2, title);
-                pstmt.setString(3, description);
-                pstmt.setInt(4, category.getId());
-                pstmt.setDouble(5, startingPrice);
-                pstmt.setTimestamp(6, startTime != null ? Timestamp.valueOf(startTime) : null);
-                pstmt.setTimestamp(7, Timestamp.valueOf(endTime));
-                pstmt.setString(8, status.name());
-
+                pstmt.setString(3, mainImageFileName);
+                pstmt.setString(4, description);
+                pstmt.setInt(5, category.getId());
+                pstmt.setDouble(6, startingPrice);
+                // Xử lý trường hợp thời gian bị null(trạng thái WAITING chờ bắt đầu)
+                if (startTime != null) {
+                    pstmt.setString(8, startTime.toString());
+                    pstmt.setString(9, endTime.toString());
+                } else {
+                    pstmt.setNull(8, java.sql.Types.VARCHAR);
+                    pstmt.setNull(9, java.sql.Types.VARCHAR);
+                }
+                
+                pstmt.setLong(7, duration);
+                pstmt.setString(10, status.name());
                 pstmt.executeUpdate();
 
                 try (ResultSet rs = pstmt.getGeneratedKeys()) {
-                    if (rs.next()) {
-                        int newAuctionId = rs.getInt(1);
-                        if (categoryGroupedSpecs != null) {
-                            for (var categoryEntry : categoryGroupedSpecs.entrySet()) {
-                                for (var fieldEntry : categoryEntry.getValue().entrySet()) {
-                                    specPstmt.setInt(1, newAuctionId);
-                                    specPstmt.setInt(2, categoryEntry.getKey());
-                                    specPstmt.setString(3, fieldEntry.getKey());
-                                    specPstmt.setString(4, fieldEntry.getValue());
-                                    specPstmt.addBatch();
-                                }
-                            }
-                            specPstmt.executeBatch();
-                        }
-                        conn.commit();
-                        return new Auction(newAuctionId, sellerId, title, description, category, categoryGroupedSpecs, startingPrice, startTime, endTime, status);
-                    }
+                    if (rs.next()) { newAuctionId = rs.getInt(1); }
                 }
-            } catch (SQLException ex) {
-                conn.rollback();
-                ServerLogger.error("Rollback tạo đấu giá: " + ex.getMessage());
-            } finally {
-                conn.setAutoCommit(originalAutoCommit);
+            } 
+
+            // 3. Lưu thư viện ảnh(ảnh phụ)
+            if (newAuctionId != -1 && subImagesBytes != null && !subImagesBytes.isEmpty()) {
+                String subImgSql = "INSERT INTO auction_images (auction_id, image_path) VALUES (?, ?)";
+                try (PreparedStatement subPstmt = conn.prepareStatement(subImgSql)) {
+                    for (byte[] subBytes : subImagesBytes) {
+                        String subImageFileName = ImageStorageManager.saveImage(subBytes);
+                        if (subImageFileName != null) {
+                            subPstmt.setInt(1, newAuctionId);
+                            subPstmt.setString(2, subImageFileName);
+                            subPstmt.addBatch(); 
+                        }
+                    }
+                    subPstmt.executeBatch();
+                }
+            }
+
+            // 4. Lưu các field mà người dùng nhập vào
+            if (newAuctionId != -1 && categoryGroupedSpecs != null) {
+                String specSql = "INSERT INTO auction_specifications (auction_id, category_id, field_name, field_value) VALUES (?, ?, ?, ?)";
+                try (PreparedStatement specStmt = conn.prepareStatement(specSql)) {
+                    for (Map.Entry<Integer, Map<String, String>> categoryEntry : categoryGroupedSpecs.entrySet()) {
+                        int catId = categoryEntry.getKey();
+                        for (Map.Entry<String, String> spec : categoryEntry.getValue().entrySet()) {
+                            specStmt.setInt(1, newAuctionId);
+                            specStmt.setInt(2, catId);
+                            specStmt.setString(3, spec.getKey());
+                            specStmt.setString(4, spec.getValue());
+                            specStmt.addBatch();
+                        }
+                    }
+                    specStmt.executeBatch();
+                }
+            }
+
+            conn.commit(); 
+            ServerLogger.info("Auction successfully saved with ID: " + newAuctionId);
+            
+            return getAuctionById(newAuctionId);
+    
+        } catch (SQLException connectionEx) {
+            ServerLogger.error("Database connection level error: " + connectionEx.getMessage());        }
+        return null;
+    }
+
+    // Tạo phiên đấu giá mới(nhận dữ liệu dưới dạng Request)
+    // -----------------------------------------------------
+    public static synchronized Auction createAuction(CreateAuctionRequest request, ClientHandler clientContext) {
+        AuctionStatus parsedStatus;
+        // Đặt mặc định làm WAITING nếu không có
+        parsedStatus = (request.getStatus() != null)? request.getStatus() : AuctionStatus.WAITING; 
+        if (parsedStatus == AuctionStatus.WAITING) {
+            ServerLogger.info("Creating auction with WAITING status");
+        } else { ServerLogger.info("Creating auction with ACTIVATED status"); }
+
+
+        return createAuction(clientContext.getAuthenticatedUserId(), request.getTitle(), 
+                             request.getMainImageBytes(), request.getSubImagesBytes(),
+                             request.getDescription(), 
+                             request.getCategory(), request.getCategoryGroupedSpecs(), request.getStartingPrice(), 
+                             request.getDuration(), request.getStartTime(), request.getEndTime(),
+                             parsedStatus);
+    }
+
+    // Lấy các phiên đấu giá phục vụ cho tính năng xem lịch sử đâu giá
+    // Lấy hết các phiên đấu giá kể cả đã kết thúc
+    // ---------------------------------------------------------------
+    public static List<Auction> getAuctions() {
+        List<Auction> auctionList = new ArrayList<>();
+        Map<Integer, Auction> auctionMap = new HashMap<>(); 
+        Map<Integer, Category> categoryMap = CategoryManager.INSTANCE.getCategories();
+        
+        String sql = "SELECT * FROM auctions";
+
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+             
+            while (rs.next()) {
+                Auction auction = extractAuctionFromResultSet(rs, categoryMap);
+                auctionList.add(auction);
+                auctionMap.put(auction.getId(), auction); 
+            }
+
+            if (!auctionList.isEmpty()) {
+                loadSubImagesForAuctions(auctionMap, conn);
+                loadSpecificationsForAuctions(auctionMap, conn);
+            }
+
+        } catch (SQLException e) {
+            ServerLogger.error("Database error getting all auctions: " + e.getMessage());
+        }
+        return auctionList;
+    }
+
+    // Lấy các phiên đấu giá theo trạng thái của chúng
+    // -----------------------------------------------
+    public static List<Auction> getAuctionsByStatus(AuctionStatus status) {
+        List<Auction> auctionList = new ArrayList<>();
+        Map<Integer, Auction> auctionMap = new HashMap<>(); 
+        Map<Integer, Category> categoryMap = CategoryManager.INSTANCE.getCategories();
+        
+        String sql = "SELECT * FROM auctions WHERE status = ?";
+
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             
+            pstmt.setString(1, status.name());
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Auction auction = extractAuctionFromResultSet(rs, categoryMap);
+                    auctionList.add(auction);
+                    auctionMap.put(auction.getId(), auction); 
+                }
+            }
+
+            if (!auctionList.isEmpty()) {
+                loadSubImagesForAuctions(auctionMap, conn);
+                loadSpecificationsForAuctions(auctionMap, conn);
+            }
+
+        } catch (SQLException e) {
+            ServerLogger.error("Database error getting auctions by status: " + e.getMessage());
+        }
+        return auctionList;
+    }
+
+    // Lấy phiên đấu giá theo id của chúng
+    // -----------------------------------
+    public static Auction getAuctionById(int auctionId) {
+        Map<Integer, Category> categoryMap = CategoryManager.INSTANCE.getCategories();
+        String sql = "SELECT * FROM auctions WHERE id = ?";
+        
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             
+            pstmt.setInt(1, auctionId);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    Auction auction = extractAuctionFromResultSet(rs, categoryMap);
+                    
+                    // Since it's just one auction, we can put it in a map to reuse the batch methods
+                    Map<Integer, Auction> map = new HashMap<>();
+                    map.put(auction.getId(), auction);
+                    
+                    loadSubImagesForAuctions(map, conn);
+                    loadSpecificationsForAuctions(map, conn);
+                    
+                    return auction;
+                }
             }
         } catch (SQLException e) {
-            ServerLogger.error("Lỗi kết nối DB khi tạo auction: " + e.getMessage());
+            ServerLogger.error("Error fetching auction by ID: " + e.getMessage());
         }
         return null;
     }
 
-    // =========================================================================
-    // 2. NHÓM TRUY VẤN DANH SÁCH (READ ACTIONS - LIST)
-    // =========================================================================
+    // Lấy các hình ảnh của phiên đấu giá
+    // ----------------------------------
+    private static void loadSubImagesForAuctions(Map<Integer, Auction> auctionMap, Connection conn) throws SQLException {
+        if (auctionMap.isEmpty()) return;
 
-    public static List<Auction> getAuctions() {
-        return fetchAuctionsFromSql("SELECT * FROM auctions", null);
-    }
-
-    public static List<Auction> getActiveAuctions() {
-        // Lấy các phiên còn hạn và ở trạng thái có thể tương tác
-        String sql = "SELECT * FROM auctions WHERE status IN ('WAITING', 'SCHEDULED', 'ACTIVED') AND end_time > ?";
-        return fetchAuctionsFromSql(sql, Timestamp.valueOf(LocalDateTime.now()));
-    }
-
-    public static List<Auction> getAuctionsBySeller(int sellerId) {
-        String sql = "SELECT * FROM auctions WHERE seller_id = ?";
-        return fetchAuctionsFromSql(sql, sellerId); 
-    }
-
-    public static Auction getAuctionById(int auctionId) {
-        String sql = "SELECT * FROM auctions WHERE id = ?";
-        List<Auction> result = fetchAuctionsFromSql(sql, auctionId); 
-        return (result != null && !result.isEmpty()) ? result.get(0) : null;
-    }
-
-    // =========================================================================
-    // 3. NHÓM CẬP NHẬT TRẠNG THÁI (UPDATE ACTIONS)
-    // =========================================================================
-
-    /**
-     * Cập nhật cả Status và StartTime (Dùng khi bắt đầu phiên đấu giá)
-     */
-    public static boolean updateAuctionStatus(int auctionId, AuctionStatus newStatus, LocalDateTime newStartTime) {
-        String sql = "UPDATE auctions SET status = ?, start_time = ? WHERE id = ?";
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setString(1, newStatus.name());
-            pstmt.setTimestamp(2, (newStartTime != null) ? Timestamp.valueOf(newStartTime) : null);
-            pstmt.setInt(3, auctionId);
-            
-            return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            ServerLogger.error("Lỗi cập nhật trạng thái & thời gian: " + e.getMessage());
-            return false;
+        StringBuilder placeholders = new StringBuilder();
+        for (int i = 0; i < auctionMap.size(); i++) {
+            placeholders.append("?");
+            if (i < auctionMap.size() - 1) placeholders.append(",");
         }
-    }
 
-    /**
-     * Chỉ cập nhật duy nhất trạng thái (Dùng khi Hủy hoặc Kết thúc)
-     */
-    public static boolean updateAuctionStatusOnly(int auctionId, AuctionStatus newStatus) {
-        String sql = "UPDATE auctions SET status = ? WHERE id = ?";
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setString(1, newStatus.name());
-            pstmt.setInt(2, auctionId);
-            
-            return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            ServerLogger.error("Lỗi cập nhật trạng thái (chỉ status): " + e.getMessage());
-            return false;
-        }
-    }
-
-    // =========================================================================
-    // 4. NHÓM PHỤC VỤ HOUSEKEEPING (MAINTENANCE QUERIES)
-    // =========================================================================
-
-    public static List<Integer> getExpiredWaitingAuctions(LocalDateTime threshold) {
-        return fetchIdsByCondition("SELECT id FROM auctions WHERE status = 'WAITING' AND start_time < ?", threshold);
-    }
-
-    public static List<Integer> getMissedScheduledAuctions(LocalDateTime now) {
-        return fetchIdsByCondition("SELECT id FROM auctions WHERE status = 'SCHEDULED' AND start_time < ?", now);
-    }
-
-    public static List<Integer> getExpiredActiveAuctions(LocalDateTime now) {
-        return fetchIdsByCondition("SELECT id FROM auctions WHERE status = 'ACTIVED' AND end_time < ?", now);
-    }
-
-    private static List<Integer> fetchIdsByCondition(String sql, LocalDateTime time) {
-        List<Integer> ids = new ArrayList<>();
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setTimestamp(1, Timestamp.valueOf(time));
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) ids.add(rs.getInt("id"));
-        } catch (SQLException e) {
-            ServerLogger.error("DAO Maintenance Error: " + e.getMessage());
-        }
-        return ids;
-    }
-
-    // =========================================================================
-    // 5. CÁC HÀM TRỢ GIÚP NỘI BỘ (INTERNAL HELPERS - Tối ưu 1+N Query)
-    // =========================================================================
-
-    private static List<Auction> fetchAuctionsFromSql(String sql, Object param) {
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            if (param instanceof Timestamp) pstmt.setTimestamp(1, (Timestamp) param);
-            else if (param instanceof Integer) pstmt.setInt(1, (Integer) param);
-            else if (param instanceof String) pstmt.setString(1, (String) param);
-            
-            return executeAndFetchWithBatchSpecs(pstmt, conn);
-        } catch (SQLException e) {
-            ServerLogger.error("Lỗi fetch auction: " + e.getMessage());
-            return new ArrayList<>();
-        }
-    }
-
-    private static List<Auction> executeAndFetchWithBatchSpecs(PreparedStatement pstmt, Connection conn) throws SQLException {
-        List<Auction> list = new ArrayList<>();
-        Map<Integer, Category> categoryMap = CategoryDAO.getCategories();
-        Map<Integer, Map<Integer, Map<String, String>>> specsByAuctionId = new HashMap<>();
-
-        try (ResultSet rs = pstmt.executeQuery()) {
-            while (rs.next()) {
-                int id = rs.getInt("id");
-                Map<Integer, Map<String, String>> emptySpecsMap = new HashMap<>();
-                specsByAuctionId.put(id, emptySpecsMap);
-
-                Auction auction = new Auction(
-                    id, rs.getInt("seller_id"), rs.getString("title"), 
-                    rs.getString("description"), categoryMap.get(rs.getInt("category_id")),
-                    emptySpecsMap, rs.getDouble("starting_price"), 
-                    parseDateTimeSafely(rs.getString("start_time")), 
-                    parseDateTimeSafely(rs.getString("end_time")), 
-                    AuctionStatus.valueOf(rs.getString("status").toUpperCase())
-                );
-                auction.setCurrentBid(rs.getDouble("current_bid"));
-                int bidderId = rs.getInt("current_bidder_id");
-                auction.setHighestBidderId(rs.wasNull() ? null : bidderId);
-                list.add(auction);
-            }
-        }
-        if (!specsByAuctionId.isEmpty()) loadSpecificationsInBatch(specsByAuctionId, conn);
-        return list;
-    }
-
-    private static void loadSpecificationsInBatch(Map<Integer, Map<Integer, Map<String, String>>> specsByAuctionId, Connection conn) throws SQLException {
-        String placeholders = String.join(",", Collections.nCopies(specsByAuctionId.size(), "?"));
-        String query = "SELECT auction_id, category_id, field_name, field_value FROM auction_specifications WHERE auction_id IN (" + placeholders + ")";
+        String query = "SELECT auction_id, image_path FROM auction_images WHERE auction_id IN (" + placeholders + ")";
         
         try (PreparedStatement pstmt = conn.prepareStatement(query)) {
             int index = 1;
-            for (Integer id : specsByAuctionId.keySet()) pstmt.setInt(index++, id);
-
+            for (Integer auctionId : auctionMap.keySet()) {
+                pstmt.setInt(index++, auctionId);
+            }
+            
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    int aId = rs.getInt("auction_id");
-                    int cId = rs.getInt("category_id");
-                    specsByAuctionId.get(aId).computeIfAbsent(cId, k -> new HashMap<>())
-                                    .put(rs.getString("field_name"), rs.getString("field_value"));
+                    int auctionId = rs.getInt("auction_id");
+                    String imagePath = rs.getString("image_path");
+                    
+                    Auction targetAuction = auctionMap.get(auctionId);
+                    if (targetAuction != null) {
+                        targetAuction.getSubImagePaths().add(imagePath);
+                    }
                 }
             }
         }
     }
 
-    private static LocalDateTime parseDateTimeSafely(String dateTimeStr) {
-        if (dateTimeStr == null || dateTimeStr.trim().isEmpty()) return null;
-        try {
-            // Thử parse theo chuẩn thông thường (Ví dụ: "2026-05-25T07:40:00")
-            return LocalDateTime.parse(dateTimeStr.replace(" ", "T"));
-        } catch (Exception e) {
-            try {
-                // SỬA LỖI Ở ĐÂY: Xử lý trường hợp Driver SQLite lưu thành số mili-giây (Unix Epoch)
-                long millis = Long.parseLong(dateTimeStr);
-                return LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(millis), java.time.ZoneId.systemDefault());
-            } catch (Exception ex) {
-                ServerLogger.error("Không thể dịch ngày tháng từ DB: " + dateTimeStr);
-                return null;
+    
+    // Lấy thông tin về các field người dùng đã nhập vào khi tạo phiên đấu giá
+    // -----------------------------------------------------------------------
+    private static void loadSpecificationsForAuctions(Map<Integer, Auction> auctionMap, Connection conn) throws SQLException {
+        if (auctionMap.isEmpty()) return;
+
+        StringBuilder placeholders = new StringBuilder();
+        for (int i = 0; i < auctionMap.size(); i++) {
+            placeholders.append("?");
+            if (i < auctionMap.size() - 1) placeholders.append(",");
+        }
+        String query = "SELECT auction_id, category_id, field_name, field_value FROM auction_specifications WHERE auction_id IN (" + placeholders + ")";
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            int index = 1;
+            for (Integer auctionId : auctionMap.keySet()) {
+                pstmt.setInt(index++, auctionId);
+            }
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    int auctionId = rs.getInt("auction_id");
+                    int catId = rs.getInt("category_id");
+                    String name = rs.getString("field_name");
+                    String value = rs.getString("field_value");
+                    
+                    Auction targetAuction = auctionMap.get(auctionId);
+                    if (targetAuction != null) {
+                        targetAuction.getCategoryGroupedSpecs()
+                                     .computeIfAbsent(catId, k -> new HashMap<>())
+                                     .put(name, value);
+                    }                }
             }
         }
+    }
+
+    // Update thông tin về bid mới
+    // ---------------------------
+    public static boolean updateBid(int auctionId, int bidderId, double bidAmount) {
+        String updateSql = "UPDATE auctions SET current_bid = ?, current_bidder_id = ? WHERE id = ?";
+
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
+             PreparedStatement updateStmt = conn.prepareStatement(updateSql);) {
+            
+            updateStmt.setDouble(1, bidAmount);
+            updateStmt.setInt(2, bidderId);
+            updateStmt.setInt(3, auctionId);
+
+            return updateStmt.executeUpdate() > 0;
+        } catch (Exception e) {
+            ServerLogger.error("Database error updating bid: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // Update trạng thái phiên đấu giá(dùng sau khi kết thúc)
+    // ------------------------------------------------------
+    public static boolean updateAuctionStatus(int auctionId, AuctionStatus status) {
+        String updateSql = "UPDATE auctions SET status = ? WHERE id = ?";
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
+             PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+             
+            updateStmt.setString(1, status.name());
+            updateStmt.setInt(2, auctionId);
+
+            return updateStmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            ServerLogger.error("Error updating status: " + e.getMessage());
+            return false;        }
     }
 }
