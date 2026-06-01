@@ -2,27 +2,13 @@ name: Java CI (Build & Test)
 
 on:
   push:
-    branches: [ "main", "0.3.0" ] # Theo dõi khi bạn push lên 0.3.0
+    branches: [ "main", "0.3.0" ]
   pull_request:
-    branches: [ "main", "0.3.0" ] # Chạy khi có ai tạo Pull Request vào 0.3.0
+    branches: [ "main", "0.3.0" ]
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: auction_db
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h localhost"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
 
     steps:
       - name: Checkout code
@@ -36,5 +22,5 @@ jobs:
           cache: maven
 
       - name: Build and Compile
-        # Lệnh này sẽ kiểm tra xem code có compile được và vượt qua test không
+        # Lệnh này sẽ tự động tạo file users.db của SQLite và chạy test
         run: mvn clean verify
