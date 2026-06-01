@@ -38,7 +38,7 @@ public class SignupController implements LifecycleController {
     }
 
     @FXML
-    private void handleSignUp(ActionEvent event) {
+    private void handleSignup(ActionEvent event) {
         // Lấy string từ file fxml
         String username = usernameField.getText();
         String email = emailField.getText();
