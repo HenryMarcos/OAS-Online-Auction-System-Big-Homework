@@ -72,7 +72,14 @@ public enum DatabaseManager {
                                 "description TEXT NOT NULL," +
                                 "category_id INTEGER NOT NULL," +
                                 "starting_price REAL NOT NULL," +
-                                "FOREIGN KEY(current_bidder_id) REFERENCES users(id), " +                                "FOREIGN KEY(category_id) REFERENCES categories(id))";
+                                "duration INTEGER, " +
+                                "start_time TEXT, " +
+                                "end_time TEXT, " +
+                                "status TEXT NOT NULL, " +
+                                "current_bid REAL DEFAULT 0, " +
+                                "current_bidder_id INTEGER, " +
+                                "FOREIGN KEY(current_bidder_id) REFERENCES users(id), " +
+                                "FOREIGN KEY(category_id) REFERENCES categories(id))";
             stmt.execute(auctionSql);
 
             String auctionImagesSql = "CREATE TABLE IF NOT EXISTS auction_images (" +
@@ -216,10 +223,6 @@ public enum DatabaseManager {
                 String seedUser = "INSERT OR IGNORE INTO users (id, username, email, password, balance, created_at) " +
                                 "VALUES (999999, 'admin', 'admin@test.com', 'admin123', 999999.0, '" + java.time.LocalDateTime.now() + "')";
                 stmt.execute(seedUser);
-
-                // 2. Thêm ID 999999 vào bảng admin_list để xác nhận quyền Admin
-                String seedAdmin = "INSERT OR IGNORE INTO admin_list (user_id) VALUES (999999)";
-                stmt.execute(seedAdmin);
                 
                 ServerLogger.info(">>> Seed Data: Tài khoản admin/admin123 đã sẵn sàng.");
             } catch (Exception e) {
