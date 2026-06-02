@@ -1,11 +1,15 @@
 package com.groupproject.client;
 import java.io.IOException;
+import java.util.function.Consumer;
 
 import com.groupproject.client.network.AuctionEventBus;
 import com.groupproject.client.network.AuctionListener;
 import com.groupproject.client.network.ClientMessageRouter;
 import com.groupproject.client.network.RequestSender;
+import com.groupproject.client.utils.AlertUtils;
+import com.groupproject.client.utils.CountDownHelper;
 import com.groupproject.client.utils.LifecycleController;
+import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.client.utils.TimeUtil;
 import com.groupproject.shared.model.enums.AuctionStatus;
@@ -17,6 +21,7 @@ import com.groupproject.shared.network.events.AuctionFinisedEvent;
 import com.groupproject.shared.network.events.AuctionStartedEvent;
 import com.groupproject.shared.network.requests.GetAuctionDetailRequest;
 import com.groupproject.shared.network.requests.JoinAuctionRequest;
+import com.groupproject.shared.network.responses.GetAuctionDetailResponse;
 import com.groupproject.shared.network.responses.JoinAuctionResponse;
 
 import javafx.animation.KeyFrame;
@@ -32,6 +37,9 @@ public class CardController implements LifecycleController, AuctionListener {
     private Auction auction;
     private Timeline timeline;
 
+    private final Consumer<GetAuctionDetailResponse> getDetailListener = this::handleGetDetailAuction;
+    private final Consumer<JoinAuctionResponse> joinAuctionListener = this::handleJoinAuctionResponse;
+
     @FXML private Label productname;
     @FXML private Label currentprice;
     @FXML private Label timeleft;
@@ -45,6 +53,8 @@ public class CardController implements LifecycleController, AuctionListener {
 
         // ĐĂNG KÝ VIỆC LẮNG NGHE TRẢ VỀ KẾT QUẢ
         ClientMessageRouter.INSTANCE.onResponse(JoinAuctionResponse.class,this::handleJoinAuctionResponse);
+        ClientMessageRouter.INSTANCE.onResponse(GetAuctionDetailResponse.class, getDetailListener);
+        ClientMessageRouter.INSTANCE.onResponse(JoinAuctionResponse.class, joinAuctionListener);
     }
 
     // Gọi hàm này từ HomeController để thêm dữ liệu vào card
@@ -89,6 +99,23 @@ public class CardController implements LifecycleController, AuctionListener {
         JoinAuctionRequest request = new JoinAuctionRequest(auction.getId());
         RequestSender.send(request);
     }
+
+    public void populateUI(Auction auction) {
+        Platform.runLater(() -> {
+            this.auction = auction;
+            productname.setText(auction.getTitle());
+            currentprice.setText(String.valueOf(auction.getCurrentBid()));
+            CountDownHelper countDownHelper = new CountDownHelper();
+            countDownHelper.start(auction, () -> timeleft.setText("ENDED"), timeleft);
+            applyAuctionStatus(auction.getStatus());
+
+            // NGHIỆP VỤ ĐỂ HIỂN THỊ NÚT HỦY PHIÊN 
+            if (auction.getStatus()==AuctionStatus.WAITING) {
+                cancelButton.setVisible(true);
+                cancelButton.setManaged(true);
+            }
+        });
+    }
    
     public void applyAuctionStatus(AuctionStatus status) {
         auctionStatus.setText("State : " + status );
@@ -123,18 +150,6 @@ public class CardController implements LifecycleController, AuctionListener {
         });
     }
 
-    @Override
-    public void cleanup() {
-        // 1. Stop the countdown timer to save CPU
-        if (timeline != null) {
-            timeline.stop();
-        }
-        // 2. Unsubscribe from the event bus so the garbage collector can delete this card
-        if (auction != null) {
-            AuctionEventBus.getInstance().unsubscribe(auction.getId(), this);
-        }
-    }
-
     @FXML
     private void handleSubscribeToggle(ActionEvent event) {
         if (subscribeToggle.isSelected()) {
@@ -160,6 +175,30 @@ public class CardController implements LifecycleController, AuctionListener {
         }
         else {
             // Thong bao cho khac hang la ho da dang ky that bai 
+        }
+    }
+
+    private void handleGetDetailAuction(GetAuctionDetailResponse response) {
+        if (response.isSuccess()) {
+            Platform.runLater(() ->{
+                SessionManager.INSTANCE.setCurrentAuctionDetail(response.getAuctionDetail());
+                SceneNavigator.INSTANCE.goTo("/com/groupproject/client/FXML/auctionscreen.fxml");
+            });
+        }
+        else {
+            Platform.runLater(() -> {
+                AlertUtils.showError("Error !" , "Can't enter the auction now ");
+            });
+        }
+    }
+
+    @Override
+    public void cleanup() {
+        ClientMessageRouter.INSTANCE.offResponse(GetAuctionDetailResponse.class, getDetailListener);
+        ClientMessageRouter.INSTANCE.offResponse(JoinAuctionResponse.class, joinAuctionListener);
+        if (timeline != null) timeline.stop();
+        if (auction != null) {
+            AuctionEventBus.getInstance().unsubscribe(auction.getId(), this);
         }
     }
 }

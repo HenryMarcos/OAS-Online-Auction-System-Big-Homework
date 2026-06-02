@@ -9,7 +9,6 @@ import com.groupproject.shared.network.requests.CreateAuctionRequest;
 import com.groupproject.shared.network.requests.Request;
 import com.groupproject.shared.network.responses.CreateAuctionResponse;
 import com.groupproject.shared.network.responses.Response;
-
 public class CreateAuctionHandler implements RequestHandler {
     @Override
     public Response handle(Request request, ClientHandler clientContext) {

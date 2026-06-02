@@ -98,7 +98,6 @@ public class AuctionDAO {
                 
                 pstmt.setLong(7, duration);
                 pstmt.setString(10, status.name());
-
                 pstmt.executeUpdate();
 
                 try (ResultSet rs = pstmt.getGeneratedKeys()) {
@@ -155,8 +154,7 @@ public class AuctionDAO {
     // -----------------------------------------------------
     public static synchronized Auction createAuction(CreateAuctionRequest request, ClientHandler clientContext) {
         AuctionStatus parsedStatus;
-        // Đặt mặc định làm WAITING nếu không có
-        parsedStatus = (request.getStatus() != null)? request.getStatus() : AuctionStatus.WAITING; 
+        parsedStatus = request.getStatus() != null ? request.getStatus() : (request.getStartTime() != null ? AuctionStatus.SCHEDULED : AuctionStatus.WAITING); 
         if (parsedStatus == AuctionStatus.WAITING) {
             ServerLogger.info("Creating auction with WAITING status");
         } else { ServerLogger.info("Creating auction with ACTIVATED status"); }
@@ -343,38 +341,6 @@ public class AuctionDAO {
             if (i < auctionMap.size() - 1) placeholders.append(",");
         }
     }
-
-    // =========================================================================
-    // 2. NHÓM TRUY VẤN DANH SÁCH (READ ACTIONS - LIST)
-    // =========================================================================
-
-    /* 
-    public static List<Auction> getAuctions() {
-        return fetchAuctionsFromSql("SELECT * FROM auctions", null);
-    }
-
-    public static List<Auction> getActiveAuctions() {
-        // Lấy các phiên còn hạn và ở trạng thái có thể tương tác
-        String sql = "SELECT * FROM auctions WHERE status IN ('WAITING', 'SCHEDULED', 'ACTIVED') AND end_time > ?";
-        return fetchAuctionsFromSql(sql, Timestamp.valueOf(LocalDateTime.now()));
-    }
-
-    public static List<Auction> getAuctionsBySeller(int sellerId) {
-        String sql = "SELECT * FROM auctions WHERE seller_id = ?";
-        return fetchAuctionsFromSql(sql, sellerId); 
-    }
-
-    public static Auction getAuctionById(int auctionId) {
-        String sql = "SELECT * FROM auctions WHERE id = ?";
-        List<Auction> result = fetchAuctionsFromSql(sql, auctionId); 
-        return (result != null && !result.isEmpty()) ? result.get(0) : null;
-    }
-
-    */
-
-    // =========================================================================
-    // 3. NHÓM CẬP NHẬT TRẠNG THÁI (UPDATE ACTIONS)
-    // =========================================================================
 
     /**
      * Cập nhật cả Status và StartTime (Dùng khi bắt đầu phiên đấu giá)
@@ -567,7 +533,59 @@ public class AuctionDAO {
             return updateStmt.executeUpdate() > 0;
         } catch (SQLException e) {
             ServerLogger.error("Error updating status: " + e.getMessage());
+            return false;        }
+    }
+
+    public static boolean updateAuctionStatusWithTime(int auctionId, AuctionStatus status, LocalDateTime startTime, LocalDateTime endTime) {
+        String sql = "UPDATE auctions SET status = ?, start_time = ?, end_time = ? WHERE id = ?";
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, status.name());
+            pstmt.setString(2, startTime.toString());
+            pstmt.setString(3, endTime.toString());
+            pstmt.setInt(4, auctionId);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            ServerLogger.error("Error updating status with time: " + e.getMessage());
             return false;
         }
+    }
+
+    /**
+     * Lấy tất cả phiên đấu giá của một seller (mọi trạng thái).
+     * Nếu categoryId != null thì lọc thêm theo category.
+     */
+    public static List<Auction> getAuctionsBySeller(int sellerId, Integer categoryId) {
+        List<Auction> auctionList = new ArrayList<>();
+        Map<Integer, Auction> auctionMap = new HashMap<>();
+        Map<Integer, Category> categoryMap = CategoryManager.INSTANCE.getCategories();
+
+        String sql = (categoryId != null)
+            ? "SELECT * FROM auctions WHERE seller_id = ? AND category_id = ? ORDER BY id DESC"
+            : "SELECT * FROM auctions WHERE seller_id = ? ORDER BY id DESC";
+
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, sellerId);
+            if (categoryId != null) pstmt.setInt(2, categoryId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Auction auction = extractAuctionFromResultSet(rs, categoryMap);
+                    auctionList.add(auction);
+                    auctionMap.put(auction.getId(), auction);
+                }
+            }
+
+            if (!auctionList.isEmpty()) {
+                loadSubImagesForAuctions(auctionMap, conn);
+                loadSpecificationsForAuctions(auctionMap, conn);
+            }
+
+        } catch (SQLException e) {
+            ServerLogger.error("AuctionDAO:getAuctionsBySeller: " + e.getMessage());
+        }
+        return auctionList;
     }
 }

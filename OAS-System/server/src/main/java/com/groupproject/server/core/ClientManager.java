@@ -9,7 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.network.events.ServerEvent;
-
 public enum ClientManager {
     INSTANCE;
 
@@ -89,6 +88,31 @@ public enum ClientManager {
             ServerLogger.info("Auction Room " + auctionId + " has been removed from ClientManager.");
         }
     }
+
+    /**
+     * Subscribe một user (theo userId) vào phòng đấu giá.
+     * Dùng bởi AuctionManager khi user trở thành highest bidder.
+     */
+    public void subscribeUserToAuction(int auctionId, int userId) {
+        ObjectOutputStream out = authenticatedUsers.get(userId);
+        if (out != null) {
+            subscribeToAuction(auctionId, out);
+            ServerLogger.info("[Auto-Subscribe] User " + userId + " added to auction room " + auctionId + " (became highest bidder).");
+        }
+    }
+
+    /**
+     * Unsubscribe một user (theo userId) khỏi phòng đấu giá.
+     * Dùng bởi AuctionManager khi user bị outbid.
+     */
+    public void unsubscribeUserFromAuction(int auctionId, int userId) {
+        ObjectOutputStream out = authenticatedUsers.get(userId);
+        if (out != null) {
+            unsubscribeToAuction(auctionId, out);
+            ServerLogger.info("[Auto-Unsubscribe] User " + userId + " removed from auction room " + auctionId + " (outbid).");
+        }
+    }
+
 
     // --- 3. CÁC HÀM BROADCAST (3 LUỒNG) ---
 

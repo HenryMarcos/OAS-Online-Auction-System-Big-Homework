@@ -13,6 +13,7 @@ import com.groupproject.shared.network.requests.GetAuctionRequest;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 
@@ -83,6 +84,24 @@ public class MyAuctionsController extends BaseAuctionViewController {
         RequestSender.send(request);
     }
 
-   
-    
+    /**
+     * Override để dùng myAuctionCard.fxml riêng thay vì card.fxml chung.
+     * Card này có nút "Bắt đầu ngay" và "Hủy phiên".
+     */
+    @Override
+    public Node createCardNode(Auction auction) {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/com/groupproject/client/FXML/myAuctionCard.fxml")
+            );
+            Node node = loader.load();
+            MyAuctionCardController ctrl = loader.getController();
+            ctrl.setAuction(auction);
+            registerChildController(ctrl);
+            return node;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

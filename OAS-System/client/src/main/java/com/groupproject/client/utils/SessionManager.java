@@ -1,10 +1,13 @@
 package com.groupproject.client.utils;
 
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.groupproject.client.MainController;
 import com.groupproject.shared.model.categories.Category;
 import com.groupproject.shared.model.transaction.Auction;
+import com.groupproject.shared.model.transaction.AuctionDetail;
 import com.groupproject.shared.model.transaction.BidDTO;
 import com.groupproject.shared.model.transaction.NotificationDTO;
 import com.groupproject.shared.model.user.User;
@@ -15,6 +18,7 @@ public enum SessionManager {
     private static User currentUser = null; // Người dùng hiện tại
     private static List<Category> currentCategories; // Các danh mục hiện tại lấy từ server
     private static List<Auction> currentAuctionList; // Danh sách các phiên đấu giá đang hoạt động hiện tại
+    private static AuctionDetail currentAuctionDetail;
 
     private static List<Auction> myProductList; // Danh sách các sản phẩm mà người dùng đã/đang bán
     private static List<Auction> joinedAuctions; // Danh sách các phiên đấu giá mà người dùng đã tham gia
@@ -26,7 +30,9 @@ public enum SessionManager {
 
     private static MainController currentMainController;
 
-    private SessionManager() {}
+    // Tập hợp các auctionId mà client đang subscribe (để đồng bộ trạng thái nút khi Home reload)
+    private final Set<Integer> watchedAuctionIds = ConcurrentHashMap.newKeySet();
+
 
     public void setCurrentUser(User user) {
         currentUser = user;
@@ -80,5 +86,18 @@ public enum SessionManager {
     public MainController getCurrentMainController() { return currentMainController; }
     public void setCurrentMainController(MainController mainController) { this.currentMainController = mainController; }
 
-    
+
+    // SETTER AND GETTER
+    public void setCurrentAuctionDetail(AuctionDetail currentAuctionDetail) {
+        this.currentAuctionDetail= currentAuctionDetail;
+    }
+    public AuctionDetail getCurrentAuctionDetail() {
+        return currentAuctionDetail;
+    }
+
+    // --- WATCHED AUCTION IDs ---
+    public void addWatchedAuction(int auctionId) { watchedAuctionIds.add(auctionId); }
+    public void removeWatchedAuction(int auctionId) { watchedAuctionIds.remove(auctionId); }
+    public boolean isWatchingAuction(int auctionId) { return watchedAuctionIds.contains(auctionId); }
+    public void clearWatchedAuctions() { watchedAuctionIds.clear(); }
 }

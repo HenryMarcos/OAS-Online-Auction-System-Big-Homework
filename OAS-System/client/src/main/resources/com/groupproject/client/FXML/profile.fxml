@@ -25,7 +25,14 @@
             </image>
          </ImageView>
          <Label fx:id="wallet" />
-         <!--Button mnemonicParsing="false" text="Thay đổi ảnh" -->
+
+         <!-- Section nạp tiền -->
+         <HBox spacing="6" alignment="CENTER">
+            <TextField fx:id="topUpAmountField" promptText="Số tiền..." prefWidth="110" />
+            <Button fx:id="topUpButton" text="Nạp tiền" onAction="#handleTopUp"
+                    style="-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 6 12; -fx-background-radius: 5;" />
+         </HBox>
+
       </children>
    </VBox>
 

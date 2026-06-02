@@ -38,6 +38,8 @@ public class CreateAuctionRequest extends Request {
         this.endTime = endTime;
         this.status = status;
     }
+    // Electronics: {condition: New, brand: Dell}
+    // Laptop: {cpu: Intel Core i7, ram: 16GB, storage: 512GB SSD}
 
     public String getTitle() { return title; }
     public String getDescription() { return description; }
@@ -49,6 +51,5 @@ public class CreateAuctionRequest extends Request {
     public long getDuration() { return duration; }
     public LocalDateTime getStartTime() { return startTime; }
     public LocalDateTime getEndTime() { return endTime; }
-    
     public AuctionStatus getStatus() { return status; }
 }

@@ -1,14 +1,20 @@
 package com.groupproject.client;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 
 import com.groupproject.client.network.ClientMessageRouter;
+import com.groupproject.client.utils.ClientLogger;
+import com.groupproject.client.utils.LifecycleController;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.model.categories.Category;
 import com.groupproject.shared.model.transaction.Auction;
+import com.groupproject.shared.network.responses.ChangeAuctionStatusResponse;
 import com.groupproject.shared.network.responses.CreateAuctionResponse;
+import com.groupproject.shared.network.responses.GetAuctionResponse;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -33,31 +39,37 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
-// Màn hình sẽ được áp dụng trong HOME, ACTION LISTINGS VÀ MY AUCTIONS
-public abstract class BaseAuctionViewController implements Initializable {
-    @FXML protected ScrollPane scrollPane;
-    @FXML protected  GridPane productgrid;
-    @FXML protected  Button sortbutton;
-    @FXML protected Button activeCategoryButton;
-    @FXML protected  TreeView<Category> categoryTreeView;
-    protected ObservableList<Auction> uiList = FXCollections.observableArrayList();
-    // man hinh moi khi an vao nut sortby
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        setupGlobalEventListeners();
-        //setupReactiveUI();
-        initializeData();
-        List<Category> mainCategories = SessionManager.INSTANCE.getCurrentCategories();
-        setupTreeViewConfiguration();
-        drawCategoryTreeUI(mainCategories);
-        fetchInitialData();
-        addEventHandles();
-        renderGrid();
-        makeSmoothScrolling(scrollPane);
-    }
 
-    public void makeSmoothScrolling(ScrollPane scrollPane) {
-        // Tốc độ cuộn: Số càng lớn cuộn càng nhanh. (Chuẩn web thường quanh mức 0.005)
+
+// Màn hình sẽ được áp dụng trong HOME, ACTION LISTINGS VÀ MY AUCTIONS
+public abstract class BaseAuctionViewController implements Initializable, LifecycleController {
+   @FXML protected ScrollPane scrollPane;
+   @FXML protected  GridPane productgrid;
+   @FXML protected  Button sortbutton;
+   @FXML protected Button activeCategoryButton;
+   @FXML protected  TreeView<Category> categoryTreeView;
+   protected ObservableList<Auction> uiList = FXCollections.observableArrayList();
+   protected List<LifecycleController> childControllers = new ArrayList<>();
+
+   private final Consumer<CreateAuctionResponse> createAuctionListener = this::handleCreateResponse;
+   private final Consumer<GetAuctionResponse> getAuctionListener = this::handleGetResponse;
+   private final Consumer<ChangeAuctionStatusResponse> changeStatusListener = this::handleChangeStatusResponse;
+
+   // man hinh moi khi an vao nut sortby
+   @Override
+   public void initialize(URL location, ResourceBundle resources) {
+      setupGlobalEventListeners();
+      setupReactiveUI();
+      List<Category> mainCategories = SessionManager.INSTANCE.getCurrentCategories();
+      setupTreeViewConfiguration();
+      drawCategoryTreeUI(mainCategories);
+      fetchInitialData();
+      addEventHandles();
+      renderGrid();
+      makeSmoothScrolling(scrollPane);
+   }
+   public void makeSmoothScrolling(ScrollPane scrollPane) {
+      // Tốc độ cuộn: Số càng lớn cuộn càng nhanh. (Chuẩn web thường quanh mức 0.005)
         final double SCROLL_SPEED = 0.005; 
 
         scrollPane.setOnScroll(event -> {
@@ -84,20 +96,23 @@ public abstract class BaseAuctionViewController implements Initializable {
     }
 
     public void addEventHandles()  {
-        sortbutton.setOnMouseClicked(mouseEvent -> {
-            Stage stage = new Stage();
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(App.class.getResource("/com/groupproject/client/FXML/sortmenu.fxml"));
-            try {
-                AnchorPane root = loader.load();
-                stage.setScene(new Scene(root));
-                stage.initStyle(StageStyle.TRANSPARENT);
-                stage.show();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+        if (sortbutton != null) {
+            sortbutton.setOnMouseClicked(mouseEvent -> {
+                Stage stage = new Stage();
+                FXMLLoader loader = new FXMLLoader();
+                loader.setLocation(App.class.getResource("/com/groupproject/client/FXML/sortmenu.fxml"));
+                try {
+                    AnchorPane root = loader.load();
+                    stage.setScene(new Scene(root));
+                    stage.initStyle(StageStyle.TRANSPARENT);
+                    stage.show();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
     }
+    
     public void setupTreeViewConfiguration() {
         // Đặt CellFactory để ép TreeView hiển thị getName() thay vì gọi toString() mặc định của Object
         categoryTreeView.setCellFactory(tv -> new TreeCell<Category>() {
@@ -171,75 +186,96 @@ public abstract class BaseAuctionViewController implements Initializable {
     }
     public void setupReactiveUI() {
         uiList.addListener((ListChangeListener<Auction>) change -> {
-            while (change.next()) {
-                if (change.wasAdded()) {
-                for (Auction item : change.getAddedSubList()) {
-                    Node cardNode= createCardNode(item);
-                    Platform.runLater(() -> productgrid.getChildren().add(0,cardNode));
-                }
-                }
-            }
+            Platform.runLater(this::renderGrid);
         });
     }
+    public void registerChildController(LifecycleController controller) {
+        if (controller != null) {
+            childControllers.add(controller);
+        }
+    }
+
     public Node createCardNode(Auction auction) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/groupproject/client/FXML/card.fxml"));
             Node node = loader.load();
             CardController cardController = loader.getController();
-            //cardController.populateUI(auction);
+            cardController.populateUI(auction);
+            registerChildController(cardController);
             return node;
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }  
     }
-
     public void setupGlobalEventListeners() {
-        // 1. LẮNG NGHE PHẢN HỒI KHI CÓ MỘT PHIÊN ĐẤU GIÁ ĐƯỢC TẠO RA
-        ClientMessageRouter.INSTANCE.onResponse(CreateAuctionResponse.class, response -> {
-                if (response.isSuccess()) {
-                Auction newAuction= response.getAuction();
-                if (shouldInclude(newAuction)) {
-                    Platform.runLater(() ->uiList.add(0,newAuction));
-                }
-                }
-        });
-        
+        ClientMessageRouter.INSTANCE.onResponse(CreateAuctionResponse.class, createAuctionListener);
+        ClientMessageRouter.INSTANCE.onResponse(GetAuctionResponse.class, getAuctionListener);
+        ClientMessageRouter.INSTANCE.onResponse(com.groupproject.shared.network.responses.ChangeAuctionStatusResponse.class, changeStatusListener);
+    }
+
+    private void handleCreateResponse(CreateAuctionResponse response) {
+        if (response.isSuccess()) {
+            Auction newAuction = response.getAuction();
+            if (shouldInclude(newAuction)) {
+                Platform.runLater(() -> uiList.add(0, newAuction));
+            }
+        }
+    }
+
+    private void handleGetResponse(GetAuctionResponse response) {
+        if (response.isSuccess()) {
+            List<Auction> serverAuctions = response.getAuctions();
+            List<Auction> filteredAuctions = serverAuctions.stream()
+                .filter(this::shouldInclude) 
+                .toList();
+            Platform.runLater(() -> {
+                uiList.setAll(filteredAuctions); 
+            });
+        } else {
+            ClientLogger.error("Không thể lấy danh sách phiên đấu giá từ Server");
+        }
+    }
+
+    private void handleChangeStatusResponse(com.groupproject.shared.network.responses.ChangeAuctionStatusResponse response) {
+        if (response.isSuccess()) {
+            Platform.runLater(this::fetchInitialData);
+        }
+    }
+
+    @Override
+    public void cleanup() {
+        ClientMessageRouter.INSTANCE.offResponse(CreateAuctionResponse.class, createAuctionListener);
+        ClientMessageRouter.INSTANCE.offResponse(GetAuctionResponse.class, getAuctionListener);
+        ClientMessageRouter.INSTANCE.offResponse(ChangeAuctionStatusResponse.class, changeStatusListener);
+        for (LifecycleController child : childControllers) {
+            child.cleanup();
+        }
+        childControllers.clear();
+    }
+    protected int getMaxColumns() {
+        return 3;
     }
 
     public void renderGrid() {
+        for (LifecycleController child : childControllers) {
+            child.cleanup();
+        }
+        childControllers.clear();
+
         productgrid.getChildren().clear();
-        for (int i = 0; i < uiList.size(); i++) {
-            appendCardToGrid(uiList.get(i), i);
-        }
-    }
-
-    private void appendCardToGrid(Auction auction, int index) {
-        Node cardNode = createCardNode(auction);
-        if (cardNode != null) {
-            int maxColumns = 3;
-            int column = index % maxColumns;
-            int row = index / maxColumns;
-            productgrid.add(cardNode, column, row);
-            GridPane.setMargin(cardNode, new Insets(10));
-        }
-    }
-
-    public void initializeData() {
-        uiList.addListener((ListChangeListener<Auction>) c -> {
-            while (c.next()) {
-                if (c.wasAdded()) {
-                    Platform.runLater(() -> {
-                        // Just append the newly added items to the end of the grid
-                        for (Auction newAuction : c.getAddedSubList()) {
-                            appendCardToGrid(newAuction, uiList.indexOf(newAuction));
-                        }
-                    });
-                }
+        int maxColumns = getMaxColumns();
+        for (int i=0 ; i < uiList.size(); i++ ) {
+            Auction auction = uiList.get(i);
+            Node cardNode = createCardNode(auction);
+            if (cardNode != null) {
+                int column =  i % maxColumns;
+                int row = i / maxColumns;
+                productgrid.add(cardNode,column,row);
+                GridPane.setMargin(cardNode,new Insets(10));
             }
-        });
+        }
     }
-
     public void highlightCategoryButton(Button clickedButton) {
         if (activeCategoryButton != null ) {
             activeCategoryButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #333333;");

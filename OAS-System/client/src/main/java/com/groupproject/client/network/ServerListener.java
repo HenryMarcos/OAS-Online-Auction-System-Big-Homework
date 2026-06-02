@@ -37,9 +37,15 @@ public class ServerListener implements Runnable {
                     if (incomingData instanceof Wallet) {
                         Wallet wallet = (Wallet) incomingData;
                         if(wallet.hasWalletUpdated()) {
-                            SessionManager.INSTANCE.getCurrentUser().setAccountBalance(wallet.getAvailableBalance());
-                            SessionManager.INSTANCE.getCurrentMainController().updateWallet(wallet.getAvailableBalance());
-                            ProfileController.getInstance().updateWallet(wallet.getAvailableBalance());
+                            if (SessionManager.INSTANCE.getCurrentUser() != null) {
+                                SessionManager.INSTANCE.getCurrentUser().setAccountBalance(wallet.getAvailableBalance());
+                            }
+                            if (SessionManager.INSTANCE.getCurrentMainController() != null) {
+                                SessionManager.INSTANCE.getCurrentMainController().updateWallet(wallet.getAvailableBalance());
+                            }
+                            if (ProfileController.getInstance() != null) {
+                                ProfileController.getInstance().updateWallet(wallet.getAvailableBalance());
+                            }
                         }
                     }/* 
                     if (incomingData instanceof AuctionEvent) {
@@ -60,6 +66,7 @@ public class ServerListener implements Runnable {
                     if (incomingData instanceof AuctionWonNotification) {
                         AuctionWonNotification event = (AuctionWonNotification) incomingData;
                         Platform.runLater(() -> {
+                            if (SessionManager.INSTANCE.getCurrentUser() == null) return;
                             String msgText="";
                             int userId = SessionManager.INSTANCE.getCurrentUser().getId().intValue();
                             String time = new SimpleDateFormat("HH:mm").format(new Date(event.getTimeStamp()));
@@ -81,9 +88,7 @@ public class ServerListener implements Runnable {
                 }
             }
         } catch (Exception e) {
-            // thông báo mất kêt nối với sever tại đây 
-            // tạo thêm một cái show Allert 
-            ClientLogger.error("Lost connection to the server.");
+            ClientLogger.error("Lost connection to the server. Exception: [" + e.getClass().getSimpleName() + "] " + e.getMessage());
         }
     }
 }

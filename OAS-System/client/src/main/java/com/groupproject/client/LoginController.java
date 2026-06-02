@@ -11,7 +11,6 @@ import com.groupproject.client.utils.SessionManager;
 import com.groupproject.client.utils.TimeUtil;
 import com.groupproject.shared.network.requests.LoginRequest;
 import com.groupproject.shared.network.responses.LoginResponse;
-
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;

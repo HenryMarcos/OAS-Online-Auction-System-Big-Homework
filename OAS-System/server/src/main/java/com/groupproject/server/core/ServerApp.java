@@ -20,7 +20,6 @@ public class ServerApp {
         // Khởi tạo database người dùng
         DatabaseManager.INSTANCE.initDatabse();
         AuctionManager.INSTANCE.refreshCache();
-
         // ServerSocket chính là thứ lắng nghe lưu lượng truy cập internet
         try (ServerSocket serverSocket = new ServerSocket(Config.SERVER_PORT)) {
             ServerLogger.info("Server is online and listening on port " + Config.SERVER_PORT + "...");

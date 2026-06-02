@@ -12,7 +12,6 @@ import com.groupproject.shared.network.requests.Request;
 import com.groupproject.shared.network.requests.SignupRequest;
 import com.groupproject.shared.network.responses.Response;
 import com.groupproject.shared.network.responses.SignupResponse;
-
 public class SignupHandler implements RequestHandler {
     @Override
     public Response handle(Request request, ClientHandler clientContext) {

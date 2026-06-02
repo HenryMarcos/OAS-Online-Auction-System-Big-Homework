@@ -32,7 +32,8 @@ public class JoinAuctionHandler implements RequestHandler {
         Auction targetAuction = AuctionManager.INSTANCE.getAuction(((JoinAuctionRequest) request).getAuctionId());
 
         if ((targetAuction != null)) {
-            ClientManager.INSTANCE.subscribeToAuction(targetAuctionId, clientContext.getOut());
+            // Không tự động subscribe vào phòng khi vào xem — chỉ fetch data
+            // Subscription chỉ xảy ra khi: (1) bấm nút Đăng ký, (2) trở thành highest bidder
 
             List<BidDTO> pastBids = BidDAO.getBidsForAuction(targetAuctionId);
 

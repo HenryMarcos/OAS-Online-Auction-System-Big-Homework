@@ -21,7 +21,6 @@ public enum CategoryManager {
     // Khóa đọc/ghi đảm bảo các máy khách có thể đọc đồng thời,
     // nhưng việc đọc chỉ bị chặn trong tích tắc khi bộ nhớ đệm đang được cập nhật
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-
     // 3. Khởi tạo riêng tư (Private Constructor)
     private CategoryManager() {
         this.categoryMap = new ConcurrentHashMap<>();

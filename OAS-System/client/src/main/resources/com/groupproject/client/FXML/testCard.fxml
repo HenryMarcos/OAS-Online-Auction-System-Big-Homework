@@ -8,7 +8,9 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ToggleButton?>
 <HBox stylesheets="@../CSS/card.css" fx:id="cardroot" spacing="10.0" maxWidth="Infinity" styleClass="product-card" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.TestCardController">
+
     <ImageView fx:id="image" fitHeight="150" fitWidth="150.0" preserveRatio="true" pickOnBounds="true" styleClass="image">
         <image>
             <Image url="@../Image/sample.png" />
@@ -40,5 +42,8 @@
         </Label>
 
         <Button onAction="#handleBid" text="Bid Now" styleClass="bidbutton" maxWidth="Infinity" prefHeight="30" />
+        <ToggleButton fx:id="watchButton" onAction="#handleWatchToggle" text="Đăng ký"
+                      maxWidth="Infinity" prefHeight="30"
+                      style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" />
     </VBox>
 </HBox>

@@ -24,7 +24,6 @@ public class PlaceBidHandler implements RequestHandler {
 
         if (success) {
             ServerLogger.info("Bid placed successfully for Auction " + bidReq.getAuctionId());
-            
             return new PlaceBidResponse(true, "Bid placed successfully!");
         } else {
             return new PlaceBidResponse(false, "Database error while placing bid.");

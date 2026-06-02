@@ -14,6 +14,7 @@ module com.groupproject.shared { // Đổi tên ở đây cho chuẩn
     // Cho phép Java Serialization làm việc (Quan trọng cho Socket)
     opens com.groupproject.shared.model.user;
     opens com.groupproject.shared.model.base;
+    opens com.groupproject.shared.model.transaction;
     opens com.groupproject.shared.model.categories;
     
 }
