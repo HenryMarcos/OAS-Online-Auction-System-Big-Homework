@@ -1,4 +1,5 @@
 package com.groupproject.client;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -15,15 +16,15 @@ import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.ClientLogger;
 import com.groupproject.client.utils.ImageOptimizer;
 import com.groupproject.client.utils.SessionManager;
-import com.groupproject.client.utils.TimeUtil;
 import com.groupproject.shared.model.categories.Category;
 import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.shared.network.requests.CreateAuctionRequest;
 import com.groupproject.shared.network.responses.CreateAuctionResponse;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.CheckBox;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
@@ -39,8 +40,8 @@ import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 
 public class CreateAuctionTestController implements Initializable {
-    // Các thuộc tính cơ bản
-    // ---------------------
+
+    // --- Form fields ---
     @FXML private TextField titleField;
     @FXML private TextArea descriptionArea;
     @FXML private Label mainImageNameLabel;
@@ -49,23 +50,21 @@ public class CreateAuctionTestController implements Initializable {
     @FXML private TextField startingPriceField;
     @FXML private VBox dynamicFieldsContainer;
     @FXML private Label statusLabel;
+    @FXML private Button submitButton;
 
-    // Nút start now để cho phiên đấu giá tạo ra bắt đầu luôn
-    @FXML private CheckBox startNowCheckBox;
-
-    // Lựa chọn đổi giữa chọn thời gian và chọn ngày
+    // Lựa chọn chế độ thời gian
     @FXML private ToggleGroup timingToggleGroup;
     @FXML private RadioButton durationRadio;
     @FXML private RadioButton dateRadio;
 
-    // Chế độ chọn thời lượng buổi đấu giá
+    // Chế độ Duration
     @FXML private Label durationLabel;
     @FXML private HBox durationInputBox;
     @FXML private Spinner<Integer> daysSpinner;
     @FXML private Spinner<Integer> hoursSpinner;
     @FXML private Spinner<Integer> minsSpinner;
 
-    // Chế độ chọn theo ngày
+    // Chế độ Schedule (ngày cụ thể)
     @FXML private Label startDateLabel;
     @FXML private HBox startDateBox;
     @FXML private DatePicker startDatePicker;
@@ -80,62 +79,38 @@ public class CreateAuctionTestController implements Initializable {
 
     private File mainImageFile = null;
     private List<File> subImageFiles = new ArrayList<>();
-
     private final Map<Integer, Category> allCategoriesMap = new HashMap<>();
-
     private final Map<String, TextField> dynamicTextFieldsMap = new HashMap<>();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Nối response với hàm tương ứng
         ClientMessageRouter.INSTANCE.onResponse(CreateAuctionResponse.class, this::handleCreateAuctionResponse);
-
-        // Setup cách categories hiển thị trong ComboBox
         setupCategoryComboBoxFormatting();
 
-        // Lấy categories
         List<Category> mainCategories = SessionManager.INSTANCE.getCurrentCategories();
-        if (mainCategories != null) {
-            populateCategoryData(mainCategories);
-        }
+        if (mainCategories != null) populateCategoryData(mainCategories);
 
-        // Kiểm tra sự thay đổi trong lựa chọn category và thay vào các field phù hợp
-        categoryComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
-                generateDynamicFields(newValue);
-            }
+        categoryComboBox.getSelectionModel().selectedItemProperty().addListener((obs, old, newVal) -> {
+            if (newVal != null) generateDynamicFields(newVal);
         });
 
         setupSpinnersAndCombos();
         setupTimingVisibilityListeners();
-        updateTimingFieldsLayout(); // Initial trigger layout execution
+        updateTimingFieldsLayout();
     }
 
     private void setupTimingVisibilityListeners() {
-        // Trigger rearrangement when switching Radio Button options
-        timingToggleGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> updateTimingFieldsLayout());
-        
-        // Trigger structural rearrangement when checking/unchecking "Start Now"
-        startNowCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> updateTimingFieldsLayout());
+        timingToggleGroup.selectedToggleProperty().addListener((obs, old, newVal) -> updateTimingFieldsLayout());
     }
 
     private void setupSpinnersAndCombos() {
-        // Initialize Duration Spinners
         daysSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 365, 0));
         hoursSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 23, 1));
         minsSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 59, 0));
 
-        // Populate Time Dropdowns
-        for (int i = 0; i < 24; i++) {
-            startHourCombo.getItems().add(i);
-            endHourCombo.getItems().add(i);
-        }
-        for (int i = 0; i < 60; i += 5) { // Intervals of 5 mins
-            startMinCombo.getItems().add(i);
-            endMinCombo.getItems().add(i);
-        }
+        for (int i = 0; i < 24; i++) { startHourCombo.getItems().add(i); endHourCombo.getItems().add(i); }
+        for (int i = 0; i < 60; i += 5) { startMinCombo.getItems().add(i); endMinCombo.getItems().add(i); }
 
-        // Default Dropdown Pick selections
         startHourCombo.getSelectionModel().select(12);
         startMinCombo.getSelectionModel().select(0);
         endHourCombo.getSelectionModel().select(12);
@@ -144,15 +119,12 @@ public class CreateAuctionTestController implements Initializable {
 
     private void updateTimingFieldsLayout() {
         boolean isDurationMode = durationRadio.isSelected();
-        boolean isStartNow = startNowCheckBox.isSelected();
 
-        // 1. Handle Duration Mode Row Items Visibility
         durationLabel.setVisible(isDurationMode);
         durationLabel.setManaged(isDurationMode);
         durationInputBox.setVisible(isDurationMode);
         durationInputBox.setManaged(isDurationMode);
 
-        // 2. Handle Date Mode Row Items Visibility
         startDateLabel.setVisible(!isDurationMode);
         startDateLabel.setManaged(!isDurationMode);
         startDateBox.setVisible(!isDurationMode);
@@ -162,55 +134,27 @@ public class CreateAuctionTestController implements Initializable {
         endDateLabel.setManaged(!isDurationMode);
         endDateBox.setVisible(!isDurationMode);
         endDateBox.setManaged(!isDurationMode);
-
-        // 3. Conditional state rules for 'Start Now' selection
-        if (!isDurationMode) {
-            // If starting instantly, manual calculation of target start picker is locked out
-            startDatePicker.setDisable(isStartNow);
-            startHourCombo.setDisable(isStartNow);
-            startMinCombo.setDisable(isStartNow);
-            if (isStartNow) {
-                startDatePicker.setValue(LocalDateTime.now().toLocalDate());
-                startHourCombo.getSelectionModel().select(Integer.valueOf(LocalDateTime.now().getHour()));
-                startMinCombo.getSelectionModel().select(Integer.valueOf(LocalDateTime.now().getMinute() - (LocalDateTime.now().getMinute() % 5)));
-            }
-        }
     }
 
-
-    // Thêm các category vào cho người dùng lựa chọn
+    // --- Categories ---
     private void populateCategoryData(List<Category> mainCategories) {
         allCategoriesMap.clear();
         categoryComboBox.getItems().clear();
-
-        for (Category mainCat : mainCategories) {
-            addCategoryToSelection(mainCat, 0);
-        }
+        for (Category mainCat : mainCategories) addCategoryToSelection(mainCat, 0);
     }
 
     private void addCategoryToSelection(Category cat, int depth) {
         allCategoriesMap.put(cat.getId(), cat);
-
-        // Lưu tên danh mục
         categoryComboBox.getItems().add(cat);
-
-        // Tìm các category con(nếu có)
-        if (cat.getSubCategories() != null) {
-            for (Category subCat : cat.getSubCategories()) {
-                addCategoryToSelection(subCat, depth + 1);
-            }
-        }
+        if (cat.getSubCategories() != null)
+            for (Category sub : cat.getSubCategories()) addCategoryToSelection(sub, depth + 1);
     }
 
-    // Thay đổi hình thức hiển thị của các mục bên trong ComboBox để các danh mục con trông thụt vào trong.
     private void setupCategoryComboBoxFormatting() {
-        ClientLogger.info("Setting up category ComboxBox formatting");
         categoryComboBox.setConverter(new StringConverter<Category>() {
             @Override
             public String toString(Category category) {
                 if (category == null) return "";
-
-                // Nếu category có parent, thì thêm dấu mũi tên
                 StringBuilder prefix = new StringBuilder();
                 Category temp = category;
                 while (temp.getParentId() != null && allCategoriesMap.containsKey(temp.getParentId())) {
@@ -219,314 +163,224 @@ public class CreateAuctionTestController implements Initializable {
                 }
                 return prefix.toString() + category.getName();
             }
-
-            @Override
-            public Category fromString(String string) { return null; }
+            @Override public Category fromString(String string) { return null; }
         });
-        ClientLogger.info("Finish setting up category ComboxBox formatting");
     }
 
-    // Lấy các field mà category hiện tại có cùng các field cần thiết của category cha
-    // -------------------------------------------------------------------------------
     private void generateDynamicFields(Category selectedCategory) {
-        ClientLogger.info("Generating dynamic fields for Scroll UI");
-        
-        // 1. Dọn sạch các field cũ đi
-        // ---------------------------
         dynamicFieldsContainer.getChildren().clear();
         dynamicTextFieldsMap.clear();
+        if (selectedCategory == null) return;
 
-        if (selectedCategory == null) return; // Nếu mà category ko tồn tại thì trả về null
-
-        // 2. Lấy các category từ child đến parent
-        // ---------------------------------------
-        List<Category> categoryLineage = new ArrayList<>();
+        List<Category> lineage = new ArrayList<>();
         Category current = selectedCategory;
-
         while (current != null) {
-            categoryLineage.add(current);
-            if (current.getParentId() != null) {
-                current = allCategoriesMap.get(current.getParentId());
-            } else {
-                current = null;
+            lineage.add(current);
+            current = current.getParentId() != null ? allCategoriesMap.get(current.getParentId()) : null;
+        }
+        java.util.Collections.reverse(lineage);
+
+        List<String> added = new ArrayList<>();
+        boolean hasFields = false;
+
+        for (Category cat : lineage) {
+            if (cat.getRequiredFields() == null || cat.getRequiredFields().isEmpty()) continue;
+            List<String> toAdd = new ArrayList<>();
+            for (String f : cat.getRequiredFields()) if (!added.contains(f)) { toAdd.add(f); added.add(f); }
+            if (toAdd.isEmpty()) continue;
+
+            hasFields = true;
+            Label header = new Label(cat.getName() + " Specifications");
+            header.setStyle("-fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-font-size: 13px; -fx-padding: 10 0 5 0;");
+            dynamicFieldsContainer.getChildren().add(header);
+
+            for (String fieldName : toAdd) {
+                HBox row = new HBox(10);
+                row.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+                Label lbl = new Label(fieldName + ":"); lbl.setPrefWidth(140);
+                TextField input = new TextField(); input.setPromptText("Enter " + fieldName.toLowerCase() + "...");
+                HBox.setHgrow(input, javafx.scene.layout.Priority.ALWAYS);
+                row.getChildren().addAll(lbl, input);
+                dynamicFieldsContainer.getChildren().add(row);
+                dynamicTextFieldsMap.put(cat.getId() + ":" + fieldName, input);
             }
         }
 
-        // 3. Đảo ngược lại để in các field của parent trước rồi mới đến child
-        // -------------------------------------------------------------------
-        java.util.Collections.reverse(categoryLineage);
-
-        boolean hasAnyFields = false;
-        List<String> alreadyAddedFields = new ArrayList<>();
-
-        // 4. Build the UI rows
-        for (Category cat : categoryLineage) {
-            
-            if (cat.getRequiredFields() != null && !cat.getRequiredFields().isEmpty()) {
-                
-                List<String> fieldsToAdd = new ArrayList<>();
-                for (String field : cat.getRequiredFields()) {
-                    if (!alreadyAddedFields.contains(field)) {
-                        fieldsToAdd.add(field);
-                        alreadyAddedFields.add(field);
-                    }
-                }
-
-                if (!fieldsToAdd.isEmpty()) {
-                    hasAnyFields = true;
-
-                    // --- ADD CATEGORY HEADER LABEL ---
-                    Label categoryHeader = new Label(cat.getName() + " Specifications");
-                    categoryHeader.setStyle("-fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-font-size: 13px; -fx-padding: 10 0 5 0;");
-                    dynamicFieldsContainer.getChildren().add(categoryHeader);
-
-                    // --- ADD TEXT FIELDS ---
-                    for (String fieldName : fieldsToAdd) {
-                        HBox fieldRow = new HBox(10);
-                        fieldRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-
-                        Label label = new Label(fieldName + ":");
-                        label.setPrefWidth(140);
-                        
-                        TextField inputField = new TextField();
-                        inputField.setPromptText("Enter " + fieldName.toLowerCase() + "...");
-                        HBox.setHgrow(inputField, javafx.scene.layout.Priority.ALWAYS);
-
-                        fieldRow.getChildren().addAll(label, inputField);
-                        dynamicFieldsContainer.getChildren().add(fieldRow);
-
-                        // Save textfield for submit data extraction
-                        dynamicTextFieldsMap.put(cat.getId() + ":" + fieldName, inputField);
-                    }
-                }
-            }
-        }
-
-        // 5. If no fields exist for this category tree
-        if (!hasAnyFields) {
-            Label noFieldsLabel = new Label("No specific specifications required.");
-            noFieldsLabel.setStyle("-fx-text-fill: #888; -fx-font-style: italic;");
-            dynamicFieldsContainer.getChildren().add(noFieldsLabel);
-        }
-
-        ClientLogger.info("Finished generating dynamic fields");
-    }
-
-    @FXML
-    private void handleChooseMainImage() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Select Main Image");
-        fileChooser.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg")
-        );
-        
-        // Open the dialog. We use titleField.getScene().getWindow() to tie the dialog to the current window
-        File selectedFile = fileChooser.showOpenDialog(titleField.getScene().getWindow());
-        
-        if (selectedFile != null) {
-            mainImageFile = selectedFile;
-            mainImageNameLabel.setText(selectedFile.getName());
+        if (!hasFields) {
+            Label none = new Label("No specific specifications required.");
+            none.setStyle("-fx-text-fill: #888; -fx-font-style: italic;");
+            dynamicFieldsContainer.getChildren().add(none);
         }
     }
 
-    @FXML
-    private void handleChooseSubImages() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Select Gallery Images");
-        fileChooser.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg")
-        );
-        
-        // Note: showOpenMultipleDialog allows selecting multiple files at once
-        List<File> selectedFiles = fileChooser.showOpenMultipleDialog(titleField.getScene().getWindow());
-        
-        if (selectedFiles != null && !selectedFiles.isEmpty()) {
-            subImageFiles.clear();
-            subImageFiles.addAll(selectedFiles);
-            subImagesCountLabel.setText(subImageFiles.size() + " images selected");
+    // --- Image pickers ---
+    @FXML private void handleChooseMainImage() {
+        FileChooser fc = new FileChooser();
+        fc.setTitle("Select Main Image");
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg"));
+        File f = fc.showOpenDialog(titleField.getScene().getWindow());
+        if (f != null) { mainImageFile = f; mainImageNameLabel.setText(f.getName()); }
+    }
+
+    @FXML private void handleChooseSubImages() {
+        FileChooser fc = new FileChooser();
+        fc.setTitle("Select Gallery Images");
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg"));
+        List<File> files = fc.showOpenMultipleDialog(titleField.getScene().getWindow());
+        if (files != null && !files.isEmpty()) {
+            subImageFiles.clear(); subImageFiles.addAll(files);
+            subImagesCountLabel.setText(files.size() + " images selected");
         }
     }
-    
+
+    // --- Cancel ---
+    @FXML private void handleCancel() {
+        // Reset form
+        titleField.clear(); descriptionArea.clear(); startingPriceField.clear();
+        mainImageFile = null; subImageFiles.clear();
+        mainImageNameLabel.setText("No file selected");
+        subImagesCountLabel.setText("0 images selected");
+        categoryComboBox.getSelectionModel().clearSelection();
+        dynamicFieldsContainer.getChildren().clear();
+        statusLabel.setText("");
+    }
+
+    // --- Submit ---
     @FXML
     private void handleSubmitAuction() {
-        ClientLogger.info("Handling submit auction");
+        statusLabel.setTextFill(javafx.scene.paint.Color.RED);
         statusLabel.setText("");
 
-        // Lấy các input
         String title = titleField.getText().trim();
         String description = descriptionArea.getText().trim();
         Category selectedCategory = categoryComboBox.getValue();
         String priceText = startingPriceField.getText().trim();
 
         if (title.isEmpty() || description.isEmpty() || selectedCategory == null || priceText.isEmpty()) {
-            statusLabel.setText("Please fill out all basic auction fields.");
+            statusLabel.setText("Vui lòng điền đầy đủ thông tin cơ bản.");
             return;
         }
 
         double startingPrice;
-
         try {
             startingPrice = Double.parseDouble(priceText);
+            if (startingPrice <= 0) { statusLabel.setText("Giá khởi điểm phải lớn hơn 0."); return; }
         } catch (NumberFormatException e) {
-            statusLabel.setText("Starting price must be a valid number.");
-            return;
+            statusLabel.setText("Giá khởi điểm không hợp lệ."); return;
         }
 
-        // Xử lý hình ảnh
+        // Xử lý ảnh
         byte[] mainImageBytes = null;
         List<byte[]> subImageBytesList = new ArrayList<>();
-
         try {
-            // Compress Main Image
-            if (mainImageFile != null) {
-                mainImageBytes = ImageOptimizer.optimizeImage(mainImageFile); 
-            }
-            // Compress Sub Images
-            for (File file : subImageFiles) {
-                subImageBytesList.add(ImageOptimizer.optimizeImage(file));
-            }
+            if (mainImageFile != null) mainImageBytes = ImageOptimizer.optimizeImage(mainImageFile);
+            for (File f : subImageFiles) subImageBytesList.add(ImageOptimizer.optimizeImage(f));
         } catch (IOException e) {
-            statusLabel.setText("Error processing image files!");
-            return;
+            statusLabel.setText("Lỗi xử lý ảnh!"); return;
         }
 
+        // Dynamic specs
+        Map<Integer, Map<String, String>> categoryGroupedSpecs = new HashMap<>();
+        for (Map.Entry<String, TextField> entry : dynamicTextFieldsMap.entrySet()) {
+            String[] parts = entry.getKey().split(":");
+            int catId = Integer.parseInt(parts[0]);
+            String specName = parts[1];
+            String val = entry.getValue().getText().trim();
+            if (val.isEmpty()) { statusLabel.setText("Thiếu thông tin: " + specName); return; }
+            categoryGroupedSpecs.computeIfAbsent(catId, k -> new HashMap<>()).put(specName, val);
+        }
+
+        boolean isDurationMode = durationRadio.isSelected();
         LocalDateTime startTime = null;
         LocalDateTime endTime = null;
+        long duration = 0;
         AuctionStatus initialStatus;
 
-        // Lưu các field của từng category theo category id
-        Map<Integer, Map<String, String>> categoryGroupedSpecs = new HashMap<>();
-
-        // 2. COLLECT DATA FROM DYNAMIC FIELDS!
-        // entry lưu trữ theo format "categoryId:fieldName" -> TextField
-        for (Map.Entry<String, TextField> entry : dynamicTextFieldsMap.entrySet()) {
-            String compoundKey = entry.getKey();
-            String specValue = entry.getValue().getText().trim();
-
-            // Chia compound key thành id và field name
-            String[] parts = compoundKey.split(":");
-            int fieldCategoryId = Integer.parseInt(parts[0]);
-            String specName = parts[1];
-
-            if (specValue.isEmpty()) {
-                statusLabel.setText("Missing spec field: " + specName);
-                return; // Stop processing if form incomplete
+        if (isDurationMode) {
+            // --- Chế độ Duration: WAITING, chờ user bấm Start Now trong My Auctions ---
+            try {
+                daysSpinner.commitValue();
+                hoursSpinner.commitValue();
+                minsSpinner.commitValue();
+            } catch (Exception e) {
+                statusLabel.setText("Định dạng thời lượng không hợp lệ!"); return;
             }
-            
-            // Thêm vào gồm id của category, tên của field và input của field
-            categoryGroupedSpecs.computeIfAbsent(fieldCategoryId, k -> new HashMap<>()).put(specName, specValue);
-        }
+            int days = daysSpinner.getValue();
+            int hours = hoursSpinner.getValue();
+            int mins = minsSpinner.getValue();
 
-        boolean isStartNow = startNowCheckBox.isSelected();
-        boolean isDurationMode = durationRadio.isSelected();
-
-        long duration = 0;
-
-        if (isStartNow) {
-            startTime = TimeUtil.getNow();
-            initialStatus = AuctionStatus.ACTIVED;
-
-            if (isDurationMode) {
-                try {
-                    daysSpinner.commitValue();
-                    hoursSpinner.commitValue();
-                    minsSpinner.commitValue();
-                } catch (Exception e) {
-                    statusLabel.setText("Invalid duration format!");
-                    return;
-                }
-
-                int days = daysSpinner.getValue();
-                int hours = hoursSpinner.getValue();
-                int mins = minsSpinner.getValue();
-
-                ClientLogger.info(String.format("Auction have duration: %d days, %d hours, %d mins", days, hours, mins));
-
-                if (days == 0 && hours == 0 && mins == 0) {
-                    statusLabel.setText("Duration cannot be 0!");
-                    return;
-                }
-
-                duration = (days * 86400L) + (hours * 3600L) + (mins * 60L);
-
-                endTime = startTime.plusSeconds(duration);
-
-                ClientLogger.info("Start date: " + startTime + ", End date: " + endTime);
-            } else {
-                // Explicit End Date Calculation Mode
-                if (endDatePicker.getValue() == null) {
-                    statusLabel.setText("Please select an End Date!");
-                    return;
-                }
-                int hour = endHourCombo.getValue() != null ? endHourCombo.getValue() : 0;
-                int min = endMinCombo.getValue() != null ? endMinCombo.getValue() : 0;
-                endTime = LocalDateTime.of(endDatePicker.getValue(), LocalTime.of(hour, min));
-
-                if (endTime.isBefore(startTime)) {
-                    statusLabel.setText("End time must be after right now!");
-                    return;
-                }
+            if (days == 0 && hours == 0 && mins == 0) {
+                statusLabel.setText("Thời lượng phải lớn hơn 0."); return;
             }
-        } else {
-            // "Start Now" is false -> System stays in WAITING phase
+
+            duration = (days * 86400L) + (hours * 3600L) + (mins * 60L);
+            startTime = null;
+            endTime = null;
             initialStatus = AuctionStatus.WAITING;
+            ClientLogger.info("Creating WAITING auction with duration " + duration + "s");
 
-            if (isDurationMode) {
-                int days = daysSpinner.getValue();
-                int hours = hoursSpinner.getValue();
-                int mins = minsSpinner.getValue();
-
-                duration = (days * 86400L) + (hours * 3600L) + (mins * 60L);
-
-                // Wait until manually activated on Server to run real calculation timestamps
-                startTime = null;
-                endTime = null;
-            } else {
-                // explicit date options provided for the future activation point
-                if (startDatePicker.getValue() == null || endDatePicker.getValue() == null) {
-                    statusLabel.setText("Please pick both Start and End Dates!");
-                    return;
-                }
-                int sHour = startHourCombo.getValue() != null ? startHourCombo.getValue() : 0;
-                int sMin = startMinCombo.getValue() != null ? startMinCombo.getValue() : 0;
-                startTime = LocalDateTime.of(startDatePicker.getValue(), LocalTime.of(sHour, sMin));
-
-                int eHour = endHourCombo.getValue() != null ? endHourCombo.getValue() : 0;
-                int eMin = endMinCombo.getValue() != null ? endMinCombo.getValue() : 0;
-                endTime = LocalDateTime.of(endDatePicker.getValue(), LocalTime.of(eHour, eMin));
-
-                if (endTime.isBefore(startTime)) {
-                    statusLabel.setText("End Date cannot be scheduled before the Start Date!");
-                    return;
-                }
+        } else {
+            // --- Chế độ Schedule: SCHEDULED, server tự kích hoạt tại startTime ---
+            if (startDatePicker.getValue() == null) {
+                statusLabel.setText("Vui lòng chọn ngày bắt đầu."); return;
             }
+            if (endDatePicker.getValue() == null) {
+                statusLabel.setText("Vui lòng chọn ngày kết thúc."); return;
+            }
+
+            int sH = startHourCombo.getValue() != null ? startHourCombo.getValue() : 0;
+            int sM = startMinCombo.getValue() != null ? startMinCombo.getValue() : 0;
+            startTime = LocalDateTime.of(startDatePicker.getValue(), LocalTime.of(sH, sM));
+
+            int eH = endHourCombo.getValue() != null ? endHourCombo.getValue() : 0;
+            int eM = endMinCombo.getValue() != null ? endMinCombo.getValue() : 0;
+            endTime = LocalDateTime.of(endDatePicker.getValue(), LocalTime.of(eH, eM));
+
+            if (!startTime.isAfter(LocalDateTime.now())) {
+                statusLabel.setText("Thời gian bắt đầu phải ở tương lai."); return;
+            }
+            if (!endTime.isAfter(startTime)) {
+                statusLabel.setText("Thời gian kết thúc phải sau thời gian bắt đầu."); return;
+            }
+
+            duration = 0;
+            initialStatus = AuctionStatus.SCHEDULED;
+            ClientLogger.info("Creating SCHEDULED auction: " + startTime + " → " + endTime);
         }
 
-        // 3. Packages and submits to Server pipeline
-        int categoryId = selectedCategory.getId();
+        // Disable nút tránh double-submit
+        submitButton.setDisable(true);
+        submitButton.setText("Đang tạo...");
 
-        ClientLogger.info("Form validation successful. Transmitting new auction layout details...");
-
-        CreateAuctionRequest request = new CreateAuctionRequest(title, description, selectedCategory, categoryGroupedSpecs, 
-                                                                mainImageBytes, subImageBytesList, startingPrice, 
-                                                                duration, startTime, endTime, initialStatus);
+        CreateAuctionRequest request = new CreateAuctionRequest(
+            title, description, selectedCategory, categoryGroupedSpecs,
+            mainImageBytes, subImageBytesList, startingPrice,
+            duration, startTime, endTime, initialStatus
+        );
         RequestSender.send(request);
-
-        ClientLogger.info("Finish handling submit auction");
+        ClientLogger.info("CreateAuctionRequest sent.");
     }
 
     private void handleCreateAuctionResponse(CreateAuctionResponse response) {
-        if (response.isSuccess()) { handleSuccessfulCreateAuction(response); }
-        else { handleFailedCreateAuction(response); }
-    }
+        Platform.runLater(() -> {
+            submitButton.setDisable(false);
+            submitButton.setText("Tạo phiên đấu giá");
 
-    private void handleSuccessfulCreateAuction(CreateAuctionResponse response) {
-        ClientLogger.info("Successfully created new auction");
-    }
-
-    private void handleFailedCreateAuction(CreateAuctionResponse response) {
-        ClientLogger.error("failed to create new auction");
+            if (response.isSuccess()) {
+                statusLabel.setTextFill(javafx.scene.paint.Color.GREEN);
+                boolean isWaiting = response.getAuction() != null
+                        && response.getAuction().getStatus() == AuctionStatus.WAITING;
+                if (isWaiting) {
+                    statusLabel.setText("✅ Đã tạo thành công! Vào 'My Auctions' để bấm 'Bắt đầu ngay' khi sẵn sàng.");
+                } else {
+                    statusLabel.setText("✅ Phiên đấu giá đã được lên lịch thành công!");
+                }
+                // Reset form sau khi tạo thành công
+                handleCancel();
+            } else {
+                statusLabel.setTextFill(javafx.scene.paint.Color.RED);
+                statusLabel.setText("❌ " + response.getMessage());
+            }
+        });
     }
 }
-
-

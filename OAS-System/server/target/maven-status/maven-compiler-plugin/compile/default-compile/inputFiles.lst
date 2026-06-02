@@ -10,6 +10,7 @@ C:\Users\admin\Documents\GitHub\OAS-Online-Auction-System-Big-Homework\OAS-Syste
 C:\Users\admin\Documents\GitHub\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\dao\UserDAO.java
 C:\Users\admin\Documents\GitHub\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\handlers\ChangeAuctionStatusHandler.java
 C:\Users\admin\Documents\GitHub\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\handlers\CreateAuctionHandler.java
+C:\Users\admin\Documents\GitHub\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\handlers\GetAuctionHandler.java
 C:\Users\admin\Documents\GitHub\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\handlers\JoinAuctionHandler.java
 C:\Users\admin\Documents\GitHub\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\handlers\LoginHandler.java
 C:\Users\admin\Documents\GitHub\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\handlers\LogOutHandler.java
@@ -17,6 +18,9 @@ C:\Users\admin\Documents\GitHub\OAS-Online-Auction-System-Big-Homework\OAS-Syste
 C:\Users\admin\Documents\GitHub\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\handlers\RequestDispatcher.java
 C:\Users\admin\Documents\GitHub\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\handlers\RequestHandler.java
 C:\Users\admin\Documents\GitHub\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\handlers\SignupHandler.java
+C:\Users\admin\Documents\GitHub\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\handlers\TopUpHandler.java
+C:\Users\admin\Documents\GitHub\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\handlers\UnwatchAuctionHandler.java
+C:\Users\admin\Documents\GitHub\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\handlers\WatchAuctionHandler.java
 C:\Users\admin\Documents\GitHub\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\ServerController.java
 C:\Users\admin\Documents\GitHub\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\service\AuctionManager.java
 C:\Users\admin\Documents\GitHub\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\utils\ClientContext.java

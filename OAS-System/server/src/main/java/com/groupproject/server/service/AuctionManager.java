@@ -16,6 +16,7 @@ import com.groupproject.server.core.ClientManager;
 import com.groupproject.server.dao.AuctionDAO;
 import com.groupproject.server.dao.BidDAO;
 import com.groupproject.server.dao.NotificationDAO;
+import com.groupproject.server.dao.UserDAO;
 import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.shared.model.transaction.Auction;
@@ -23,6 +24,7 @@ import com.groupproject.shared.network.AuctionEvent.AuctionCancelledEvent;
 import com.groupproject.shared.network.events.AuctionEndedEvent;
 import com.groupproject.shared.network.AuctionEvent.AuctionFinisedEvent;
 import com.groupproject.shared.network.events.AuctionListUpdateEvent;
+import com.groupproject.shared.network.events.BalanceUpdateEvent;
 import com.groupproject.shared.network.AuctionEvent.AuctionStartedEvent;
 import com.groupproject.shared.network.events.NewBidEvent;
 import com.groupproject.shared.network.requests.PlaceBidRequest;
@@ -166,15 +168,27 @@ public enum AuctionManager {
         Auction auction = activeAuctions.remove(auctionId);
         scheduledAuctionIds.remove(auctionId);
         if (auction != null) {
+            // ESCROW: Hoàn tiền nếu đã có người đặt giá (an toàn phòng trường hợp bất thường)
+            if (auction.getHighestBidderId() != null && auction.getCurrentBid() > 0) {
+                boolean refundOk = UserDAO.addBalance(auction.getHighestBidderId(), auction.getCurrentBid());
+                ServerLogger.info("[Escrow] Refunded $" + auction.getCurrentBid()
+                        + " to bidder " + auction.getHighestBidderId() + " (force-cancel WAITING)"
+                        + (refundOk ? " OK" : " FAILED!"));
+                if (refundOk) {
+                    double newBal = UserDAO.getBalance(auction.getHighestBidderId());
+                    ClientManager.INSTANCE.sendToUser(auction.getHighestBidderId(), new BalanceUpdateEvent(auction.getHighestBidderId(), newBal));
+                }
+            }
+
             boolean isUpdated = AuctionDAO.updateAuctionStatusOnly(auctionId, AuctionStatus.CANCELLED);
             if (isUpdated) {
                 auction.setStatus(AuctionStatus.CANCELLED);
                 ServerLogger.info("Auction " + auctionId + " forced to CANCELLED because it expired in WAITING state.");
-                
+
                 AuctionCancelledEvent event = new AuctionCancelledEvent(auctionId, "Phiên đấu giá bị hệ thống hủy do không được bắt đầu đúng hạn.");
                 ClientManager.INSTANCE.broadcastSystemEvent(event);
                 ClientManager.INSTANCE.broadcastEventToAuction(auctionId, event);
-                
+
                 ClientManager.INSTANCE.removeAuctionRoom(auctionId);
             }
         }
@@ -184,15 +198,27 @@ public enum AuctionManager {
         Auction auction = activeAuctions.remove(auctionId);
         scheduledAuctionIds.remove(auctionId);
         if (auction != null) {
+            // ESCROW: Hoàn tiền cho người đang giữ giá cao nhất trước khi hủy
+            if (auction.getHighestBidderId() != null && auction.getCurrentBid() > 0) {
+                boolean refundOk = UserDAO.addBalance(auction.getHighestBidderId(), auction.getCurrentBid());
+                ServerLogger.info("[Escrow] Refunded $" + auction.getCurrentBid()
+                        + " to bidder " + auction.getHighestBidderId() + " (manual cancel)"
+                        + (refundOk ? " OK" : " FAILED!"));
+                if (refundOk) {
+                    double newBal = UserDAO.getBalance(auction.getHighestBidderId());
+                    ClientManager.INSTANCE.sendToUser(auction.getHighestBidderId(), new BalanceUpdateEvent(auction.getHighestBidderId(), newBal));
+                }
+            }
+
             boolean isUpdated = AuctionDAO.updateAuctionStatusOnly(auctionId, AuctionStatus.CANCELLED);
             if (isUpdated) {
                 auction.setStatus(AuctionStatus.CANCELLED);
                 ServerLogger.info("Auction " + auctionId + " manually CANCELLED and removed from active RAM memory.");
-                
+
                 AuctionCancelledEvent cancelledEvent = new AuctionCancelledEvent(auctionId, "Phiên đấu giá đã bị hủy bởi người bán hoặc quản trị viên.");
                 ClientManager.INSTANCE.broadcastSystemEvent(cancelledEvent);
                 ClientManager.INSTANCE.broadcastEventToAuction(auctionId, cancelledEvent);
-                
+
                 ClientManager.INSTANCE.removeAuctionRoom(auctionId);
             }
         }
@@ -250,13 +276,23 @@ public enum AuctionManager {
                 return;
             }
 
-            boolean transferOk = BidDAO.executeDirectTransfer(winnerId, sellerId, finalPrice);
-            if (transferOk) {
-                ServerLogger.info("Transfer completed for auction " + auctionId);
-                endAuction(auctionId); 
+            // ESCROW: Tiền winner đã bị trừ lúc đặt giá, chỉ cần cộng cho seller
+            boolean payOk = UserDAO.addBalance(sellerId, finalPrice);
+            if (payOk) {
+                ServerLogger.info("[Escrow] Paid $" + finalPrice + " to seller " + sellerId + " for auction " + auctionId);
+                // Cập nhật số dư realtime cho seller
+                double sellerNewBal = UserDAO.getBalance(sellerId);
+                ClientManager.INSTANCE.sendToUser(sellerId, new BalanceUpdateEvent(sellerId, sellerNewBal));
+                endAuction(auctionId);
             } else {
-                ServerLogger.error("Critical: Transfer failed for auction " + auctionId + ". Buyer insufficient balance.");
-                cancelFinishedAuction(auctionId); 
+                // Không thể trả tiền cho seller (lỗi DB nghiêm trọng): hoàn tiền winner và hủy
+                ServerLogger.error("Critical: Failed to pay seller for auction " + auctionId + ". Refunding winner " + winnerId);
+                boolean refundWinnerOk = UserDAO.addBalance(winnerId, finalPrice);
+                if (refundWinnerOk) {
+                    double winnerNewBal = UserDAO.getBalance(winnerId);
+                    ClientManager.INSTANCE.sendToUser(winnerId, new BalanceUpdateEvent(winnerId, winnerNewBal));
+                }
+                cancelFinishedAuction(auctionId);
             }
         }
     }
@@ -303,10 +339,10 @@ public enum AuctionManager {
             boolean isCancelledInDb = AuctionDAO.updateAuctionStatusOnly(auctionId, AuctionStatus.CANCELLED);
             if (isCancelledInDb) {
                 auction.setStatus(AuctionStatus.CANCELLED);
-                activeAuctions.remove(auctionId); 
+                activeAuctions.remove(auctionId);
                 ServerLogger.info("Auction " + auctionId + " fully CANCELLED and cleared from RAM.");
 
-                AuctionCancelledEvent cancelledEvent = new AuctionCancelledEvent(auctionId, "Không có người đặt giá hoặc người mua không đủ số dư thanh toán.");
+                AuctionCancelledEvent cancelledEvent = new AuctionCancelledEvent(auctionId, "Không có người đặt giá hoặc không thể hoàn tất thanh toán.");
                 ClientManager.INSTANCE.broadcastEventToAuction(auctionId, cancelledEvent);
                 ClientManager.INSTANCE.broadcastSystemEvent(cancelledEvent);
 
@@ -339,24 +375,44 @@ public enum AuctionManager {
             return false;
         }
 
-        if (bidAmount <= auction.getCurrentBid()) { return false; }
+        // Lưu lại thông tin người đang giữ giá cũ trước khi ghi đè (dùng cho ESCROW refund)
+        Integer previousBidderId  = auction.getHighestBidderId();
+        double  previousBidAmount = auction.getCurrentBid();
 
-        boolean dbSuccess = BidDAO.insertBid(auctionId, bidderId, bidAmount);
+        // insertBid xử lý toàn bộ escrow (double-check, trừ tiền mới, hoàn tiền cũ) trong 1 transaction
+        boolean dbSuccess = BidDAO.insertBid(auctionId, bidderId, bidAmount, previousBidderId, previousBidAmount);
         if (dbSuccess) {
             auction.setCurrentBid(bidAmount);
             auction.setHighestBidderId(bidderId);
             ServerLogger.info("User " + bidderId + " successfully bid $" + bidAmount + " on Auction " + auctionId);
 
+            // Cập nhật số dư realtime cho người vừa đặt giá (tiền bị trừ)
+            double bidderNewBal = UserDAO.getBalance(bidderId);
+            ClientManager.INSTANCE.sendToUser(bidderId, new BalanceUpdateEvent(bidderId, bidderNewBal));
+
+            // Auto-subscribe người vừa trở thành highest bidder vào phòng
+            ClientManager.INSTANCE.subscribeUserToAuction(auctionId, bidderId);
+
+            // BƯỚC 1: Broadcast NewBidEvent cho toàn phòng TRƯỚC (kể cả người bị outbid vẫn còn trong phòng)
             NewBidEvent roomUpdate = new NewBidEvent(auctionId, bidAmount, bidderId);
             ClientManager.INSTANCE.broadcastEventToAuction(auctionId, roomUpdate);
-            broadcastAuctionListUpdate();
 
+            // BƯỚC 2: Sau khi người bị outbid đã nhận được thông báo, mới unsubscribe họ ra khỏi phòng
+            if (previousBidderId != null && previousBidderId != bidderId) {
+                ClientManager.INSTANCE.unsubscribeUserFromAuction(auctionId, previousBidderId);
+                // Cập nhật số dư cho người bị outbid (tiền được hoàn)
+                double prevBidderNewBal = UserDAO.getBalance(previousBidderId);
+                ClientManager.INSTANCE.sendToUser(previousBidderId, new BalanceUpdateEvent(previousBidderId, prevBidderNewBal));
+            }
+
+            broadcastAuctionListUpdate();
             return true;
         } else {
             ServerLogger.error("Failed to save bid to DB for Auction " + auctionId);
             return false;
         }
     }
+
 
     public synchronized boolean placeBid(PlaceBidRequest request, ClientHandler clientContext) {
         if (request == null || clientContext.getAuthenticatedUserId() == null) return false;

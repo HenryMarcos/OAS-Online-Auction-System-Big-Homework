@@ -80,9 +80,7 @@ public class ServerListener implements Runnable {
                 }
             }
         } catch (Exception e) {
-            // thông báo mất kêt nối với sever tại đây 
-            // tạo thêm một cái show Allert 
-            ClientLogger.error("Lost connection to the server.");
+            ClientLogger.error("Lost connection to the server. Exception: [" + e.getClass().getSimpleName() + "] " + e.getMessage());
         }
     }
 }

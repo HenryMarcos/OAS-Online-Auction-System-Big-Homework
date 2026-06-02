@@ -82,6 +82,31 @@ public enum ClientManager {
         }
     }
 
+    /**
+     * Subscribe một user (theo userId) vào phòng đấu giá.
+     * Dùng bởi AuctionManager khi user trở thành highest bidder.
+     */
+    public void subscribeUserToAuction(int auctionId, int userId) {
+        ObjectOutputStream out = authenticatedUsers.get(userId);
+        if (out != null) {
+            subscribeToAuction(auctionId, out);
+            ServerLogger.info("[Auto-Subscribe] User " + userId + " added to auction room " + auctionId + " (became highest bidder).");
+        }
+    }
+
+    /**
+     * Unsubscribe một user (theo userId) khỏi phòng đấu giá.
+     * Dùng bởi AuctionManager khi user bị outbid.
+     */
+    public void unsubscribeUserFromAuction(int auctionId, int userId) {
+        ObjectOutputStream out = authenticatedUsers.get(userId);
+        if (out != null) {
+            unsubscribeToAuction(auctionId, out);
+            ServerLogger.info("[Auto-Unsubscribe] User " + userId + " removed from auction room " + auctionId + " (outbid).");
+        }
+    }
+
+
     // --- 3. CÁC HÀM BROADCAST (3 LUỒNG) ---
 
     // LUỒNG 2: GỬI EVENT TỚI 1 PHÒNG CỤ THỂ (Dành cho việc đặt giá, đếm ngược)

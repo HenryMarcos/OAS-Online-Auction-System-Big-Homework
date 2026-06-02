@@ -10,6 +10,10 @@ import com.groupproject.shared.network.requests.JoinAuctionRequest;
 import com.groupproject.shared.network.requests.LogOutRequest;
 import com.groupproject.shared.network.requests.LoginRequest;
 import com.groupproject.shared.network.requests.PlaceBidRequest;
+import com.groupproject.shared.network.requests.TopUpRequest;
+import com.groupproject.shared.network.requests.WatchAuctionRequest;
+import com.groupproject.shared.network.requests.UnwatchAuctionRequest;
+import com.groupproject.shared.network.requests.GetAuctionRequest;
 import com.groupproject.shared.network.requests.Request;
 import com.groupproject.shared.network.requests.SignupRequest;
 import com.groupproject.shared.network.responses.Response;
@@ -26,6 +30,10 @@ public class RequestDispatcher {
         handlers.put(PlaceBidRequest.class, new PlaceBidHandler());
         handlers.put(JoinAuctionRequest.class, new JoinAuctionHandler());
         handlers.put(com.groupproject.shared.network.requests.ChangeAuctionStatusRequest.class, new ChangeAuctionStatusHandler());
+        handlers.put(TopUpRequest.class, new TopUpHandler());
+        handlers.put(WatchAuctionRequest.class, new WatchAuctionHandler());
+        handlers.put(UnwatchAuctionRequest.class, new UnwatchAuctionHandler());
+        handlers.put(GetAuctionRequest.class, new GetAuctionHandler());
     }
 
     public Response dispatch(Request request, ClientHandler clientContext) {

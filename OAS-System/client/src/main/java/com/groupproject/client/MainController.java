@@ -12,7 +12,9 @@ import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.client.utils.TimeUtil;
 import com.groupproject.shared.model.transaction.NotificationDTO;
+import com.groupproject.shared.model.user.User;
 import com.groupproject.shared.network.events.AuctionListUpdateEvent;
+import com.groupproject.shared.network.events.BalanceUpdateEvent;
 import com.groupproject.shared.network.requests.LogOutRequest;
 import com.groupproject.shared.network.responses.JoinAuctionResponse;
 import com.groupproject.shared.network.responses.LogOutResponse;
@@ -74,6 +76,18 @@ public class MainController extends Application implements Initializable {
         ClientMessageRouter.INSTANCE.onResponse(LogOutResponse.class, this::handleLogOutResponse);
         // 2. NEW: Listen for Global Auction List Updates
         ClientMessageRouter.INSTANCE.onEvent(AuctionListUpdateEvent.class, this::handleAuctionListUpdate);
+        // 3. NEW: Listen for personal Balance Updates (real-time wallet sync)
+        ClientMessageRouter.INSTANCE.onEvent(BalanceUpdateEvent.class, event -> {
+            Platform.runLater(() -> {
+                // Update local session balance
+                User currentUser = SessionManager.INSTANCE.getCurrentUser();
+                if (currentUser != null) {
+                    currentUser.setBalance(event.getNewBalance());
+                }
+                // Instantly refresh the wallet label in the top bar
+                updateWallet(event.getNewBalance());
+            });
+        });
 
         
         // Load notifications into the list
@@ -91,9 +105,11 @@ public class MainController extends Application implements Initializable {
             bellButton.setText("🔔 Inbox");
         }
         
-         // Thiết lập tên dựa vào username
+        // Thiết lập tên dựa vào username
         updateUI();
-         // lắng nghe gọi GetCategoriesResponse 
+        // Đăng ký instance này vào SessionManager để các controller khác gọi được updateWallet()
+        SessionManager.INSTANCE.setCurrentMainController(this);
+        // lắng nghe gọi GetCategoriesResponse 
         redDotIndicator.visibleProperty().bind(NotificationStore.getInstance().unreadCountProperty().greaterThan(0));
     }
 
@@ -139,6 +155,12 @@ public class MainController extends Application implements Initializable {
         loadViewIntoCenter("/com/groupproject/client/FXML/notification.fxml");
         // ĐĂNG KÝ NGHE ĐỂ TRẢ VỀ THÔNG BÁO 
     }
+    
+    @FXML 
+    private void switchToMyAuctions() {
+        loadViewIntoCenter("/com/groupproject/client/FXML/myauctions.fxml");
+    }
+
     @FXML 
     private void swichtoMyProducts() {
         loadViewIntoCenter("/com/groupproject/client/FXML/yourauctions.fxml");
@@ -160,7 +182,7 @@ public class MainController extends Application implements Initializable {
         });
     }
     public void updateWallet(double availableBalance) {
-        wallet.setText(String.format("Wallet : %,.0f USD", availableBalance));
+        Platform.runLater(() -> wallet.setText(String.format("Wallet : %,.0f USD", availableBalance)));
     }
     
     private void loadViewIntoCenter(String fxmlPath) {
@@ -239,12 +261,12 @@ public class MainController extends Application implements Initializable {
         // 1. ALWAYS update the session data, regardless of what screen the user is on!
         SessionManager.INSTANCE.setCurrentAuctionList(event.getActiveAuctions());
 
-        // 2. Check if the user is currently looking at the Home Screen
+        // 2. Check if the user is currently looking at a list Screen
         Platform.runLater(() -> {
-            if (currentSubController instanceof HomeController) {
-                // If they are on the home screen, force the grid to repaint live!
-                HomeController home = (HomeController) currentSubController;
-                home.loadAuctions();
+            if (currentSubController instanceof BaseAuctionViewController) {
+                // If they are on any auction list screen, force it to fetch new data!
+                BaseAuctionViewController listScreen = (BaseAuctionViewController) currentSubController;
+                listScreen.fetchInitialData();
             }
         });
     }

@@ -190,7 +190,7 @@ public class UserDAO {
                 // KIỂM TRA QUYỀN ADMIN
                 boolean isUserAdmin = isAdmin(id);
 
-                return new User(id, username, password, email, 10000, createdAt);
+                return new User(id, username, password, email, balance, createdAt);
             }
         } catch (Exception e) {
             ServerLogger.error("UserDAO:getUser: " + e.getMessage());
@@ -222,5 +222,18 @@ public class UserDAO {
             ServerLogger.error("Lỗi cập nhật số dư khi nạp tiền: " + e.getMessage());
             return false;
         }
+    }
+
+    public static double getBalance(int userId) {
+        String sql = "SELECT balance FROM users WHERE id = ?";
+        try (java.sql.Connection conn = DatabaseManager.INSTANCE.getConnection();
+             java.sql.PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, userId);
+            java.sql.ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) return rs.getDouble("balance");
+        } catch (java.sql.SQLException e) {
+            ServerLogger.error("UserDAO:getBalance: " + e.getMessage());
+        }
+        return -1; // sentinel: lỗi không lấy được số dư
     }
 }

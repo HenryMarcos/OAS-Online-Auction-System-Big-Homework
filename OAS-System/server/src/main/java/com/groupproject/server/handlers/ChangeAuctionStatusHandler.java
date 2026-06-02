@@ -32,6 +32,13 @@ public class ChangeAuctionStatusHandler implements RequestHandler {
 
         AuctionStatus currentStatus = currentAuction.getStatus();
 
+        // Chỉ seller hoặc admin mới được thao tác
+        Integer requestingUserId = clientContext.getAuthenticatedUserId();
+        boolean isAdmin = (requestingUserId != null && requestingUserId == 999999);
+        if (!isAdmin && (requestingUserId == null || requestingUserId != currentAuction.getSellerId())) {
+            return new ChangeAuctionStatusResponse(false, "Bạn không có quyền thao tác phiên đấu giá này.");
+        }
+
         if (newStatus == AuctionStatus.ACTIVED) {
             if (currentStatus != AuctionStatus.WAITING && currentStatus != AuctionStatus.SCHEDULED) {
                 return new ChangeAuctionStatusResponse(false, "Chỉ có thể bắt đầu phiên đang ở trạng thái WAITING hoặc SCHEDULED.");

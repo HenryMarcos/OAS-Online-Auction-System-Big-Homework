@@ -1,6 +1,8 @@
 package com.groupproject.client.utils;
 
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.groupproject.client.MainController;
 import com.groupproject.shared.model.categories.Category;
@@ -29,7 +31,9 @@ public enum SessionManager {
 
     private static MainController currentMainController;
 
-    private SessionManager() {}
+    // Tập hợp các auctionId mà client đang subscribe (để đồng bộ trạng thái nút khi Home reload)
+    private final Set<Integer> watchedAuctionIds = ConcurrentHashMap.newKeySet();
+
 
     public void setCurrentUser(User user) {
         currentUser = user;
@@ -81,5 +85,10 @@ public enum SessionManager {
     public AuctionDetail getCurrentAuctionDetail() {
         return currentAuctionDetail;
     }
-    
+
+    // --- WATCHED AUCTION IDs ---
+    public void addWatchedAuction(int auctionId) { watchedAuctionIds.add(auctionId); }
+    public void removeWatchedAuction(int auctionId) { watchedAuctionIds.remove(auctionId); }
+    public boolean isWatchingAuction(int auctionId) { return watchedAuctionIds.contains(auctionId); }
+    public void clearWatchedAuctions() { watchedAuctionIds.clear(); }
 }

@@ -82,19 +82,21 @@ public abstract class BaseAuctionViewController implements Initializable {
    }
 
    public void addEventHandles()  {
-      sortbutton.setOnMouseClicked(mouseEvent -> {
-         Stage stage = new Stage();
-         FXMLLoader loader = new FXMLLoader();
-         loader.setLocation(App.class.getResource("/com/groupproject/client/FXML/sortmenu.fxml"));
-         try {
-               AnchorPane root = loader.load();
-               stage.setScene(new Scene(root));
-               stage.initStyle(StageStyle.TRANSPARENT);
-               stage.show();
-         } catch (IOException e) {
-               e.printStackTrace();
-         }
-      });
+      if (sortbutton != null) {
+         sortbutton.setOnMouseClicked(mouseEvent -> {
+            Stage stage = new Stage();
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(App.class.getResource("/com/groupproject/client/FXML/sortmenu.fxml"));
+            try {
+                  AnchorPane root = loader.load();
+                  stage.setScene(new Scene(root));
+                  stage.initStyle(StageStyle.TRANSPARENT);
+                  stage.show();
+            } catch (IOException e) {
+                  e.printStackTrace();
+            }
+         });
+      }
    }
    public void setupTreeViewConfiguration() {
         // Đặt CellFactory để ép TreeView hiển thị getName() thay vì gọi toString() mặc định của Object
@@ -169,14 +171,7 @@ public abstract class BaseAuctionViewController implements Initializable {
     }
    public void setupReactiveUI() {
       uiList.addListener((ListChangeListener<Auction>) change -> {
-         while (change.next()) {
-            if (change.wasAdded()) {
-               for (Auction item : change.getAddedSubList()) {
-                  Node cardNode= createCardNode(item);
-                  Platform.runLater(() -> productgrid.getChildren().add(0,cardNode));
-               }
-            }
-         }
+         Platform.runLater(this::renderGrid);
       });
    }
    public Node createCardNode(Auction auction) {
@@ -222,21 +217,32 @@ public abstract class BaseAuctionViewController implements Initializable {
                ClientLogger.error("Không thể lấy danh sách phiên đấu giá từ Server");
          }
       });
+      
+      // 3. LẮNG NGHE PHẢN HỒI KHI THAY ĐỔI TRẠNG THÁI AUCTION (Bắt đầu ngay / Huỷ phiên)
+      ClientMessageRouter.INSTANCE.onResponse(com.groupproject.shared.network.responses.ChangeAuctionStatusResponse.class, response -> {
+          if (response.isSuccess()) {
+              // Khi thay đổi thành công, tự động tải lại dữ liệu của màn hình hiện tại để UI cập nhật ngay lập tức
+              Platform.runLater(this::fetchInitialData);
+          }
+      });
    }
+   protected int getMaxColumns() {
+      return 3;
+   }
+
    public void renderGrid() {
       productgrid.getChildren().clear();
-      int maxColumns=3;
+      int maxColumns = getMaxColumns();
       for (int i=0 ; i < uiList.size(); i++ ) {
          Auction auction = uiList.get(i);
          Node cardNode = createCardNode(auction);
          if (cardNode != null) {
             int column =  i % maxColumns;
-            int row = i /maxColumns;
+            int row = i / maxColumns;
             productgrid.add(cardNode,column,row);
             GridPane.setMargin(cardNode,new Insets(10));
          }
       }
-
    }
    public void highlightCategoryButton(Button clickedButton) {
       if (activeCategoryButton != null ) {

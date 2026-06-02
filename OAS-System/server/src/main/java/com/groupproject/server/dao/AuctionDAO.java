@@ -405,4 +405,42 @@ public class AuctionDAO {
     public static java.util.List<Integer> getExpiredActiveAuctions(java.time.LocalDateTime time) {
         return new java.util.ArrayList<>();
     }
+
+    /**
+     * Lấy tất cả phiên đấu giá của một seller (mọi trạng thái).
+     * Nếu categoryId != null thì lọc thêm theo category.
+     */
+    public static List<Auction> getAuctionsBySeller(int sellerId, Integer categoryId) {
+        List<Auction> auctionList = new ArrayList<>();
+        Map<Integer, Auction> auctionMap = new HashMap<>();
+        Map<Integer, Category> categoryMap = CategoryManager.INSTANCE.getCategories();
+
+        String sql = (categoryId != null)
+            ? "SELECT * FROM auctions WHERE seller_id = ? AND category_id = ? ORDER BY id DESC"
+            : "SELECT * FROM auctions WHERE seller_id = ? ORDER BY id DESC";
+
+        try (Connection conn = DatabaseManager.INSTANCE.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, sellerId);
+            if (categoryId != null) pstmt.setInt(2, categoryId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Auction auction = extractAuctionFromResultSet(rs, categoryMap);
+                    auctionList.add(auction);
+                    auctionMap.put(auction.getId(), auction);
+                }
+            }
+
+            if (!auctionList.isEmpty()) {
+                loadSubImagesForAuctions(auctionMap, conn);
+                loadSpecificationsForAuctions(auctionMap, conn);
+            }
+
+        } catch (SQLException e) {
+            ServerLogger.error("AuctionDAO:getAuctionsBySeller: " + e.getMessage());
+        }
+        return auctionList;
+    }
 }
