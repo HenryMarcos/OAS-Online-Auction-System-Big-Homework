@@ -14,12 +14,12 @@ public class UnwatchAuctionHandler implements RequestHandler {
         ServerLogger.info("Handling " + request.getClass().getSimpleName());
 
         if (!(request instanceof UnwatchAuctionRequest)) {
-            return new UnwatchAuctionResponse(false, "Invalid request type.");
+            return new UnwatchAuctionResponse(false, "Invalid request type.", -1);
         }
 
         Integer userId = clientContext.getAuthenticatedUserId();
         if (userId == null) {
-            return new UnwatchAuctionResponse(false, "Chưa đăng nhập.");
+            return new UnwatchAuctionResponse(false, "Chưa đăng nhập.", -1);
         }
 
         UnwatchAuctionRequest unwatchReq = (UnwatchAuctionRequest) request;
@@ -27,6 +27,6 @@ public class UnwatchAuctionHandler implements RequestHandler {
 
         ClientManager.INSTANCE.unsubscribeToAuction(auctionId, clientContext.getOut());
         ServerLogger.info("User " + userId + " unsubscribed from auction room " + auctionId + ".");
-        return new UnwatchAuctionResponse(true, "Hủy đăng ký theo dõi thành công.");
+        return new UnwatchAuctionResponse(true, "Hủy đăng ký theo dõi thành công.", auctionId);
     }
 }

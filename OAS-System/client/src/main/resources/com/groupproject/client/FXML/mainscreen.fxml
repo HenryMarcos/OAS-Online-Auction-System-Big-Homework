@@ -82,7 +82,7 @@
             </padding>
             <children>
                 <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#switchtoHome" prefHeight="45.0" prefWidth="190.0" styleClass="button-left" text="HOME" />
-                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Active Listings" />
+                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#switchtoActiveListings" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Active Listings" />
                 
                 <Region prefHeight="1.0" prefWidth="190.0" styleClass="region" />
                 
@@ -96,7 +96,7 @@
                             <children>
                                 <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#switchtoPersonalInfo" prefHeight="35.0" prefWidth="170.0" styleClass="button-left" text="Personal Info" />
                                 <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#switchToMyAuctions" prefHeight="35.0" prefWidth="170.0" styleClass="button-left" text="Your Listings" />
-                                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#swichtoMyProducts" prefHeight="35.0" prefWidth="170.0" styleClass="button-left" text="Your Products" />
+                                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#swichtoMyProducts" prefHeight="35.0" prefWidth="170.0" styleClass="button-left" text="Your Products" visible="false" managed="false" />
                                 <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#switchtoNotification" prefHeight="35.0" prefWidth="170.0" styleClass="button-left" text="Notification" />
                             </children>
                         </VBox>

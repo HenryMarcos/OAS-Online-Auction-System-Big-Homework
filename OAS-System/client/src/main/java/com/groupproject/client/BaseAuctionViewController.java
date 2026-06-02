@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import com.groupproject.client.network.ClientMessageRouter;
 import com.groupproject.client.utils.ClientLogger;
+import com.groupproject.client.utils.LifecycleController;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.network.responses.CreateAuctionResponse;
@@ -34,13 +35,18 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 // Màn hình sẽ được áp dụng trong HOME, ACTION LISTINGS VÀ MY AUCTIONS
-public abstract class BaseAuctionViewController implements Initializable {
+public abstract class BaseAuctionViewController implements Initializable, LifecycleController {
    @FXML protected ScrollPane scrollPane;
    @FXML protected  GridPane productgrid;
    @FXML protected  Button sortbutton;
    @FXML protected Button activeCategoryButton;
    @FXML protected  TreeView<Category> categoryTreeView;
    protected ObservableList<Auction> uiList = FXCollections.observableArrayList();
+   protected java.util.List<LifecycleController> childControllers = new java.util.ArrayList<>();
+
+   private final java.util.function.Consumer<CreateAuctionResponse> createAuctionListener = this::handleCreateResponse;
+   private final java.util.function.Consumer<GetAuctionResponse> getAuctionListener = this::handleGetResponse;
+   private final java.util.function.Consumer<com.groupproject.shared.network.responses.ChangeAuctionStatusResponse> changeStatusListener = this::handleChangeStatusResponse;
    // man hinh moi khi an vao nut sortby
    @Override
    public void initialize(URL location, ResourceBundle resources) {
@@ -174,12 +180,19 @@ public abstract class BaseAuctionViewController implements Initializable {
          Platform.runLater(this::renderGrid);
       });
    }
+   public void registerChildController(LifecycleController controller) {
+      if (controller != null) {
+         childControllers.add(controller);
+      }
+   }
+
    public Node createCardNode(Auction auction) {
       try {
          FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/groupproject/client/FXML/card.fxml"));
          Node node = loader.load();
          CardController cardController = loader.getController();
          cardController.populateUI(auction);
+         registerChildController(cardController);
          return node;
       } catch (IOException e) {
          e.printStackTrace();
@@ -187,50 +200,60 @@ public abstract class BaseAuctionViewController implements Initializable {
       }  
    }
    public void setupGlobalEventListeners() {
-      // 1. LẮNG NGHE PHẢN HỒI KHI CÓ MỘT PHIÊN ĐẤU GIÁ ĐƯỢC TẠO RA
-      ClientMessageRouter.INSTANCE.onResponse(CreateAuctionResponse.class, response -> {
-            if (response.isSuccess()) {
-               Auction newAuction= response.getAuction();
-               if (shouldInclude(newAuction)) {
-                  Platform.runLater(() ->uiList.add(0,newAuction));
-               }
-            }
-      });
-      // 2. LẮNG NGHE PHẢN HỒI LẤY DANH SÁCH TỪ SERVER (Chỗ bạn đang tìm)
-      ClientMessageRouter.INSTANCE.onResponse(GetAuctionResponse.class, response -> {
-         if (response.isSuccess()) {
-               // Lấy danh sách từ Server về
-               List<Auction> serverAuctions = response.getAuctions();
+      ClientMessageRouter.INSTANCE.onResponse(CreateAuctionResponse.class, createAuctionListener);
+      ClientMessageRouter.INSTANCE.onResponse(GetAuctionResponse.class, getAuctionListener);
+      ClientMessageRouter.INSTANCE.onResponse(com.groupproject.shared.network.responses.ChangeAuctionStatusResponse.class, changeStatusListener);
+   }
 
-               // Lọc lại một lần nữa bằng hàm abstract của từng màn hình
-               List<Auction> filteredAuctions = serverAuctions.stream()
-                     .filter(this::shouldInclude) 
-                     .toList();
-
-               // Đưa dữ liệu vào uilist trên luồng giao diện (JavaFX Application Thread)
-               Platform.runLater(() -> {
-                  uiList.setAll(filteredAuctions); 
-                  // LỆNH THẦN THÁNH: setAll() sẽ xóa uilist cũ, nạp list mới vào.
-                  // Ngay lập tức, uilist phát ra tín hiệu -> kích hoạt hàm setupReactiveUI() của bạn tự vẽ!
-               });
-         } else {
-               ClientLogger.error("Không thể lấy danh sách phiên đấu giá từ Server");
+   private void handleCreateResponse(CreateAuctionResponse response) {
+      if (response.isSuccess()) {
+         Auction newAuction = response.getAuction();
+         if (shouldInclude(newAuction)) {
+            Platform.runLater(() -> uiList.add(0, newAuction));
          }
-      });
-      
-      // 3. LẮNG NGHE PHẢN HỒI KHI THAY ĐỔI TRẠNG THÁI AUCTION (Bắt đầu ngay / Huỷ phiên)
-      ClientMessageRouter.INSTANCE.onResponse(com.groupproject.shared.network.responses.ChangeAuctionStatusResponse.class, response -> {
-          if (response.isSuccess()) {
-              // Khi thay đổi thành công, tự động tải lại dữ liệu của màn hình hiện tại để UI cập nhật ngay lập tức
-              Platform.runLater(this::fetchInitialData);
-          }
-      });
+      }
+   }
+
+   private void handleGetResponse(GetAuctionResponse response) {
+      if (response.isSuccess()) {
+         List<Auction> serverAuctions = response.getAuctions();
+         List<Auction> filteredAuctions = serverAuctions.stream()
+               .filter(this::shouldInclude) 
+               .toList();
+         Platform.runLater(() -> {
+            uiList.setAll(filteredAuctions); 
+         });
+      } else {
+         ClientLogger.error("Không thể lấy danh sách phiên đấu giá từ Server");
+      }
+   }
+
+   private void handleChangeStatusResponse(com.groupproject.shared.network.responses.ChangeAuctionStatusResponse response) {
+      if (response.isSuccess()) {
+         Platform.runLater(this::fetchInitialData);
+      }
+   }
+
+   @Override
+   public void cleanup() {
+      ClientMessageRouter.INSTANCE.offResponse(CreateAuctionResponse.class, createAuctionListener);
+      ClientMessageRouter.INSTANCE.offResponse(GetAuctionResponse.class, getAuctionListener);
+      ClientMessageRouter.INSTANCE.offResponse(com.groupproject.shared.network.responses.ChangeAuctionStatusResponse.class, changeStatusListener);
+      for (LifecycleController child : childControllers) {
+         child.cleanup();
+      }
+      childControllers.clear();
    }
    protected int getMaxColumns() {
       return 3;
    }
 
    public void renderGrid() {
+      for (LifecycleController child : childControllers) {
+         child.cleanup();
+      }
+      childControllers.clear();
+
       productgrid.getChildren().clear();
       int maxColumns = getMaxColumns();
       for (int i=0 ; i < uiList.size(); i++ ) {

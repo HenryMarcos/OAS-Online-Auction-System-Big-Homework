@@ -16,12 +16,12 @@ public class WatchAuctionHandler implements RequestHandler {
         ServerLogger.info("Handling " + request.getClass().getSimpleName());
 
         if (!(request instanceof WatchAuctionRequest)) {
-            return new WatchAuctionResponse(false, "Invalid request type.");
+            return new WatchAuctionResponse(false, "Invalid request type.", -1);
         }
 
         Integer userId = clientContext.getAuthenticatedUserId();
         if (userId == null) {
-            return new WatchAuctionResponse(false, "Chưa đăng nhập.");
+            return new WatchAuctionResponse(false, "Chưa đăng nhập.", -1);
         }
 
         WatchAuctionRequest watchReq = (WatchAuctionRequest) request;
@@ -29,11 +29,11 @@ public class WatchAuctionHandler implements RequestHandler {
 
         Auction auction = AuctionManager.INSTANCE.getAuction(auctionId);
         if (auction == null) {
-            return new WatchAuctionResponse(false, "Phiên đấu giá không tồn tại hoặc đã kết thúc.");
+            return new WatchAuctionResponse(false, "Phiên đấu giá không tồn tại hoặc đã kết thúc.", auctionId);
         }
 
         ClientManager.INSTANCE.subscribeToAuction(auctionId, clientContext.getOut());
         ServerLogger.info("User " + userId + " subscribed to auction room " + auctionId + " via Watch button.");
-        return new WatchAuctionResponse(true, "Đăng ký theo dõi thành công.");
+        return new WatchAuctionResponse(true, "Đăng ký theo dõi thành công.", auctionId);
     }
 }

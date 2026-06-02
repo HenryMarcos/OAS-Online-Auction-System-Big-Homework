@@ -42,6 +42,7 @@ public class HomeController extends BaseAuctionViewController {
            Node node = loader.load();
            TestCardController controller = loader.getController();
            controller.setAuction(auction);
+           registerChildController(controller);
            return node;
        } catch (IOException e) {
            e.printStackTrace();

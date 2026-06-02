@@ -4,6 +4,7 @@ import com.groupproject.client.network.ClientMessageRouter;
 import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.AlertUtils;
 import com.groupproject.client.utils.CountDownHelper;
+import com.groupproject.client.utils.LifecycleController;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.shared.model.transaction.Auction;
@@ -17,9 +18,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 
-public class MyAuctionCardController {
+public class MyAuctionCardController implements LifecycleController {
 
     private Auction auction;
+    private final java.util.function.Consumer<ChangeAuctionStatusResponse> statusChangeListener = this::handleStatusChangeResponse;
 
     @FXML private ImageView image;
     @FXML private Label productname;
@@ -34,7 +36,7 @@ public class MyAuctionCardController {
         updateUI(auction);
 
         // Lắng nghe phản hồi ChangeAuctionStatus
-        ClientMessageRouter.INSTANCE.onResponse(ChangeAuctionStatusResponse.class, this::handleStatusChangeResponse);
+        ClientMessageRouter.INSTANCE.onResponse(ChangeAuctionStatusResponse.class, statusChangeListener);
     }
 
     private void updateUI(Auction a) {
@@ -125,5 +127,10 @@ public class MyAuctionCardController {
             case CANCELLED -> "❌ Đã hủy";
             case FINISHED -> "✅ Hoàn thành";
         };
+    }
+
+    @Override
+    public void cleanup() {
+        ClientMessageRouter.INSTANCE.offResponse(ChangeAuctionStatusResponse.class, statusChangeListener);
     }
 }

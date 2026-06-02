@@ -6,6 +6,7 @@ import com.groupproject.client.network.ClientMessageRouter;
 import com.groupproject.client.network.RequestSender;
 import com.groupproject.client.utils.AlertUtils;
 import com.groupproject.client.utils.CountDownHelper;
+import com.groupproject.client.utils.LifecycleController;
 import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.model.enums.AuctionStatus;
@@ -30,9 +31,12 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 
-public class CardController implements AuctionListener { 
+public class CardController implements AuctionListener, LifecycleController { 
     private Auction auction;
     private Timeline timeline;
+
+    private final java.util.function.Consumer<GetAuctionDetailResponse> getDetailListener = this::handleGetDetailAuction;
+    private final java.util.function.Consumer<JoinAuctionResponse> joinAuctionListener = this::handleJoinAuctionResponse;
 
     @FXML private Label productname;
     @FXML private Label currentprice;
@@ -47,8 +51,8 @@ public class CardController implements AuctionListener {
         populateUI(auction);
 
         // ĐĂNG KÝ VIỆC LẮNG NGHE TRẢ VỀ KẾT QUẢ
-        ClientMessageRouter.INSTANCE.onResponse(GetAuctionDetailResponse.class, this::handleGetDetailAuction);
-        ClientMessageRouter.INSTANCE.onResponse(JoinAuctionResponse.class,this::handleJoinAuctionResponse);
+        ClientMessageRouter.INSTANCE.onResponse(GetAuctionDetailResponse.class, getDetailListener);
+        ClientMessageRouter.INSTANCE.onResponse(JoinAuctionResponse.class, joinAuctionListener);
     }
     @FXML 
     private void handleBid(ActionEvent event) throws IOException {
@@ -147,6 +151,16 @@ public class CardController implements AuctionListener {
         }
         else {
             // Thong bao cho khac hang la ho da dang ky that bai 
+        }
+    }
+
+    @Override
+    public void cleanup() {
+        ClientMessageRouter.INSTANCE.offResponse(GetAuctionDetailResponse.class, getDetailListener);
+        ClientMessageRouter.INSTANCE.offResponse(JoinAuctionResponse.class, joinAuctionListener);
+        if (timeline != null) timeline.stop();
+        if (auction != null) {
+            AuctionEventBus.getInstance().unsubscribe(auction.getId(), this);
         }
     }
 }

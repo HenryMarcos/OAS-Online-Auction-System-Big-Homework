@@ -31,6 +31,10 @@ public class TestCardController implements LifecycleController {
     private Auction auction;
     private Timeline timeline;
 
+    private final java.util.function.Consumer<NewBidEvent> newBidEventListener = this::handleNewBidEvent;
+    private final java.util.function.Consumer<WatchAuctionResponse> watchResponseListener = this::handleWatchResponse;
+    private final java.util.function.Consumer<UnwatchAuctionResponse> unwatchResponseListener = this::handleUnwatchResponse;
+
     // Màu sắc nút
     private static final String STYLE_WATCHING =
             "-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;";
@@ -67,16 +71,13 @@ public class TestCardController implements LifecycleController {
         applyWatchingState(alreadyWatching);
 
         // Đăng ký lắng nghe NewBidEvent để cập nhật giá realtime trên card
-        ClientMessageRouter.INSTANCE.onEvent(NewBidEvent.class, this::handleNewBidEvent);
+        ClientMessageRouter.INSTANCE.onEvent(NewBidEvent.class, newBidEventListener);
 
         // Đăng ký lắng nghe phản hồi từ server cho Watch/Unwatch
-        ClientMessageRouter.INSTANCE.onResponse(WatchAuctionResponse.class, this::handleWatchResponse);
-        ClientMessageRouter.INSTANCE.onResponse(UnwatchAuctionResponse.class, this::handleUnwatchResponse);
+        ClientMessageRouter.INSTANCE.onResponse(WatchAuctionResponse.class, watchResponseListener);
+        ClientMessageRouter.INSTANCE.onResponse(UnwatchAuctionResponse.class, unwatchResponseListener);
 
-        // Nếu đang watching, đăng ký vào AuctionEventBus để nhận event
-        if (alreadyWatching) {
-            AuctionEventBus.getInstance().subscribe(auction.getId(), null);
-        }
+
     }
 
     // --- Nút Bid Now → vào màn hình đấu giá ---
@@ -105,6 +106,8 @@ public class TestCardController implements LifecycleController {
 
     // --- Xử lý phản hồi từ server ---
     private void handleWatchResponse(WatchAuctionResponse response) {
+        if (auction == null || response.getAuctionId() != auction.getId()) return;
+
         Platform.runLater(() -> {
             watchButton.setDisable(false);
             if (response.isSuccess()) {
@@ -118,6 +121,8 @@ public class TestCardController implements LifecycleController {
     }
 
     private void handleUnwatchResponse(UnwatchAuctionResponse response) {
+        if (auction == null || response.getAuctionId() != auction.getId()) return;
+
         Platform.runLater(() -> {
             watchButton.setDisable(false);
             if (response.isSuccess()) {
@@ -185,5 +190,8 @@ public class TestCardController implements LifecycleController {
     @Override
     public void cleanup() {
         if (timeline != null) timeline.stop();
+        ClientMessageRouter.INSTANCE.offEvent(NewBidEvent.class, newBidEventListener);
+        ClientMessageRouter.INSTANCE.offResponse(WatchAuctionResponse.class, watchResponseListener);
+        ClientMessageRouter.INSTANCE.offResponse(UnwatchAuctionResponse.class, unwatchResponseListener);
     }
 }

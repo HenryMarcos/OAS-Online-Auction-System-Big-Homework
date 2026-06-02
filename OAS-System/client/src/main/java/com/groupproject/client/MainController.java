@@ -67,8 +67,6 @@ public class MainController extends Application implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        loadViewIntoCenter("/com/groupproject/client/FXML/homecontent.fxml");
-        // yêu cầu nhả ra các categories đã có sẵn trong máy.
         loadView("homecontent.fxml");
         // lắng nghe gọi GetCategoriesResponse 
         // 1. Listen for Join Responses
@@ -175,10 +173,12 @@ public class MainController extends Application implements Initializable {
     }
     private void updateUI() {
         Platform.runLater(() -> {
-            String name= SessionManager.INSTANCE.getCurrentUser().getUsername();
-            username.setText(name);
-            updateWallet((SessionManager.INSTANCE.getCurrentUser() != null)? SessionManager.INSTANCE.getCurrentUser().getBalance(): 0.0f);
-    
+            User user = SessionManager.INSTANCE.getCurrentUser();
+            if (user != null) {
+                String name = user.getUsername();
+                username.setText(name);
+                updateWallet(user.getBalance());
+            }
         });
     }
     public void updateWallet(double availableBalance) {
@@ -187,13 +187,13 @@ public class MainController extends Application implements Initializable {
     
     private void loadViewIntoCenter(String fxmlPath) {
         try {
-            // 1. Tải giao diện của màn hình con
+            if (currentSubController instanceof LifecycleController) {
+                ((LifecycleController) currentSubController).cleanup();
+            }
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Node view = loader.load();
-            
-            // 2. Đặt giao diện vừa tải vào phần CENTER của BorderPane
+            currentSubController = loader.getController();
             mainBorderPane.setCenter(view);
-
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("Lỗi: Không thể tải giao diện " + fxmlPath);
@@ -217,7 +217,7 @@ public class MainController extends Application implements Initializable {
     } 
     @FXML
     private void switchtoAddItem() throws IOException {
-        loadView("additem.fxml");
+        loadView("createAuctionTest.fxml");
     }
 
     @FXML

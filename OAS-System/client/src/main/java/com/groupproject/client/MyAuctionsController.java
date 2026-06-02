@@ -58,6 +58,7 @@ public class MyAuctionsController extends BaseAuctionViewController {
             Node node = loader.load();
             MyAuctionCardController ctrl = loader.getController();
             ctrl.setAuction(auction);
+            registerChildController(ctrl);
             return node;
         } catch (IOException e) {
             e.printStackTrace();
