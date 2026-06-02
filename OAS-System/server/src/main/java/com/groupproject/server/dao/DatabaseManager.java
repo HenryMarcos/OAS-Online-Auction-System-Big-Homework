@@ -53,7 +53,7 @@ public enum DatabaseManager {
             stmt.execute(sql);
 
             // Tạo bảng chứa các thông báo
-            String notificationsSql = "CREATE TABLE notifications (" + //
+            String notificationsSql = "CREATE TABLE IF NOT EXISTS notifications (" + //
                                       "    id INTEGER PRIMARY KEY AUTOINCREMENT," + //
                                       "    user_id INTEGER NOT NULL," + //
                                       "    message TEXT NOT NULL," + //

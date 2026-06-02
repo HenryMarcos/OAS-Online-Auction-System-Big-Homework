@@ -5,7 +5,6 @@ import java.util.List;
 import com.groupproject.client.MainController;
 import com.groupproject.shared.model.categories.Category;
 import com.groupproject.shared.model.transaction.Auction;
-import com.groupproject.shared.model.transaction.AuctionDetail;
 import com.groupproject.shared.model.transaction.BidDTO;
 import com.groupproject.shared.model.transaction.NotificationDTO;
 import com.groupproject.shared.model.user.User;
@@ -13,19 +12,17 @@ import com.groupproject.shared.model.user.User;
 public enum SessionManager {
     INSTANCE;
 
-    private static User currentUser = null;
-    private static List<Category> currentCategories;
-    private static List<Auction> currentAuctionList;
+    private static User currentUser = null; // Người dùng hiện tại
+    private static List<Category> currentCategories; // Các danh mục hiện tại lấy từ server
+    private static List<Auction> currentAuctionList; // Danh sách các phiên đấu giá đang hoạt động hiện tại
 
-    private static List<Auction> myProductList;
-    private static List<Auction> joinedAuctions;
+    private static List<Auction> myProductList; // Danh sách các sản phẩm mà người dùng đã/đang bán
+    private static List<Auction> joinedAuctions; // Danh sách các phiên đấu giá mà người dùng đã tham gia
 
-    private Auction currentViewingAuction;
-    private List<BidDTO> currentAuctionBids;
+    private Auction currentViewingAuction; // Phiên đấu giá mà người dùng đang tham gia
+    private List<BidDTO> currentAuctionBids; // Danh sách các bid của phiên đấu giá mà người dùng đang tham gia
 
-    private List<NotificationDTO> notificationList;
-
-    private static AuctionDetail currentAuctionDetail;
+    private List<NotificationDTO> notificationList; // Danh sách các thông báo từ server gửi cho user
 
     private static MainController currentMainController;
 
@@ -42,7 +39,6 @@ public enum SessionManager {
 
     public void logout() {
         currentUser = null;
-        currentAuctionDetail = null;
         System.out.println("Session cleared: User logged out.");
     }
 
@@ -65,8 +61,18 @@ public enum SessionManager {
     public void setCurrentViewingAuction(Auction auction) { this.currentViewingAuction = auction; }
     public Auction getCurrentViewingAuction() { return currentViewingAuction; }
 
-    public List<BidDTO> getCurrentAuctionBids() { return currentAuctionBids; }
     public void setCurrentAuctionBids(List<BidDTO> bids) { this.currentAuctionBids = bids; }
+    public List<BidDTO> getCurrentAuctionBids() { return currentAuctionBids; }
+
+    public void setMyProductList(List<Auction> myProductList) { 
+        this.myProductList = myProductList;
+        if (myProductList != null) {
+            ClientLogger.info("My Product loaded: " + myProductList.size());
+        } else {
+            ClientLogger.warning("My Product loaded: 0 (List was null)");
+        }
+    }
+    public List<Auction> getMyProductList() { return myProductList; }    
 
     public List<NotificationDTO> getNotificationList() { return notificationList; }
     public void setNotificationList(List<NotificationDTO> notificationList) { this.notificationList = notificationList; }
@@ -74,12 +80,5 @@ public enum SessionManager {
     public MainController getCurrentMainController() { return currentMainController; }
     public void setCurrentMainController(MainController mainController) { this.currentMainController = mainController; }
 
-    // SETTER AND GETTER
-    public void setCurrentAuctionDetail(AuctionDetail currentAuctionDetail) {
-        this.currentAuctionDetail= currentAuctionDetail;
-    }
-    public AuctionDetail getCurrentAuctionDetail() {
-        return currentAuctionDetail;
-    }
     
 }

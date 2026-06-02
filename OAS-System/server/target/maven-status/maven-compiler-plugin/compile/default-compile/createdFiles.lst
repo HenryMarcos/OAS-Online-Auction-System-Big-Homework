@@ -9,6 +9,7 @@ module-info.class
 com\groupproject\server\handlers\LoginHandler.class
 com\groupproject\server\utils\Config.class
 com\groupproject\server\dao\BidDAO.class
+com\groupproject\server\handlers\LeaveAuctionRoomHandler.class
 com\groupproject\server\dao\CategoryDAO.class
 com\groupproject\server\handlers\RequestHandler.class
 com\groupproject\server\dao\NotificationDAO.class

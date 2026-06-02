@@ -236,7 +236,7 @@ public class AuctionDAO {
 
     // Lấy các phiên đấu giá theo id người bán
     // ---------------------------------------
-    public static List<Auction> getAuctionsBySelerId(int sellerId) {
+    public static List<Auction> getAuctionsBySellerId(int sellerId) {
         List<Auction> auctionList = new ArrayList<>();
         Map<Integer, Auction> auctionMap = new HashMap<>(); 
         Map<Integer, Category> categoryMap = CategoryManager.INSTANCE.getCategories();

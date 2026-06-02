@@ -114,6 +114,7 @@ public class LoginController implements LifecycleController {
             ClientLogger.info("Got " + response.getAuctionList().size() + " active auctions from server");
         }
         SessionManager.INSTANCE.setCurrentAuctionList(response.getAuctionList());
+        SessionManager.INSTANCE.setMyProductList(response.getUserAuctionList());
 
         // Trước khi chuyển màn hình thì xóa hết listener để tránh tràn bộ nhớ
         ClientMessageRouter.INSTANCE.clearAllListeners();

@@ -26,32 +26,10 @@ public class RequestDispatcher {
         handlers.put(PlaceBidRequest.class, new PlaceBidHandler());
         handlers.put(JoinAuctionRequest.class, new JoinAuctionHandler());
         
-        // THÊM 5 REQUEST MỚI: GetMyAuctionsRequest, ChangeAuctionStatusRequest, JoinAuctionRoomRequest, LeaveAuctionRoomRequest, TopUpRequest
-        handlers.put(GetMyAuctionsRequest.class, new GetMyAuctionHandler());
-        handlers.put(ChangeAuctionStatusRequest.class, new ChangeAuctionStatusHandler());
-        handlers.put(JoinAuctionRoomRequest.class, new JoinAuctionRoomHandler());
-        handlers.put(LeaveAuctionRoomRequest.class, new LeaveAuctionRoomHandler());
-        handlers.put(TopUpRequest.class, new TopUpHandler());
     }
 
     public Response dispatch(Request request, ClientHandler clientContext) {
         ServerLogger.info("Getting suitable Handler for " + request.getClass().getSimpleName());
-
-        // =======================================================================
-        // 1. TRẠM GÁC BẢO MẬT (MIDDLEWARE)
-        // =======================================================================
-        if (!isPublicRequest(request)) {
-            // Nếu không phải là Request công khai, BẮT BUỘC phải kiểm tra đăng nhập
-            if (ClientContext.currentUser.get() == null) {
-                ServerLogger.warning("SECURITY ALERT: Chặn đứng request " + 
-                                     request.getClass().getSimpleName() + 
-                                     " từ một client chưa đăng nhập!");
-                
-                // TRẢ VỀ LỖI CÓ CẤU TRÚC THAY VÌ NULL
-                return new ErrorNotLoginResponse("Phiên làm việc hết hạn hoặc bạn chưa đăng nhập.");
-            }
-        }
-        // =======================================================================
 
         RequestHandler handler = handlers.get(request.getClass());
 

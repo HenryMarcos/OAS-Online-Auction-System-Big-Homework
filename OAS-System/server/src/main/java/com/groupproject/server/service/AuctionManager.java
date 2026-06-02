@@ -19,9 +19,11 @@ import com.groupproject.server.dao.NotificationDAO;
 import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.shared.model.transaction.Auction;
+import com.groupproject.shared.network.events.AuctionCancelledEvent;
 import com.groupproject.shared.network.events.AuctionEndedEvent;
 import com.groupproject.shared.network.events.AuctionFinishedEvent;
 import com.groupproject.shared.network.events.AuctionListUpdateEvent;
+import com.groupproject.shared.network.events.AuctionStartedEvent;
 import com.groupproject.shared.network.events.NewBidEvent;
 import com.groupproject.shared.network.events.SystemNotificationEvent;
 import com.groupproject.shared.network.requests.PlaceBidRequest;
@@ -79,6 +81,10 @@ public enum AuctionManager {
         ServerLogger.info("Registering newly created auction ID: " + auction.getId());
         registerAuctionInternal(auction);
         broadcastAuctionListUpdate(); // 📢 Push real-time event
+    }
+
+    public List<Auction> getUserAuctions(int userId) {
+        return AuctionDAO.getAuctionsBySellerId(userId);
     }
 
     // Kết nối với hệ thống lập lịch mà không bị trùng lặp task
@@ -285,7 +291,7 @@ public enum AuctionManager {
     public void registerAuction(Auction auction) {
         activeAuctions.put(auction.getId(), auction);
 
-        if (auction.getStatus() == AuctionStatus.ACTIVED) {
+        if (auction.getStatus() == AuctionStatus.ACTIVATED) {
             // Đếm ngược đến endTime chuyển từ ACTIVED -> FINISHED
             long delayEnd = Duration.between(LocalDateTime.now(), auction.getEndTime()).toSeconds();
             scheduler.schedule(() -> finishAuction(auction.getId()), Math.max(0, delayEnd), TimeUnit.SECONDS);
@@ -321,13 +327,13 @@ public enum AuctionManager {
         // =====================================================================
         // LUỒNG 1: Bắn cho toàn hệ thống (Lobby) biết để hiển thị thẻ đấu giá đang hoạt động
         AuctionStartedEvent event = new AuctionStartedEvent(updatedAuction.getId());
-        ClientManager.getInstance().broadcastSystemEvent(event);
+        ClientManager.INSTANCE.broadcastSystemEvent(event);
 
         // LUỒNG 3: Báo cho Admin lưu log hiển thị hệ thống
         SystemNotificationEvent adminLog = new SystemNotificationEvent(
             "Người bán đã kích hoạt thủ công phiên đấu giá ID: " + updatedAuction.getId(), "Hệ Thống"
         );
-        ClientManager.getInstance().broadcastToAdmins(adminLog);
+        ClientManager.INSTANCE.broadcastToAdmins(adminLog);
         // =====================================================================
     }
 
@@ -352,19 +358,19 @@ public enum AuctionManager {
                 AuctionCancelledEvent event = new AuctionCancelledEvent(auctionId, "Phiên đấu giá bị hệ thống hủy do không được bắt đầu đúng hạn.");
                 
                 // LUỒNG 1: Báo cho toàn hệ thống gỡ thẻ này khỏi trang chủ UI
-                ClientManager.getInstance().broadcastSystemEvent(event);
+                ClientManager.INSTANCE.broadcastSystemEvent(event);
 
                 // LUỒNG 2: Phát thông báo cho những người đang ở trong phòng (nếu có)
-                ClientManager.getInstance().broadcastEventToAuction(auctionId, event);
+                ClientManager.INSTANCE.broadcastEventToAuction(auctionId, event);
                 
                 // LUỒNG 3: Ghi log cho Admin
                 SystemNotificationEvent adminLog = new SystemNotificationEvent(
                     "Hệ thống ép hủy phiên WAITING quá hạn (ID: " + auctionId + ")", "Hệ Thống"
                 );
-                ClientManager.getInstance().broadcastToAdmins(adminLog);
+                ClientManager.INSTANCE.broadcastToAdmins(adminLog);
 
                 // 4. Giải phóng phòng đấu giá
-                ClientManager.getInstance().removeAuctionRoom(auctionId);
+                ClientManager.INSTANCE.removeAuctionRoom(auctionId);
                 // =====================================================================
             }
         }
@@ -389,19 +395,19 @@ public enum AuctionManager {
                 AuctionCancelledEvent cancelledEvent = new AuctionCancelledEvent(auctionId, "Phiên đấu giá đã bị hủy bởi người bán hoặc quản trị viên.");
                 
                 // LUỒNG 1: Báo toàn hệ thống dọn dẹp thẻ hiển thị trên trang chủ
-                ClientManager.getInstance().broadcastSystemEvent(cancelledEvent);
+                ClientManager.INSTANCE.broadcastSystemEvent(cancelledEvent);
 
                 // LUỒNG 2: Phát thông báo trực tiếp cho những người đang trong phòng
-                ClientManager.getInstance().broadcastEventToAuction(auctionId, cancelledEvent);
+                ClientManager.INSTANCE.broadcastEventToAuction(auctionId, cancelledEvent);
                 
                 // LUỒNG 3: Gửi Log hệ thống báo cho Admin
                 SystemNotificationEvent adminLog = new SystemNotificationEvent(
                     "Phiên đấu giá ID " + auctionId + " bị hủy thủ công bởi người bán hoặc Admin.", "Hệ Thống"
                 );
-                ClientManager.getInstance().broadcastToAdmins(adminLog);
+                ClientManager.INSTANCE.broadcastToAdmins(adminLog);
 
                 // Giải phóng phòng đấu giá khỏi RAM
-                ClientManager.getInstance().removeAuctionRoom(auctionId);
+                ClientManager.INSTANCE.removeAuctionRoom(auctionId);
                 // =====================================================================
             }
         }
@@ -420,10 +426,10 @@ public enum AuctionManager {
         if (auction != null && auction.getStatus() == AuctionStatus.SCHEDULED) {
             LocalDateTime now = LocalDateTime.now();
             
-            boolean isUpdatedInDb = AuctionDAO.updateAuctionStatus(auctionId, AuctionStatus.ACTIVED, now);
+            boolean isUpdatedInDb = AuctionDAO.updateAuctionStatus(auctionId, AuctionStatus.ACTIVATED, now);
             
             if (isUpdatedInDb) {
-                auction.setStatus(AuctionStatus.ACTIVED);
+                auction.setStatus(AuctionStatus.ACTIVATED);
                 auction.setStartTime(now); 
                 
                 long delayEnd = Duration.between(now, auction.getEndTime()).toSeconds();
@@ -439,16 +445,16 @@ public enum AuctionManager {
                 AuctionStartedEvent event = new AuctionStartedEvent(auctionId);
                 
                 // LUỒNG 1: Phát toàn hệ thống để trang chủ Client kích hoạt đổi màu trạng thái
-                ClientManager.getInstance().broadcastSystemEvent(event);
+                ClientManager.INSTANCE.broadcastSystemEvent(event);
 
                 // LUỒNG 2: Báo cho những người đã trực trong phòng từ trước
-                ClientManager.getInstance().broadcastEventToAuction(auctionId, event);
+                ClientManager.INSTANCE.broadcastEventToAuction(auctionId, event);
 
                 // LUỒNG 3: Báo cho Admin lưu log sự kiện
                 SystemNotificationEvent adminLog = new SystemNotificationEvent(
                     "Hệ thống tự động kích hoạt phiên đấu giá lên lịch thành công (ID: " + auctionId + ")", "Hệ Thống"
                 );
-                ClientManager.getInstance().broadcastToAdmins(adminLog);
+                ClientManager.INSTANCE.broadcastToAdmins(adminLog);
                 // =====================================================================
             } else {
                 ServerLogger.error("Failed to auto-start SCHEDULED auction " + auctionId + " in Database.");
@@ -462,7 +468,7 @@ public enum AuctionManager {
      */
     private void finishAuction(int auctionId) {
         Auction auction = activeAuctions.get(auctionId);
-        if (auction == null || auction.getStatus() != AuctionStatus.ACTIVED) return;
+        if (auction == null || auction.getStatus() != AuctionStatus.ACTIVATED) return;
 
         if (AuctionDAO.updateAuctionStatusOnly(auctionId, AuctionStatus.FINISHED)) {
             auction.setStatus(AuctionStatus.FINISHED);
@@ -475,16 +481,16 @@ public enum AuctionManager {
             AuctionFinishedEvent finishedEvent = new AuctionFinishedEvent(auctionId);
 
             // LUỒNG 2: Báo khẩn cấp trong phòng để Client đóng băng nút Bid và hiển thị "Đang xử lý giao dịch..."
-            ClientManager.getInstance().broadcastEventToAuction(auctionId, finishedEvent);
+            ClientManager.INSTANCE.broadcastEventToAuction(auctionId, finishedEvent);
 
             // LUỒNG 1: Báo toàn Server để dẹp thẻ này khỏi Main UI (Lobby) người dùng thường
-            ClientManager.getInstance().broadcastSystemEvent(finishedEvent);
+            ClientManager.INSTANCE.broadcastSystemEvent(finishedEvent);
 
             // LUỒNG 3: Báo Admin ghi nhận log hệ thống chuẩn bị đối soát
             SystemNotificationEvent adminLog = new SystemNotificationEvent(
                 "Phiên ID " + auctionId + " đã hết giờ. Bắt đầu đối soát giao dịch ví...", "Hệ Thống"
             );
-            ClientManager.getInstance().broadcastToAdmins(adminLog);
+            ClientManager.INSTANCE.broadcastToAdmins(adminLog);
             // =====================================================================
 
             // BẮT ĐẦU QUY TRÌNH THANH TOÁN
@@ -532,19 +538,19 @@ public enum AuctionManager {
                 AuctionCancelledEvent cancelledEvent = new AuctionCancelledEvent(auctionId, "Không có người đặt giá hoặc người mua không đủ số dư thanh toán.");
 
                 // LUỒNG 2: Báo lỗi thanh toán/không ai Bid cho những người trong phòng biết
-                ClientManager.getInstance().broadcastEventToAuction(auctionId, cancelledEvent);
+                ClientManager.INSTANCE.broadcastEventToAuction(auctionId, cancelledEvent);
 
                 // LUỒNG 1: Báo toàn hệ thống gỡ hoàn toàn thẻ đấu giá này
-                ClientManager.getInstance().broadcastSystemEvent(cancelledEvent);
+                ClientManager.INSTANCE.broadcastSystemEvent(cancelledEvent);
 
                 // LUỒNG 3: Báo cho Admin log hệ thống
                 SystemNotificationEvent adminLog = new SystemNotificationEvent(
                     "Phiên ID " + auctionId + " bị hệ thống hủy. Lý do: Không ai Bid hoặc ví của người thắng không đủ tiền.", "Hệ Thống"
                 );
-                ClientManager.getInstance().broadcastToAdmins(adminLog);
+                ClientManager.INSTANCE.broadcastToAdmins(adminLog);
 
                 // Giải tán phòng đấu giá
-                ClientManager.getInstance().removeAuctionRoom(auctionId);
+                ClientManager.INSTANCE.removeAuctionRoom(auctionId);
                 // =====================================================================
             }
         }

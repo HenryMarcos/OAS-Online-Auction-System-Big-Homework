@@ -2,26 +2,24 @@ package com.groupproject.client;
 import java.io.IOException;
 
 import com.groupproject.client.network.AuctionEventBus;
+import com.groupproject.client.network.AuctionListener;
 import com.groupproject.client.network.ClientMessageRouter;
 import com.groupproject.client.network.RequestSender;
-import com.groupproject.client.utils.AlertUtils;
-import com.groupproject.client.utils.CountDownHelper;
-import com.groupproject.client.utils.SceneNavigator;
+import com.groupproject.client.utils.LifecycleController;
 import com.groupproject.client.utils.SessionManager;
+import com.groupproject.client.utils.TimeUtil;
 import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.model.user.User;
-import com.groupproject.shared.network.AuctionEvent.AuctionCancelledEvent;
-import com.groupproject.shared.network.AuctionEvent.AuctionFinisedEvent;
-import com.groupproject.shared.network.AuctionEvent.AuctionListener;
-import com.groupproject.shared.network.AuctionEvent.AuctionStartedEvent;
-import com.groupproject.shared.network.AuctionEvent.BidUpdatedEvent;
+import com.groupproject.shared.network.events.AuctionCancelledEvent;
 import com.groupproject.shared.network.events.AuctionEndedEvent;
+import com.groupproject.shared.network.events.AuctionFinisedEvent;
+import com.groupproject.shared.network.events.AuctionStartedEvent;
 import com.groupproject.shared.network.requests.GetAuctionDetailRequest;
 import com.groupproject.shared.network.requests.JoinAuctionRequest;
-import com.groupproject.shared.network.responses.GetAuctionDetailResponse;
 import com.groupproject.shared.network.responses.JoinAuctionResponse;
 
+import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -30,7 +28,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 
-public class CardController implements AuctionListener { 
+public class CardController implements LifecycleController, AuctionListener { 
     private Auction auction;
     private Timeline timeline;
 
@@ -44,56 +42,58 @@ public class CardController implements AuctionListener {
 
     @FXML
     public  void initialize() {
-        populateUI(auction);
 
         // ĐĂNG KÝ VIỆC LẮNG NGHE TRẢ VỀ KẾT QUẢ
-        ClientMessageRouter.INSTANCE.onResponse(GetAuctionDetailResponse.class, this::handleGetDetailAuction);
         ClientMessageRouter.INSTANCE.onResponse(JoinAuctionResponse.class,this::handleJoinAuctionResponse);
     }
+
+    // Gọi hàm này từ HomeController để thêm dữ liệu vào card
+    // ------------------------------------------------------
+    public void setAuction(Auction auction) {
+        this.auction = auction;
+
+        // Thêm dữ liệu vào các ô
+        productname.setText(auction.getTitle());
+
+        // Hiện bid hiện tại nếu có người bid, không thì hiện giá khởi điểm
+        double displayPrice = (auction.getCurrentBid() > 0) ? auction.getCurrentBid() : auction.getStartingPrice();
+        currentprice.setText("$" + displayPrice);
+
+        // Setup timer
+        if (auction.getEndTime() != null) {
+            timeline = new Timeline(new KeyFrame(javafx.util.Duration.seconds(1), event -> {
+                updateCountDown();
+            }));
+            timeline.setCycleCount(Timeline.INDEFINITE);
+            timeline.play();
+            updateCountDown(); // Run once immediately
+        } else {
+            timeleft.setText("No End Time");
+        }
+    }
+
+    public void updateCountDown() {
+        if (auction == null) return;
+        if (auction.getEndTime() == null) return;
+
+        String timeString = TimeUtil.formatTimeRemaining(auction.getEndTime());
+        timeleft.setText(timeString);
+    
+        if ("ENDED".equals(timeString)) {
+            if (timeline != null) timeline.stop();
+        }
+    }
+
     @FXML 
     private void handleBid(ActionEvent event) throws IOException {
-        // Chỉ lưu ID vào session, AuctionController sẽ tự fetch từ Server khi initialize
-        GetAuctionDetailRequest request = new GetAuctionDetailRequest(auction.getId());
+        JoinAuctionRequest request = new JoinAuctionRequest(auction.getId());
         RequestSender.send(request);
     }
-    public void populateUI(Auction auction) {
-        Platform.runLater(() -> {
-            this.auction = auction;
-            productname.setText(auction.getTitle());
-            currentprice.setText(String.valueOf(auction.getCurrentBid()));
-            CountDownHelper countDownHelper = new CountDownHelper();
-            countDownHelper.start(auction, () -> timeleft.setText("ENDED"), timeleft);
-            applyAuctionStatus(auction.getStatus());
-
-            // NGHIỆP VỤ ĐỂ HIỂN THỊ NÚT HỦY PHIÊN 
-            if (auction.getStatus()==AuctionStatus.WAITING) {
-                cancelButton.setVisible(true);
-                cancelButton.setManaged(true);
-            }
-        });
-    }
-    private void handleGetDetailAuction(GetAuctionDetailResponse response) {
-        if (response.isSuccess()) {
-            Platform.runLater(() ->{
-                SessionManager.INSTANCE.setCurrentAuctionDetail(response.getAuctionDetail());
-                SceneNavigator.INSTANCE.goTo("/com/groupproject/client/FXML/auctionscreen.fxml");
-            });
-        }
-        else {
-            Platform.runLater(() -> {
-                AlertUtils.showError("Error !" , "Can't enter the auction now ");
-            });
-        }
-    }
+   
     public void applyAuctionStatus(AuctionStatus status) {
         auctionStatus.setText("State : " + status );
     }
-    @Override 
-    public void onBidUpdated(BidUpdatedEvent event) {
-        Platform.runLater(() -> {
-            currentprice.setText(String.valueOf(event.getBidAmount())+"USD");
-        });
-    }
+    
     @Override
     public void onAuctionStarted(AuctionStartedEvent event) {
         Platform.runLater(() -> {
@@ -122,6 +122,19 @@ public class CardController implements AuctionListener {
             applyAuctionStatus(AuctionStatus.FINISHED);
         });
     }
+
+    @Override
+    public void cleanup() {
+        // 1. Stop the countdown timer to save CPU
+        if (timeline != null) {
+            timeline.stop();
+        }
+        // 2. Unsubscribe from the event bus so the garbage collector can delete this card
+        if (auction != null) {
+            AuctionEventBus.getInstance().unsubscribe(auction.getId(), this);
+        }
+    }
+
     @FXML
     private void handleSubscribeToggle(ActionEvent event) {
         if (subscribeToggle.isSelected()) {

@@ -8,7 +8,6 @@ import com.groupproject.client.ProfileController;
 import com.groupproject.client.utils.ClientLogger;
 import com.groupproject.client.utils.NotificationStore;
 import com.groupproject.client.utils.SessionManager;
-import com.groupproject.shared.network.AuctionEvent.AuctionEvent;
 import com.groupproject.shared.network.AuctionWonNotification;
 import com.groupproject.shared.network.Notification;
 import com.groupproject.shared.network.OutBidNotification;
@@ -42,12 +41,13 @@ public class ServerListener implements Runnable {
                             SessionManager.INSTANCE.getCurrentMainController().updateWallet(wallet.getAvailableBalance());
                             ProfileController.getInstance().updateWallet(wallet.getAvailableBalance());
                         }
-                    }
+                    }/* 
                     if (incomingData instanceof AuctionEvent) {
                         AuctionEvent event = (AuctionEvent) incomingData;
                         AuctionEventBus.getInstance().publish(event);
                         // Tạo thêm thông báo ở trong notification ( dùng logger đẻ ghi lại hoặc dùng như cũ để hiển thị)
                     } 
+                    */
                     if (incomingData instanceof OutBidNotification) {
                         OutBidNotification notification = (OutBidNotification) incomingData;
                         Platform.runLater(() -> {

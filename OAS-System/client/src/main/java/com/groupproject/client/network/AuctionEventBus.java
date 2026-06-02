@@ -1,15 +1,11 @@
 package com.groupproject.client.network;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.groupproject.shared.network.AuctionEvent.*;
-
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.List;
 
-import javafx.application.Platform;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 // NƠI ĐĂNG KÝ NHỮNG NGƯỜI MUỐN NHẬN THÔNG BÁO TỪ PHIÊN ĐẤU GIÁ VÀ PHÁT THÔNG BÁO 
 public class AuctionEventBus {
     private static final Logger logger = LoggerFactory.getLogger(AuctionEventBus.class);
@@ -41,9 +37,10 @@ public class AuctionEventBus {
         });
     }
 
+    /* 
     // ── Phân phát event tới đúng phòng ──
     // OCP: thêm event mới không cần sửa hàm này
-    public void publish(AuctionEvent event) {
+    public void publish(ServerEvent event) {
         List<AuctionListener> room = rooms.get(event.getAuctionId());
         if (room == null || room.isEmpty()) return;
 
@@ -57,7 +54,9 @@ public class AuctionEventBus {
             }
         });
     }
+    */
 
+    /* 
     // DRY: tập trung logic dispatch tại một chỗ duy nhất
     private void dispatch(AuctionEvent event, AuctionListener listener) {
         try {
@@ -67,4 +66,5 @@ public class AuctionEventBus {
             logger.error("[EventBus] Lỗi khi dispatch event tới listener : {}", e.getMessage());
         }
     }
+    */
 }

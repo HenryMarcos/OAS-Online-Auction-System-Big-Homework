@@ -12,13 +12,15 @@ public class LoginResponse extends Response {
     //List<Category> categoryTree = CategoryDAO.getCategories();
     private List<Category> categoryTree;
     private List<Auction> auctionList;
+    private List<Auction> userAuctionList;
     private LocalDateTime serverTime;
 
-    public LoginResponse(boolean success, User user, List<Category> categoryTree, List<Auction> auctionList, LocalDateTime serverTime, String message) {
+    public LoginResponse(boolean success, User user, List<Category> categoryTree, List<Auction> auctionList, List<Auction> userAuctionList, LocalDateTime serverTime, String message) {
         super(success, message);
         this.user = user;
         this.categoryTree = categoryTree;
         this.auctionList = auctionList;
+        this.userAuctionList = userAuctionList;
         this.serverTime = serverTime;
     }
 
@@ -29,5 +31,6 @@ public class LoginResponse extends Response {
     public User getUser() { return user; }
     public List<Category> getCategoryTree() { return categoryTree; }
     public List<Auction> getAuctionList() { return auctionList; }
+    public List<Auction> getUserAuctionList() { return userAuctionList; }
     public LocalDateTime getServerTime() { return serverTime; }
 }

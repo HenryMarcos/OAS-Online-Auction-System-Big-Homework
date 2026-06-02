@@ -68,7 +68,6 @@ public class MainController extends Application implements Initializable {
         loadViewIntoCenter("/com/groupproject/client/FXML/homecontent.fxml");
         // yêu cầu nhả ra các categories đã có sẵn trong máy.
         loadView("homecontent.fxml");
-        // lắng nghe gọi GetCategoriesResponse 
         // 1. Listen for Join Responses
         ClientMessageRouter.INSTANCE.onResponse(JoinAuctionResponse.class, this::handleJoinAuctionResponse);
         ClientMessageRouter.INSTANCE.onResponse(LogOutResponse.class, this::handleLogOutResponse);
@@ -110,7 +109,6 @@ public class MainController extends Application implements Initializable {
             profilesubmenu.setManaged(!iscurrentlyvisible);
             profilebtn.setText("Profile ▼ ");
         }
-        
     }
 
     private void loadView(String fxmlFileName) {
@@ -151,6 +149,11 @@ public class MainController extends Application implements Initializable {
     private void switchtoPersonalInfo() {
         loadViewIntoCenter("/com/groupproject/client/FXML/profile.fxml");
     }
+    @FXML
+    private void switchtoYourListings() {
+        
+    }
+
     private void updateUI() {
         Platform.runLater(() -> {
             String name= SessionManager.INSTANCE.getCurrentUser().getUsername();

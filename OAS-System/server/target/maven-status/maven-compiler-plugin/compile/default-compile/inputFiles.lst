@@ -10,6 +10,7 @@ D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\server
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\dao\UserDAO.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\handlers\CreateAuctionHandler.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\handlers\JoinAuctionHandler.java
+D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\handlers\LeaveAuctionRoomHandler.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\handlers\LoginHandler.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\handlers\LogOutHandler.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\server\src\main\java\com\groupproject\server\handlers\PlaceBidHandler.java
