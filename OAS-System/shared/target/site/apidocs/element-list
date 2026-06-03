@@ -1,0 +1,12 @@
+module:com.groupproject.shared
+com.groupproject.shared
+com.groupproject.shared.model.base
+com.groupproject.shared.model.categories
+com.groupproject.shared.model.enums
+com.groupproject.shared.model.item
+com.groupproject.shared.model.transaction
+com.groupproject.shared.model.user
+com.groupproject.shared.network
+com.groupproject.shared.network.events
+com.groupproject.shared.network.requests
+com.groupproject.shared.network.responses

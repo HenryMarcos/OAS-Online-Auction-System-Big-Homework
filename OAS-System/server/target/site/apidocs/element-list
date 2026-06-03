@@ -1,0 +1,8 @@
+module:com.groupproject.server
+com.groupproject.server
+com.groupproject.server.cache
+com.groupproject.server.core
+com.groupproject.server.dao
+com.groupproject.server.handlers
+com.groupproject.server.service
+com.groupproject.server.utils

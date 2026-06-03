@@ -1,0 +1,4 @@
+module:com.groupproject.client
+com.groupproject.client
+com.groupproject.client.network
+com.groupproject.client.utils

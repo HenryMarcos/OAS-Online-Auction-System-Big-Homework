@@ -1,0 +1,31 @@
+--module-path
+'C:/Users/pc/.m2/repository/org/slf4j/slf4j-api/2.0.7/slf4j-api-2.0.7.jar;C:/Users/pc/.m2/repository/ch/qos/logback/logback-classic/1.4.7/logback-classic-1.4.7.jar;C:/Users/pc/.m2/repository/ch/qos/logback/logback-core/1.4.7/logback-core-1.4.7.jar'
+-doclet
+'nl.talsmasoftware.umldoclet.UMLDoclet'
+-docletpath
+'C:/Users/pc/.m2/repository/nl/talsmasoftware/umldoclet/2.1.2/umldoclet-2.1.2.jar'
+-encoding
+'UTF-8'
+-private
+-source
+'17'
+-sourcepath
+'D:/GithubDesktopProject/OAS-Online-Auction-System-Big-Homework/OAS-System/shared/src/main/java'
+-subpackages
+com.groupproject
+-umlImageFormat png
+-author
+-bottom
+'Copyright &#169; 2026. All rights reserved.'
+-charset
+'UTF-8'
+-d
+'D:/GithubDesktopProject/OAS-Online-Auction-System-Big-Homework/OAS-System/shared/target/site/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'shared 1.0-SNAPSHOT API'
+-use
+-version
+-windowtitle
+'shared 1.0-SNAPSHOT API'

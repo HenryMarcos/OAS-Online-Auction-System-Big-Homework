@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html","k":"18"},{"m":"com.groupproject.client","l":"com.groupproject.client"},{"m":"com.groupproject.client","l":"com.groupproject.client.network"},{"m":"com.groupproject.client","l":"com.groupproject.client.utils"}];updateSearchResults();
