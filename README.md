@@ -37,32 +37,44 @@ Khởi chạy ServerChạy file JAR hoặc target đã biên dịch để kích 
 java -jar server-1.0-SNAPSHOT.jar
 
 💻 2. Cấu Hình & Chạy Client App
+
 Thực hiện các bước sau để biên dịch và khởi chạy ứng dụng giao diện JavaFX trên máy tính.
 Biên dịch Client
+
 Biên dịch và đóng gói module desktop client cùng các thư viện phụ thuộc đi kèm.
+
 Trước tiên tạo file client.properties trong client/src/main/resources
 
 bao gồm:
+
 SERVER_IP=your_server_ip (server ip của bạn)
+
 SERVER_PORT=your_port (port của server)
 
 Để tạo file exe chạy luôn:
+
 jpackage --type app-image --name OAS-App --runtime-image target/image --module com.groupproject.client/com.groupproject.client.App --icon logo.ico
+
 (Bỏ --icon logo.ico nếu không có file ảnh tên logo.ico)
 
 Để tạo installer exe:
+
 jpackage --type exe --name OAS-App-Installer --runtime-image target/image --module com.groupproject.client/com.groupproject.client.App --icon logo.ico --win-shortcut --win-menu --win-dir-chooser
 
 -Nếu có thỏa thuận người dùng(eula.rtf):
+
 jpackage --type exe --name OAS-App-Installer --runtime-image target/image --module com.groupproject.client/com.groupproject.client.App --icon logo.ico --win-shortcut --win-menu --win-dir-chooser --license-file eula.rtf
 
 Khởi chạy Client
+
 Kích hoạt chạy ứng dụng để mở màn hình đăng nhập/chính (gọi trực tiếp qua MainController).
 
 cd client
+
 mvn javafx:run
 
 🌐 Triển Khai Production (GCP VM qua systemd)
+
 Để chạy backend server liên tục 24/7 trên một máy ảo Linux của Google Cloud (GCP VM), hệ thống có thể được cấu hình như một dịch vụ chạy ngầm thông qua tệp cấu hình systemd đặt tại (/etc/systemd/system/myserver.service):
 Ini, TOML
 [Unit]
@@ -82,11 +94,15 @@ RestartSec=10
 WantedBy=multi-user.target
 
 Các lệnh quản lý tiến trình chạy ngầm:Bash# Tải lại cấu hình hệ thống sau khi sửa file dịch vụ
+
 sudo systemctl daemon-reload
 
 # Khởi chạy dịch vụ server chạy full-time
+
 sudo systemctl start myserver.service
 
 # Xem log hệ thống và console output của ứng dụng theo thời gian thực
+
 sudo journalctl -u myserver.service -f
+
 📄 Giấy Phép (License)Dự án này được cấp phép theo các điều khoản của MIT License - xem file LICENSE để biết thêm chi tiết.
