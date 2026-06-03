@@ -1,4 +1,5 @@
 Hệ Thống Đấu Giá Trực Tuyến (Online Auction System - OAS)
+link pdf thêm: https://drive.google.com/file/d/1rAoQzgZrHV3yHY3uMtWCIt6J0bSS4jer/view
 
 Một nền tảng đấu giá trực tuyến theo thời gian thực (real-time) toàn diện theo mô hình Client-Server, được xây dựng bằng Java, JavaFX và Maven. Hệ thống này cho phép người dùng lên lịch đấu giá, tham gia đấu giá trực tiếp, quản lý danh mục sản phẩm và theo dõi lịch sử biến động giá một cách trực quan.
 
