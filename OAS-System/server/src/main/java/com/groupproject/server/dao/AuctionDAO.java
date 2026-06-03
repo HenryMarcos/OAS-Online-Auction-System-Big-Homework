@@ -188,7 +188,7 @@ public class AuctionDAO {
              ResultSet rs = stmt.executeQuery(sql)) {
              
             while (rs.next()) {
-                Auction auction = extractAuctionFromResultSet(rs, categoryMap, false);
+                Auction auction = extractAuctionFromResultSet(rs, categoryMap, true);
                 auctionList.add(auction);
             }
 
@@ -225,7 +225,7 @@ public class AuctionDAO {
     }
 
     public static List<Auction> getAuctionsByStatus(AuctionStatus status) {
-        return getAuctionsByStatus(status, false);
+        return getAuctionsByStatus(status, true);
     }
 
     // Lấy các phiên đấu giá theo id người bán
@@ -244,7 +244,7 @@ public class AuctionDAO {
             if (categoryId != null) pstmt.setInt(2, categoryId);
 
             try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) auctionList.add(extractAuctionFromResultSet(rs, categoryMap, false));
+                while (rs.next()) auctionList.add(extractAuctionFromResultSet(rs, categoryMap, true));
             }
         } catch (SQLException e) { ServerLogger.error("Error getting auctions by seller: " + e.getMessage()); }
         return auctionList;
