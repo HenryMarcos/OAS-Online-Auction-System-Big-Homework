@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.groupproject</groupId><!--Can be removed if match the parent-->
+        <groupId>com.groupproject</groupId>
         <artifactId>OAS-System</artifactId>
-        <version>1.0-SNAPSHOT</version><!--Can be removed if match the parent-->
+        <version>1.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>server</artifactId>
@@ -19,7 +19,6 @@
     </properties>
 
     <dependencies>
-        <!--Shared item for both server and client to use-->
         <dependency>
             <groupId>com.groupproject</groupId>
             <artifactId>shared</artifactId>
@@ -61,9 +60,32 @@
             <artifactId>sqlite-jdbc</artifactId>
             <version>3.45.1.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.5.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
+
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.1.2</version>
+                <configuration>
+                    <argLine>
+                        --add-opens com.groupproject.server/com.groupproject.server.core=ALL-UNNAMED
+                        --add-opens com.groupproject.server/com.groupproject.server.cache=ALL-UNNAMED
+                        --add-opens com.groupproject.server/com.groupproject.server.dao=ALL-UNNAMED
+                        --add-opens com.groupproject.server/com.groupproject.server.handlers=ALL-UNNAMED
+                        --add-opens com.groupproject.server/com.groupproject.server.utils=ALL-UNNAMED
+                    </argLine>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -85,7 +107,6 @@
                 </executions>
             </plugin>
         </plugins>
-        
     </build>
 
 </project>
