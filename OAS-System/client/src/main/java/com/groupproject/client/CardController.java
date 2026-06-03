@@ -14,7 +14,6 @@ import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.model.user.User;
 import com.groupproject.shared.network.events.NewBidEvent;
 import com.groupproject.shared.network.requests.ChangeAuctionStatusRequest;
-import com.groupproject.shared.network.requests.GetAuctionDetailRequest;
 import com.groupproject.shared.network.requests.JoinAuctionRequest;
 import com.groupproject.shared.network.responses.ChangeAuctionStatusResponse;
 import com.groupproject.shared.network.responses.GetAuctionDetailResponse;
@@ -125,7 +124,7 @@ public class CardController implements LifecycleController, AuctionListener {
 
     @FXML
     private void handleViewAuction(ActionEvent event) {
-        RequestSender.send(new GetAuctionDetailRequest(auction.getId()));
+        RequestSender.send(new JoinAuctionRequest(auction.getId()));
     }
 
     @FXML
