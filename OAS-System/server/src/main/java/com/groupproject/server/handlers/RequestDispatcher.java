@@ -6,16 +6,16 @@ import java.util.Map;
 import com.groupproject.server.core.ClientHandler;
 import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.network.requests.CreateAuctionRequest;
+import com.groupproject.shared.network.requests.GetAuctionRequest;
 import com.groupproject.shared.network.requests.JoinAuctionRequest;
 import com.groupproject.shared.network.requests.LogOutRequest;
 import com.groupproject.shared.network.requests.LoginRequest;
 import com.groupproject.shared.network.requests.PlaceBidRequest;
-import com.groupproject.shared.network.requests.TopUpRequest;
-import com.groupproject.shared.network.requests.WatchAuctionRequest;
-import com.groupproject.shared.network.requests.UnwatchAuctionRequest;
-import com.groupproject.shared.network.requests.GetAuctionRequest;
 import com.groupproject.shared.network.requests.Request;
 import com.groupproject.shared.network.requests.SignupRequest;
+import com.groupproject.shared.network.requests.TopUpRequest;
+import com.groupproject.shared.network.requests.UnwatchAuctionRequest;
+import com.groupproject.shared.network.requests.WatchAuctionRequest;
 import com.groupproject.shared.network.responses.Response;
 
 public class RequestDispatcher {
