@@ -1,0 +1,7 @@
+com\groupproject\shared\model\transaction\AuctionTest.class
+com\groupproject\shared\model\transaction\BidDTOTest.class
+com\groupproject\shared\model\transaction\AuctionDetailTest.class
+com\groupproject\shared\model\transaction\NotificationDTOTest.class
+com\groupproject\shared\network\requests\GetAuctionRequestTest.class
+com\groupproject\shared\model\categories\CategoryTest.class
+com\groupproject\shared\network\requests\CreateAuctionRequestTest.class

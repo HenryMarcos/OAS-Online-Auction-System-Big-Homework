@@ -1,0 +1,17 @@
+com\groupproject\server\dao\AuctionDAOTest.class
+com\groupproject\server\core\ClientManagerTest.class
+com\groupproject\server\core\ServerAppTest.class
+com\groupproject\server\handlers\AuctionActionHandlersTest.class
+com\groupproject\server\handlers\RequestDispatcherTest.class
+com\groupproject\server\cache\CategoryManagerTest.class
+com\groupproject\server\dao\BidDAOTest.class
+com\groupproject\server\service\AuctionManagerTest.class
+com\groupproject\server\dao\CategoryDAOTest.class
+com\groupproject\server\handlers\AuctionDataHandlersTest.class
+com\groupproject\server\dao\UserDAOTest.class
+com\groupproject\server\handlers\LogOutHandlerTest.class
+com\groupproject\server\core\ClientHandlerTest.class
+com\groupproject\server\dao\DatabaseManagerTest.class
+com\groupproject\server\handlers\HandlersIntegrationTest.class
+com\groupproject\server\dao\NotificationDAOTest.class
+com\groupproject\server\handlers\AuctionRoomHandlersTest.class

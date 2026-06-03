@@ -22,5 +22,6 @@ jobs:
           cache: maven
 
       - name: Build and Compile
+        working-directory: ./OAS-System
         # Lệnh này sẽ tự động tạo file users.db của SQLite và chạy test
         run: mvn clean verify
