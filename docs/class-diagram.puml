@@ -1,0 +1,339 @@
+@startuml OAS_Simple_Class_Diagram
+title Online Auction System - Ordered Class Diagram
+
+left to right direction
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 55
+skinparam ranksep 65
+hide empty members
+
+package "Client" as CLIENT {
+  class App
+  class MainController
+  class LoginController
+  class SignupController
+  class CreateAuctionController
+  class AuctionController
+  class CardController
+  class ProfileController
+
+  enum NetworkManager {
+    INSTANCE
+  }
+
+  class RequestSender
+  class ServerListener
+  enum ClientMessageRouter {
+    INSTANCE
+  }
+
+  enum SessionManager {
+    INSTANCE
+  }
+
+  interface AuctionListener
+}
+
+package "Network Messages" as NETWORK {
+  together {
+    abstract class Request
+    class LoginRequest
+    class SignupRequest
+    class CreateAuctionRequest
+    class GetAuctionRequest
+    class GetAuctionDetailRequest
+    class ChangeAuctionStatusRequest
+    class JoinAuctionRequest
+    class PlaceBidRequest
+    class TopUpRequest
+  }
+
+  together {
+    abstract class Response {
+      - success: boolean
+      - message: String
+    }
+    class LoginResponse
+    class SignupResponse
+    class CreateAuctionResponse
+    class GetAuctionResponse
+    class GetAuctionDetailResponse
+    class ChangeAuctionStatusResponse
+    class JoinAuctionResponse
+    class PlaceBidResponse
+    class TopUpResponse
+  }
+
+  together {
+    abstract class ServerEvent
+    class NewBidEvent
+    class AuctionStartedEvent
+    class AuctionEndedEvent
+    class AuctionCancelledEvent
+    class AuctionListUpdateEvent
+    class BalanceUpdateEvent
+    class SystemNotificationEvent
+  }
+}
+
+package "Server" as SERVER {
+  class ServerApp
+  class ClientHandler
+  class RequestDispatcher
+  interface RequestHandler
+
+  enum ClientManager {
+    INSTANCE
+  }
+
+  enum AuctionManager {
+    INSTANCE
+  }
+
+  enum CategoryManager {
+    INSTANCE
+  }
+
+  class UserDAO
+  class AuctionDAO
+  class BidDAO
+  class CategoryDAO
+  class NotificationDAO
+  enum DatabaseManager {
+    INSTANCE
+  }
+}
+
+package "Shared Model" as MODEL {
+  abstract class Entity {
+    - id: Integer
+    - createdAt: LocalDateTime
+  }
+
+  class User {
+    - username: String
+    - password: String
+    - email: String
+    - accountBalance: double
+  }
+
+  class Category {
+    - id: int
+    - name: String
+    - parentId: Integer
+    - subCategories: List<Category>
+    - requiredFields: List<String>
+  }
+
+  enum AuctionStatus {
+    SCHEDULED
+    WAITING
+    ACTIVATED
+    ENDED
+    CANCELLED
+    FINISHED
+  }
+
+  class Auction {
+    - sellerId: int
+    - title: String
+    - mainImagePath: String
+    - category: Category
+    - startingPrice: double
+    - currentBid: double
+    - highestBidderId: Integer
+    - startTime: LocalDateTime
+    - endTime: LocalDateTime
+    - status: AuctionStatus
+  }
+
+  class AuctionDetail {
+    - auction: Auction
+    - description: String
+    - bidHistory: List<BidDTO>
+    - categoryGroupedSpecs: Map<Integer, Map<String, String>>
+    - subImagePaths: List<String>
+  }
+
+  class BidDTO {
+    - bidderName: String
+    - amount: double
+    - bidTime: LocalDateTime
+  }
+
+  class NotificationDTO {
+    - id: int
+    - message: String
+    - isRead: boolean
+  }
+}
+
+' Force the main package order.
+CLIENT -[hidden]right-> NETWORK
+NETWORK -[hidden]right-> SERVER
+NETWORK -[hidden]down-> MODEL
+
+' Keep important boxes in readable rows inside each package.
+App -[hidden]down-> MainController
+MainController -[hidden]down-> LoginController
+LoginController -[hidden]right-> SignupController
+SignupController -[hidden]right-> CreateAuctionController
+CreateAuctionController -[hidden]right-> AuctionController
+AuctionController -[hidden]right-> CardController
+CardController -[hidden]right-> ProfileController
+RequestSender -[hidden]right-> NetworkManager
+NetworkManager -[hidden]right-> ServerListener
+ServerListener -[hidden]right-> ClientMessageRouter
+ClientMessageRouter -[hidden]right-> SessionManager
+SessionManager -[hidden]right-> AuctionListener
+
+Request -[hidden]down-> LoginRequest
+LoginRequest -[hidden]right-> SignupRequest
+SignupRequest -[hidden]right-> CreateAuctionRequest
+CreateAuctionRequest -[hidden]right-> GetAuctionRequest
+GetAuctionRequest -[hidden]right-> GetAuctionDetailRequest
+GetAuctionDetailRequest -[hidden]right-> ChangeAuctionStatusRequest
+ChangeAuctionStatusRequest -[hidden]right-> JoinAuctionRequest
+JoinAuctionRequest -[hidden]right-> PlaceBidRequest
+PlaceBidRequest -[hidden]right-> TopUpRequest
+
+Response -[hidden]down-> LoginResponse
+LoginResponse -[hidden]right-> SignupResponse
+SignupResponse -[hidden]right-> CreateAuctionResponse
+CreateAuctionResponse -[hidden]right-> GetAuctionResponse
+GetAuctionResponse -[hidden]right-> GetAuctionDetailResponse
+GetAuctionDetailResponse -[hidden]right-> ChangeAuctionStatusResponse
+ChangeAuctionStatusResponse -[hidden]right-> JoinAuctionResponse
+JoinAuctionResponse -[hidden]right-> PlaceBidResponse
+PlaceBidResponse -[hidden]right-> TopUpResponse
+
+ServerEvent -[hidden]down-> NewBidEvent
+NewBidEvent -[hidden]right-> AuctionStartedEvent
+AuctionStartedEvent -[hidden]right-> AuctionEndedEvent
+AuctionEndedEvent -[hidden]right-> AuctionCancelledEvent
+AuctionCancelledEvent -[hidden]right-> AuctionListUpdateEvent
+AuctionListUpdateEvent -[hidden]right-> BalanceUpdateEvent
+BalanceUpdateEvent -[hidden]right-> SystemNotificationEvent
+
+ServerApp -[hidden]down-> ClientHandler
+ClientHandler -[hidden]down-> RequestDispatcher
+RequestDispatcher -[hidden]down-> RequestHandler
+ClientManager -[hidden]down-> AuctionManager
+AuctionManager -[hidden]right-> CategoryManager
+UserDAO -[hidden]right-> AuctionDAO
+AuctionDAO -[hidden]right-> BidDAO
+BidDAO -[hidden]right-> CategoryDAO
+CategoryDAO -[hidden]right-> NotificationDAO
+NotificationDAO -[hidden]right-> DatabaseManager
+
+Entity -[hidden]down-> User
+User -[hidden]right-> Category
+Category -[hidden]right-> AuctionStatus
+AuctionStatus -[hidden]right-> Auction
+Auction -[hidden]right-> AuctionDetail
+AuctionDetail -[hidden]right-> BidDTO
+BidDTO -[hidden]right-> NotificationDTO
+
+' Shared model relationships.
+Entity <|-- User
+Entity <|-- Auction
+Category "1" o-- "0..*" Category : subCategories
+Auction --> Category
+Auction --> AuctionStatus
+Auction ..> User : sellerId
+Auction ..> User : highestBidderId
+AuctionDetail *-- Auction
+AuctionDetail o-- "0..*" BidDTO
+
+' Network inheritance relationships.
+Request <|-- LoginRequest
+Request <|-- SignupRequest
+Request <|-- CreateAuctionRequest
+Request <|-- GetAuctionRequest
+Request <|-- GetAuctionDetailRequest
+Request <|-- ChangeAuctionStatusRequest
+Request <|-- JoinAuctionRequest
+Request <|-- PlaceBidRequest
+Request <|-- TopUpRequest
+
+Response <|-- LoginResponse
+Response <|-- SignupResponse
+Response <|-- CreateAuctionResponse
+Response <|-- GetAuctionResponse
+Response <|-- GetAuctionDetailResponse
+Response <|-- ChangeAuctionStatusResponse
+Response <|-- JoinAuctionResponse
+Response <|-- PlaceBidResponse
+Response <|-- TopUpResponse
+
+ServerEvent <|-- NewBidEvent
+ServerEvent <|-- AuctionStartedEvent
+ServerEvent <|-- AuctionEndedEvent
+ServerEvent <|-- AuctionCancelledEvent
+ServerEvent <|-- AuctionListUpdateEvent
+ServerEvent <|-- BalanceUpdateEvent
+ServerEvent <|-- SystemNotificationEvent
+
+' Network messages that carry domain data.
+CreateAuctionRequest -down-> Category
+CreateAuctionRequest -down-> AuctionStatus
+LoginResponse -down-> User
+LoginResponse -down-> Category
+LoginResponse -down-> Auction
+CreateAuctionResponse -down-> Auction
+GetAuctionResponse -down-> Auction
+GetAuctionDetailResponse -down-> AuctionDetail
+AuctionListUpdateEvent -down-> Auction
+NewBidEvent ..> Auction
+BalanceUpdateEvent ..> User
+
+' Server flow: app -> client socket -> dispatcher -> handler -> service/dao.
+ServerApp -down-> ClientHandler : creates
+ClientHandler -down-> RequestDispatcher
+RequestDispatcher o-- RequestHandler
+RequestHandler ..> Request
+RequestHandler ..> Response
+
+AuctionManager o-- "0..*" Auction
+AuctionManager -down-> AuctionDAO
+AuctionManager -down-> BidDAO
+AuctionManager -down-> UserDAO
+AuctionManager -left-> ClientManager
+CategoryManager o-- "0..*" Category
+CategoryManager -down-> CategoryDAO
+
+UserDAO -down-> DatabaseManager
+AuctionDAO -down-> DatabaseManager
+BidDAO -down-> DatabaseManager
+CategoryDAO -down-> DatabaseManager
+NotificationDAO -down-> DatabaseManager
+
+' Client flow: controllers send requests, listener routes responses/events.
+LoginController ..> LoginRequest
+SignupController ..> SignupRequest
+CreateAuctionController ..> CreateAuctionRequest
+AuctionController ..> PlaceBidRequest
+ProfileController ..> TopUpRequest
+
+RequestSender -right-> NetworkManager
+RequestSender ..> Request
+ServerListener -right-> NetworkManager
+ServerListener -right-> ClientMessageRouter
+ClientMessageRouter ..> Response
+ClientMessageRouter ..> ServerEvent
+
+SessionManager -down-> User
+SessionManager -down-> Category
+SessionManager -down-> Auction
+SessionManager -down-> AuctionDetail
+
+AuctionListener <|.. AuctionController
+AuctionListener <|.. CardController
+AuctionController -down-> Auction
+AuctionController -down-> BidDTO
+CardController -down-> Auction
+MainController -down-> SessionManager
+
+@enduml
