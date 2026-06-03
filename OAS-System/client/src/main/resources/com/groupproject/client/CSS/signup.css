@@ -1,0 +1,51 @@
+.signup-title {
+    -fx-font-size: 50px;
+    -fx-font-weight: bold;
+    -fx-text-fill: black;
+}
+.signup-label {
+     -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-text-fill: black;
+}
+.input-field, .password-wrapper {
+    -fx-background-color: white;
+    -fx-border-color: #ccc;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 8;
+    -fx-font-size: 14px;
+}
+
+.input-field:focused, .password-wrapper:focused-within {
+    -fx-border-color: black;
+}
+.password-wrapper {
+    -fx-padding: 2 5 2 2; /* Viền ngoài của khung chứa cả text và nút mắt */
+}
+.inner-password-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 8;
+    -fx-font-size: 14px;
+}
+.inner-password-field:focused {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+.createaccount-button {
+    -fx-background-color: black;
+    -fx-text-fill: white;
+    -fx-background-radius: 5px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 30;
+    -fx-cursor: hand;
+}
+.createaccount-button:hover{
+    -fx-background-color:#333;
+}
+.hyperlink{
+    -fx-font-size:12px;
+    -fx-font-weight:bold;
+    -fx-text-fill:black;
+}

@@ -10,6 +10,9 @@
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
+# properties files
+*.properties
+
 # Package Files #
 *.jar
 *.war
@@ -22,3 +25,11 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# Folders
+OAS-System/client/target/
+OAS-System/client/OAS-App/
+OAS-System/server/target/
+OAS-System/shared/target/
+/OAS-System/server/target
+/OAS-System/server/target

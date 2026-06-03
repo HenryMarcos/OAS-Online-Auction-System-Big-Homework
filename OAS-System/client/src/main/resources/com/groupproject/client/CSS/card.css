@@ -1,0 +1,64 @@
+.bidbutton{
+    -fx-background-color: #ecc667;
+    -fx-background-radius: 10;
+    -fx-text-fill: black;
+    -fx-font-size: 15;
+    -fx-font-weight: bold;
+    -fx-padding: 10;
+    -fx-cursor:hand;
+}
+.cardPane {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+}
+
+.cardPane:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 10, 0, 0, 0);
+    -fx-background-color: silver;
+}
+.image {
+    -fx-background-color: rgba(208, 208, 208, 0.97);
+    -fx-background-radius: 40;
+    -fx-padding: 10;
+    -fx-border-radius: 40;
+}
+.labels {
+    -fx-font-family: 'Varela Round', sans-serif;
+    -fx-font-size: 15;
+    -fx-font-weight: bold;
+}
+
+.titleCard {
+    -fx-font-weight: bold;
+    -fx-font-size: 30;
+    -fx-font-family: "Varela Round", sans-serif;
+}
+/* Nút Hủy phiên mang tính chất cảnh báo (Màu đỏ) */
+.cancel-button {
+    -fx-background-color: #ffebee;
+    -fx-text-fill: #c62828;
+    -fx-border-color: #ef9a9a;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-cursor: hand;
+    -fx-font-weight: bold;
+}
+.cancel-button:hover {
+    -fx-background-color: #ffcdd2;
+}
+
+/* Nút Theo dõi mặc định (Chưa chọn) */
+.subscribe-toggle {
+    -fx-background-color: white;
+    -fx-text-fill: #2980b9;
+    -fx-border-color: #2980b9;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-cursor: hand;
+}
+
+/* Nút Theo dõi khi đang LÚN XUỐNG (Đã chọn/Đang lắng nghe) */
+.subscribe-toggle:selected {
+    -fx-background-color: #2980b9;
+    -fx-text-fill: white;
+}

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<HBox fx:id="cardroot" spacing="14.0" maxWidth="Infinity" minWidth="280.0" prefWidth="450.0" styleClass="product-card" stylesheets="@../CSS/card.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.groupproject.client.CardController">
+    <VBox alignment="TOP_CENTER" spacing="10.0" minWidth="130.0" prefWidth="140.0" maxWidth="140.0">
+        <ImageView fx:id="image" fitHeight="110.0" fitWidth="110.0" preserveRatio="true" pickOnBounds="true" styleClass="image-container">
+            <image>
+                <Image url="@../Image/sample.png" />
+            </image>
+        </ImageView>
+        
+        <VBox spacing="6.0" alignment="CENTER" maxWidth="Infinity">
+            <ToggleButton fx:id="subcribeToggle" text="BID NOW !" onAction="#handleSubscribeToggle" styleClass="subscribe-toggle" maxWidth="Infinity" minHeight="30.0"/>
+            <Button fx:id="startNowButton" text="▶ Start Now" onAction="#handleStartNow" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" visible="false" managed="false" maxWidth="Infinity" minHeight="30.0"/>
+            <Button fx:id="cancelAuctionButton" text="✕ Cancel" onAction="#handleCancelAction" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" visible="false" managed="false" maxWidth="Infinity" minHeight="30.0"/>
+            <Button fx:id="viewAuctionButton" text="View Room" onAction="#handleViewAuction" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;" visible="false" managed="false" maxWidth="Infinity" minHeight="30.0"/>
+        </VBox>
+    </VBox>
+    
+    <VBox spacing="6.0" styleClass="cardContent" maxWidth="Infinity" HBox.hgrow="ALWAYS" alignment="TOP_LEFT">
+        <padding>
+            <Insets top="4.0" right="10.0" bottom="10.0" left="4.0" />
+        </padding>
+        
+        <Label fx:id="productname" styleClass="titleCard" text="Product Name" wrapText="true" maxWidth="Infinity" VBox.vgrow="NEVER">
+            <font>
+                <Font name="System Bold" size="15.0" />
+            </font>
+        </Label>
+        
+        <Label fx:id="auctionStatus" styleClass="status-label" text="Status: Loading" maxWidth="Infinity" textFill="#7f8c8d">
+            <font>
+                <Font name="System Italic" size="12.0" />
+            </font>
+        </Label>
+        
+        <VBox spacing="4.0" maxWidth="Infinity" style="-fx-background-color: rgba(0,0,0,0.02); -fx-background-radius: 4; -fx-padding: 6;">
+            <HBox spacing="5.0" alignment="CENTER_LEFT">
+                <Label text="Current Bid:" textFill="#34495e" minWidth="75.0">
+                    <font><Font name="System" size="12.0"/></font>
+                </Label>
+                <Label fx:id="currentprice" text="0.00 VND" textFill="#e74c3c" wrapText="true" HBox.hgrow="ALWAYS">
+                    <font><Font name="System Bold" size="13.0"/></font>
+                </Label>
+            </HBox>
+            
+            <HBox spacing="5.0" alignment="CENTER_LEFT">
+                <Label text="Buyout Price:" textFill="#34495e" minWidth="75.0">
+                    <font><Font name="System" size="11.0"/></font>
+                </Label>
+                <Label fx:id="buyoutPrice" text="0.00 VND" textFill="#2c3e50" wrapText="true" HBox.hgrow="ALWAYS">
+                    <font><Font name="System" size="12.0"/></font>
+                </Label>
+            </HBox>
+        </VBox>
+        
+        <Label fx:id="timeleft" text="Time Left: --:--:--" maxWidth="Infinity" textFill="#2980b9" style="-fx-font-weight: bold;" VBox.vgrow="ALWAYS">
+            <font>
+                <Font name="System" size="12.0" />
+            </font>
+        </Label>
+    </VBox>
+</HBox>

@@ -1,0 +1,51 @@
+package com.groupproject.client.utils;
+
+import java.io.IOException;
+
+import javafx.application.Platform;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+
+public enum SceneNavigator {
+    INSTANCE;
+
+    // Một màn hình window duy nhất
+    private static Stage mainStage;
+
+    // Theo dõi bất kỳ controller nào đang hiện trên màn hình
+    private Object currentController;
+
+    private SceneNavigator() {}
+
+    // Dùng 1 lần khi mở app
+    public void setMainStage(Stage stage) { mainStage = stage; }
+
+    public void goTo(String fxmlPath) {
+        // Đặt trong Platform.runLater để đảm bảo an toàn khi gọi
+        // từ bất kỳ luồng nào, kể cả từ ServerListener chạy ở background
+        Platform.runLater(() -> {
+            try {
+                // Dọn dẹp màn hình cũ(Nếu nó có hàm cleanup)
+                if (currentController instanceof  LifecycleController) {
+                    ((LifecycleController) currentController).cleanup();
+                }
+                // Load màn hình mới
+                FXMLLoader loader = new FXMLLoader(SceneNavigator.class.getResource(fxmlPath));
+                Parent root = loader.load();
+
+                // Lưu controller mới
+                currentController = loader.getController();
+                
+                // Hiển thị màn hình mới
+                mainStage.setScene(new Scene(root, 1080, 720));
+                mainStage.show();
+                
+            } catch (IOException e) {
+                System.err.println("CRITICAL ERROR: Could not load FXML file -> " + fxmlPath);
+                e.printStackTrace();
+            }
+        });
+    }
+}
