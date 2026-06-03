@@ -1,0 +1,34 @@
+sudo nano /etc/systemd/system/myserver.service
+
+myserver.service:
+
+[Unit]
+Description=My Group Project Java Server
+After=network.target
+
+[Service]
+User=thangtranmanh9
+
+ExecStart=/usr/bin/java -jar /path/to/your/server.jar
+or 
+ExecStart=/usr/bin/java -jar /home/thangtranmanh9/sever-1.0-SNAPSHOT.jar
+
+SuccessExitStatus=143
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+
+load
+sudo systemctl daemon-reload
+
+enable
+sudo systemctl enable myserver
+
+start
+sudo systemctl start myserver
+
+To view the live logs: sudo journalctl -u myserver -f
+
+To stop the server: sudo systemctl stop myserver

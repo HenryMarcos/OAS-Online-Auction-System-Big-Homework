@@ -1,0 +1,16 @@
+{
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.test.config": [
+        {
+            "name": "OAS-Test-Config",
+            "vmArgs": [
+                "--add-opens=com.groupproject.server/com.groupproject.server.core=ALL-UNNAMED",
+                "--add-opens=com.groupproject.server/com.groupproject.server.cache=ALL-UNNAMED",
+                "--add-opens=com.groupproject.server/com.groupproject.server.dao=ALL-UNNAMED",
+                "--add-opens=com.groupproject.server/com.groupproject.server.handlers=ALL-UNNAMED",
+                "--add-opens=com.groupproject.server/com.groupproject.server.utils=ALL-UNNAMED"
+            ]
+        }
+    ],
+    "java.test.defaultConfig": "OAS-Test-Config"
+}
