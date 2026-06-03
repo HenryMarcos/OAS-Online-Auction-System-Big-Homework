@@ -5,16 +5,25 @@ Một nền tảng đấu giá trực tuyến theo thời gian thực (real-time
 Tính Năng Nổi Bật:
 
 -Bidding Engine thời gian thực: Đồng bộ hóa dữ liệu phòng đấu giá đồng thời (concurrent rooms) với độ trễ cực thấp nhờ hệ thống phát sự kiện EventBus tập trung ở phía Server.
+
 -Giao diện trực quan (UI/UX): Ứng dụng desktop JavaFX được thiết kế hiện đại với hệ thống CSS tùy biến, hỗ trợ co giãn linh hoạt (TableView) và đồng hồ đếm ngược thời gian thực.
+
 -Biểu đồ biến động giá trực tiếp: Tích hợp LineChart ngay trong phòng đấu giá để cập nhật và hiển thị trực quan các lượt trả giá của người dùng theo thời gian thực.
+
 -Tối ưu hóa quản lý vòng đời ứng dụng: Quản lý và lưu trữ bộ nhớ cache phía client thông qua một SessionManager hợp nhất, giúp đồng bộ trạng thái giao diện và ngăn chặn các yêu cầu gửi lên mạng (network calls) trùng lặp hoặc lặp vô hạn.
+
 -Vòng đời đấu giá đa trạng thái: Tự động chuyển đổi mượt mà giữa các trạng thái WAITING $\rightarrow$ SCHEDULED $\rightarrow$ ACTIVATED $\rightarrow$ FINISHED / CANCELLED nhờ các luồng background quét và cập nhật cơ sở dữ liệu liên tục ở backend.
 
 Công Nghệ Sử Dụng & Yêu Cầu Hệ Thống
+
 -Ngôn ngữ: Java (Khuyến nghị JDK 17 trở lên)
+
 -UI Framework: JavaFX (kết hợp FXML)
+
 -Build System: Maven
+
 -Cơ sở dữ liệu: SQL thông qua tầng JDBC Persistence layer
+
 *Trước khi biên dịch, hãy đảm bảo bạn đã cài đặt Java Development Kit (JDK), Maven và cấu hình biến môi trường (Environment Variables) đầy đủ trên máy tính.
 
 🏗️ Hướng Dẫn Cài Đặt & Khởi ChạyĐầu tiên, clone repository này về máy cục bộ của bạn:
