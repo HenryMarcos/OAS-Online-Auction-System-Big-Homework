@@ -11,7 +11,6 @@ D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\shared
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\shared\src\main\java\com\groupproject\shared\network\AuctionWonNotification.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\shared\src\main\java\com\groupproject\shared\network\events\AuctionCancelledEvent.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\shared\src\main\java\com\groupproject\shared\network\events\AuctionEndedEvent.java
-D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\shared\src\main\java\com\groupproject\shared\network\events\AuctionFinisedEvent.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\shared\src\main\java\com\groupproject\shared\network\events\AuctionFinishedEvent.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\shared\src\main\java\com\groupproject\shared\network\events\AuctionListUpdateEvent.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\shared\src\main\java\com\groupproject\shared\network\events\AuctionResultEvent.java

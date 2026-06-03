@@ -2,7 +2,7 @@ package com.groupproject.client.network;
 
 import com.groupproject.shared.network.events.AuctionCancelledEvent;
 import com.groupproject.shared.network.events.AuctionEndedEvent;
-import com.groupproject.shared.network.events.AuctionFinisedEvent;
+import com.groupproject.shared.network.events.AuctionFinishedEvent;
 import com.groupproject.shared.network.events.AuctionStartedEvent;
 import com.groupproject.shared.network.events.NewBidEvent;
 
@@ -14,7 +14,7 @@ public interface AuctionListener {
     // BẮT ĐẦU VÔ HIỆU HÓA NÚT ĐẶT GIÁ 
     default void onAuctionEnded(AuctionEndedEvent event){}
     // KẾT THÚC 
-    default void onAuctionFinished(AuctionFinisedEvent event){}
+    default void onAuctionFinished(AuctionFinishedEvent event){}
     // HỦY PHIÊN ĐẤU GIÁ -> TỰ ĐỘNG RA MÀN HÌNH CHÍNH 
     default void onAuctionCancelled(AuctionCancelledEvent event){}
 }

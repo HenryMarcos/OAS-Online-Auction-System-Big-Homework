@@ -162,7 +162,7 @@ public abstract class BaseAuctionViewController implements Initializable, Lifecy
                 
                 // Nếu người dùng click vào nút gốc "Tất cả" (ID là "-1")
                 if ("-1".equals(selectedCategory.getId())) {
-                     fetchInitialData(); // Gọi Server lấy hết toàn bộ Auction
+                    fetchInitialData(); // Gọi Server lấy hết toàn bộ Auction
                 } else {
                     // Gọi Server lấy các Auction thuộc danh mục cụ thể này
                     fetchDataByCategory(selectedCategory.getId()); 

@@ -6,4 +6,6 @@ public class AuctionStartedEvent extends ServerEvent {
     public AuctionStartedEvent(int auctionId) {
         this.auctionId = auctionId;
     }
+
+    public int getAuctionId() { return auctionId; }
 }

@@ -7,7 +7,6 @@ com\groupproject\client\utils\SessionManager.class
 com\groupproject\client\network\AuctionEventBus.class
 com\groupproject\client\network\RequestSender.class
 com\groupproject\client\SimpleChatAppController.class
-com\groupproject\client\MyAuctionCardController.class
 com\groupproject\client\network\ClientMessageRouter.class
 com\groupproject\client\utils\ImageOptimizer.class
 com\groupproject\client\CreateAuctionController$1.class
@@ -28,7 +27,6 @@ com\groupproject\client\SortingmenuController.class
 com\groupproject\client\utils\CountDownHelper.class
 com\groupproject\client\MainController.class
 com\groupproject\client\utils\SceneNavigator.class
-com\groupproject\client\MyAuctionCardController$1.class
 com\groupproject\client\utils\ClientConfig.class
 com\groupproject\client\network\AuctionEventBus$Helper.class
 com\groupproject\client\utils\NotificationStore.class

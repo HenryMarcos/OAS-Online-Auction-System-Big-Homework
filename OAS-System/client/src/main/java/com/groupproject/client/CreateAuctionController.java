@@ -411,6 +411,7 @@ public class CreateAuctionController implements Initializable {
 
         if (title.isEmpty() || description.isEmpty() || selectedCategory == null || priceText.isEmpty()) {
             statusLabel.setText("Please fill out all basic auction fields.");
+            submitButton.setDisable(false);
             return;
         }
 
@@ -420,6 +421,7 @@ public class CreateAuctionController implements Initializable {
             startingPrice = Double.parseDouble(priceText);
         } catch (NumberFormatException e) {
             statusLabel.setText("Starting price must be a valid number.");
+            submitButton.setDisable(false);
             return;
         }
 
@@ -438,6 +440,7 @@ public class CreateAuctionController implements Initializable {
             }
         } catch (IOException e) {
             statusLabel.setText("Error processing image files!");
+            submitButton.setDisable(false);
             return;
         }
 
@@ -461,6 +464,7 @@ public class CreateAuctionController implements Initializable {
 
             if (specValue.isEmpty()) {
                 statusLabel.setText("Missing spec field: " + specName);
+                submitButton.setDisable(false);
                 return; // Stop processing if form incomplete
             }
             
@@ -484,6 +488,7 @@ public class CreateAuctionController implements Initializable {
                     minsSpinner.commitValue();
                 } catch (Exception e) {
                     statusLabel.setText("Invalid duration format!");
+                    submitButton.setDisable(false);
                     return;
                 }
 
@@ -495,6 +500,7 @@ public class CreateAuctionController implements Initializable {
 
                 if (days == 0 && hours == 0 && mins == 0) {
                     statusLabel.setText("Duration cannot be 0!");
+                    submitButton.setDisable(false);
                     return;
                 }
 
@@ -515,8 +521,10 @@ public class CreateAuctionController implements Initializable {
 
                 if (endTime.isBefore(startTime)) {
                     statusLabel.setText("End time must be after right now!");
+                    submitButton.setDisable(false);
                     return;
                 }
+                
             }
         } else {
             // "Start Now" is false -> System stays in WAITING phase
@@ -536,6 +544,7 @@ public class CreateAuctionController implements Initializable {
                 // explicit date options provided for the future activation point
                 if (startDatePicker.getValue() == null || endDatePicker.getValue() == null) {
                     statusLabel.setText("Please pick both Start and End Dates!");
+                    submitButton.setDisable(false);
                     return;
                 }
                 int sHour = startHourCombo.getValue() != null ? startHourCombo.getValue() : 0;
@@ -548,6 +557,7 @@ public class CreateAuctionController implements Initializable {
 
                 if (endTime.isBefore(startTime)) {
                     statusLabel.setText("End Date cannot be scheduled before the Start Date!");
+                    submitButton.setDisable(false);
                     return;
                 }
             }

@@ -1,6 +1,7 @@
 package com.groupproject.server.handlers;
 
 import com.groupproject.server.core.ClientHandler;
+import com.groupproject.server.core.ClientManager;
 import com.groupproject.server.service.AuctionManager;
 import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.model.transaction.AuctionDetail;
@@ -22,6 +23,9 @@ public class JoinAuctionHandler implements RequestHandler {
 
         if (detail != null) {
             ServerLogger.info("Successfully joined auction " + targetId);
+
+            ClientManager.INSTANCE.subscribeUserToAuction(targetId, clientContext.getAuthenticatedUserId());
+
             return new JoinAuctionResponse(true, detail, "Successfully joined auction");
         } else {
             ServerLogger.error("Failed to join auction " + targetId);

@@ -11,9 +11,11 @@ import com.groupproject.client.utils.NotificationStore;
 import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.client.utils.TimeUtil;
+import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.model.transaction.NotificationDTO;
 import com.groupproject.shared.model.user.User;
 import com.groupproject.shared.network.events.AuctionListUpdateEvent;
+import com.groupproject.shared.network.events.AuctionStartedEvent;
 import com.groupproject.shared.network.events.BalanceUpdateEvent;
 import com.groupproject.shared.network.requests.LogOutRequest;
 import com.groupproject.shared.network.responses.GetAuctionResponse;
@@ -68,13 +70,13 @@ public class MainController extends Application implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        loadView("homecontent.fxml");
         // 1. Listen for Join Responses
         ClientMessageRouter.INSTANCE.onResponse(JoinAuctionResponse.class, this::handleJoinAuctionResponse);
         ClientMessageRouter.INSTANCE.onResponse(LogOutResponse.class, this::handleLogOutResponse);
         ClientMessageRouter.INSTANCE.onResponse(GetAuctionResponse.class, this::handleGetAuctionResponse);
         // 2. NEW: Listen for Global Auction List Updates
         ClientMessageRouter.INSTANCE.onEvent(AuctionListUpdateEvent.class, this::handleAuctionListUpdate);
+        ClientMessageRouter.INSTANCE.onEvent(AuctionStartedEvent.class, this::handleAuctionStartedEvent);
         // 3. NEW: Listen for personal Balance Updates (real-time wallet sync)
         ClientMessageRouter.INSTANCE.onEvent(BalanceUpdateEvent.class, event -> {
             Platform.runLater(() -> {
@@ -110,6 +112,8 @@ public class MainController extends Application implements Initializable {
         SessionManager.INSTANCE.setCurrentMainController(this);
         // lắng nghe gọi GetCategoriesResponse 
         redDotIndicator.visibleProperty().bind(NotificationStore.getInstance().unreadCountProperty().greaterThan(0));
+
+        loadView("homecontent.fxml");
     }
 
     @FXML
@@ -163,10 +167,7 @@ public class MainController extends Application implements Initializable {
     private void swichtoMyProducts() {
         loadViewIntoCenter("/com/groupproject/client/FXML/yourauctions.fxml");
     }
-    @FXML
-    private void switchtoActiveListings() {
-        loadViewIntoCenter("/com/groupproject/client/FXML/activeauctions.fxml");
-    }
+    
     @FXML
     private void switchtoPersonalInfo() {
         loadViewIntoCenter("/com/groupproject/client/FXML/profile.fxml");
@@ -220,10 +221,6 @@ public class MainController extends Application implements Initializable {
     private void switchtoHome() throws IOException {
         loadView("homecontent.fxml");
     } 
-    @FXML
-    private void switchtoAddItem() throws IOException {
-        loadView("createAuctionTest.fxml");
-    }
 
     @FXML
     private void toggleInbox() {
@@ -282,6 +279,21 @@ public class MainController extends Application implements Initializable {
         // 1. Update the session data memory
         SessionManager.INSTANCE.setCurrentAuctionList(event.getActiveAuctions());
 
+        // Update the "My Products" memory cache simultaneously
+        User currentUser = SessionManager.INSTANCE.getCurrentUser();
+        if (currentUser != null) {
+            int myId = currentUser.getId();
+            List<com.groupproject.shared.model.transaction.Auction> myUpdatedList = new java.util.ArrayList<>();
+            
+            for (com.groupproject.shared.model.transaction.Auction a : event.getActiveAuctions()) {
+                if (a.getSellerId() == myId) {
+                    myUpdatedList.add(a);
+                }
+            }
+            // Now "My Listings" knows about the newly created WAITING auction!
+            SessionManager.INSTANCE.setMyProductList(myUpdatedList);
+        }
+
         // 2. Safely tell the UI to repaint from memory (NO NETWORK CALLS!)
         Platform.runLater(() -> {
             if (currentSubController instanceof BaseAuctionViewController) {
@@ -289,6 +301,49 @@ public class MainController extends Application implements Initializable {
                 listScreen.refreshFromSession(); 
             }
         });
+    }
+
+    private void handleAuctionStartedEvent(AuctionStartedEvent event) {
+        int startedAuctionId = event.getAuctionId();
+        boolean needsUiRefresh = false;
+
+        // 1. Find and update the auction in the global list
+        List<Auction> globalList = SessionManager.INSTANCE.getCurrentAuctionList();
+        if (globalList != null) {
+            for (Auction auction : globalList) {
+                if (auction.getId() == startedAuctionId) {
+                    auction.setStatus(com.groupproject.shared.model.enums.AuctionStatus.ACTIVATED);
+                    needsUiRefresh = true;
+                    break;
+                }
+            }
+        }
+
+        // 2. Find and update the auction in the "My Products" list
+        List<Auction> myList = SessionManager.INSTANCE.getMyProductList();
+        if (myList != null) {
+            for (Auction auction : myList) {
+                if (auction.getId() == startedAuctionId) {
+                    auction.setStatus(com.groupproject.shared.model.enums.AuctionStatus.ACTIVATED);
+                    needsUiRefresh = true;
+                    break;
+                }
+            }
+        }
+
+        // 3. Tell the currently visible screen to redraw itself with the new status
+        if (needsUiRefresh) {
+            Platform.runLater(() -> {
+                if (currentSubController instanceof BaseAuctionViewController) {
+                    BaseAuctionViewController listScreen = (BaseAuctionViewController) currentSubController;
+                    
+                    // This will clear the screen and recreate the cards. 
+                    // Because the status is now ACTIVATED, your CardController will automatically 
+                    // hide the "Start Now" button and disable cancellation!
+                    listScreen.refreshFromSession(); 
+                }
+            });
+        }
     }
 
 }

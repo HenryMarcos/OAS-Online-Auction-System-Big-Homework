@@ -82,7 +82,6 @@
             </padding>
             <children>
                 <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#switchtoHome" prefHeight="45.0" prefWidth="190.0" styleClass="button-left" text="HOME" />
-                <Button alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#switchtoActiveListings" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Active Listings" />
                 
                 <Region prefHeight="1.0" prefWidth="190.0" styleClass="region" />
                 
@@ -102,16 +101,14 @@
                         </VBox>
                     </children>
                 </VBox>
-                
-                <Button fx:id="testCreateAuction" alignment="BASELINE_LEFT" mnemonicParsing="false" onAction="#switchToCreateAuction" prefHeight="40.0" prefWidth="190.0" styleClass="button-left" text="Create Auction(test)" />
-                
+                            
                 <Region prefHeight="1.0" prefWidth="190.0" styleClass="region" />
                 
                 <Region VBox.vgrow="ALWAYS" />
                 
                 <HBox alignment="CENTER">
                     <children>
-                        <Button alignment="CENTER" mnemonicParsing="false" onAction="#switchtoAddItem" prefHeight="45.0" prefWidth="140.0" styleClass="sell-button" text="Sell" />
+                        <Button alignment="CENTER" mnemonicParsing="false" onAction="#switchToCreateAuction" prefHeight="45.0" prefWidth="140.0" styleClass="sell-button" text="Sell" />
                     </children>
                 </HBox>
             </children>

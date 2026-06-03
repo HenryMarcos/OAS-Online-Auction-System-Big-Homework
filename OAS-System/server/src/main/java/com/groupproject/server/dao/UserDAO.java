@@ -200,7 +200,7 @@ public class UserDAO {
                 // KIỂM TRA QUYỀN ADMIN
                 boolean isUserAdmin = isAdmin(id);
 
-                return new User(id, username, password, email, 10000, createdAt);
+                return new User(id, username, password, email, balance, createdAt);
             }
         } catch (Exception e) {
             ServerLogger.error("UserDAO:getUser: " + e.getMessage());

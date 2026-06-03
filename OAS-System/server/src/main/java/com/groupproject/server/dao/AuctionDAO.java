@@ -23,7 +23,7 @@ public class AuctionDAO {
 
     // Lấy thông tin nhận được từ database và tạo thành phiên đấu giá
     // --------------------------------------------------------------
-    private static Auction extractAuctionFromResultSet(ResultSet rs, Map<Integer, Category> categoryMap) throws SQLException {
+    private static Auction extractAuctionFromResultSet(ResultSet rs, Map<Integer, Category> categoryMap, boolean loadImages) throws SQLException {
         int id = rs.getInt("id");
         int sellerId = rs.getInt("seller_id");
         String title = rs.getString("title");
@@ -40,19 +40,19 @@ public class AuctionDAO {
 
         Category category = categoryMap.get(categoryId);
         
-        // 🌟 LOAD BYTES FROM DISK FIRST
+        // LOAD BYTES FROM DISK FIRST
         byte[] imageBytes = null;
-        if (mainImagePath != null && !mainImagePath.isEmpty()) {
+        if (loadImages && mainImagePath != null && !mainImagePath.isEmpty()) {
             imageBytes = ImageStorageManager.loadImage(mainImagePath);
         }
         
-        // 🌟 CALL NEW CONSTRUCTOR
+        // CALL NEW CONSTRUCTOR
         Auction auction = new Auction(
             id, sellerId, title, imageBytes, category, 
             startingPrice, duration, startTime, endTime, status
         );
 
-        // 🌟 SET THE REMAINING FIELDS VIA SETTERS
+        // SET THE REMAINING FIELDS VIA SETTERS
         auction.setMainImagePath(mainImagePath);
         auction.setCurrentBid(currentBid);
         auction.setHighestBidderId(highestBidderId);
@@ -188,7 +188,7 @@ public class AuctionDAO {
              ResultSet rs = stmt.executeQuery(sql)) {
              
             while (rs.next()) {
-                Auction auction = extractAuctionFromResultSet(rs, categoryMap);
+                Auction auction = extractAuctionFromResultSet(rs, categoryMap, false);
                 auctionList.add(auction);
             }
 
@@ -200,7 +200,7 @@ public class AuctionDAO {
 
     // Lấy các phiên đấu giá theo trạng thái của chúng
     // -----------------------------------------------
-    public static List<Auction> getAuctionsByStatus(AuctionStatus status) {
+    public static List<Auction> getAuctionsByStatus(AuctionStatus status, boolean loadImages) {
         List<Auction> auctionList = new ArrayList<>();
         Map<Integer, Category> categoryMap = CategoryManager.INSTANCE.getCategories();
         
@@ -213,7 +213,7 @@ public class AuctionDAO {
             
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    Auction auction = extractAuctionFromResultSet(rs, categoryMap);
+                    Auction auction = extractAuctionFromResultSet(rs, categoryMap, loadImages);
                     auctionList.add(auction);
                 }
             }
@@ -222,6 +222,10 @@ public class AuctionDAO {
             ServerLogger.error("Database error getting auctions by status: " + e.getMessage());
         }
         return auctionList;
+    }
+
+    public static List<Auction> getAuctionsByStatus(AuctionStatus status) {
+        return getAuctionsByStatus(status, false);
     }
 
     // Lấy các phiên đấu giá theo id người bán
@@ -240,7 +244,7 @@ public class AuctionDAO {
             if (categoryId != null) pstmt.setInt(2, categoryId);
 
             try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) auctionList.add(extractAuctionFromResultSet(rs, categoryMap));
+                while (rs.next()) auctionList.add(extractAuctionFromResultSet(rs, categoryMap, false));
             }
         } catch (SQLException e) { ServerLogger.error("Error getting auctions by seller: " + e.getMessage()); }
         return auctionList;
@@ -259,7 +263,7 @@ public class AuctionDAO {
             
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    Auction auction = extractAuctionFromResultSet(rs, categoryMap);
+                    Auction auction = extractAuctionFromResultSet(rs, categoryMap, true);
                     
                     return auction;
                 }
@@ -388,7 +392,7 @@ public class AuctionDAO {
     }
 
     public static List<Integer> getExpiredActiveAuctions(LocalDateTime now) {
-        return fetchIdsByCondition("SELECT id FROM auctions WHERE status = 'ACTIVED' AND end_time < ?", now);
+        return fetchIdsByCondition("SELECT id FROM auctions WHERE status = 'ACTIVATED' AND end_time < ?", now);
     }
 
     private static List<Integer> fetchIdsByCondition(String sql, LocalDateTime time) {

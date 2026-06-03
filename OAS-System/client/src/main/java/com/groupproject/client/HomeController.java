@@ -12,7 +12,7 @@ public class HomeController extends BaseAuctionViewController {
     // hàm load những items có trong từng mục category
     @Override
     public boolean shouldInclude(Auction newItem) {
-        return true;
+        return newItem.getStatus() == com.groupproject.shared.model.enums.AuctionStatus.ACTIVATED;
     }
 
     @Override

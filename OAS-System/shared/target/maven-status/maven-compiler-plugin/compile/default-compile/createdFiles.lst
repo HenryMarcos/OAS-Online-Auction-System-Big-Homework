@@ -28,7 +28,6 @@ com\groupproject\shared\network\requests\CreateAuctionRequest.class
 com\groupproject\shared\network\requests\LoginRequest.class
 com\groupproject\shared\network\responses\PlaceBidResponse.class
 com\groupproject\shared\network\responses\WatchAuctionResponse.class
-com\groupproject\shared\network\events\AuctionFinisedEvent.class
 com\groupproject\shared\network\events\SystemNotificationEvent.class
 com\groupproject\shared\network\responses\LoginResponse.class
 com\groupproject\shared\network\responses\BidResponse.class

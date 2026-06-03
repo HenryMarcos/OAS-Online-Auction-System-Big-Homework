@@ -81,7 +81,7 @@ public enum DatabaseManager {
                                 "starting_price REAL NOT NULL," +
                                 "duration INT DEFAULT 0, " +
                                 "start_time DATETIME, " +
-                                "end_time DATETIME NOT NULL," +
+                                "end_time DATETIME," +
                                 "current_bid REAL," +
                                 "current_bidder_id INTEGER, " +
                                 "status TEXT NOT NULL, " +

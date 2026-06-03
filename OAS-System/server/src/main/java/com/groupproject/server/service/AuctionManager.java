@@ -24,7 +24,7 @@ import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.model.transaction.AuctionDetail;
 import com.groupproject.shared.network.events.AuctionCancelledEvent;
 import com.groupproject.shared.network.events.AuctionEndedEvent;
-import com.groupproject.shared.network.events.AuctionFinisedEvent;
+import com.groupproject.shared.network.events.AuctionFinishedEvent;
 import com.groupproject.shared.network.events.AuctionListUpdateEvent;
 import com.groupproject.shared.network.events.AuctionStartedEvent;
 import com.groupproject.shared.network.events.BalanceUpdateEvent;
@@ -81,9 +81,9 @@ public enum AuctionManager {
 
     private void loadActiveAuctionsFromDatabase() {
         try {
-            List<Auction> activeAuctionList = AuctionDAO.getAuctionsByStatus(AuctionStatus.ACTIVATED);
-            List<Auction> waitingAuctionList = AuctionDAO.getAuctionsByStatus(AuctionStatus.WAITING);
-            List<Auction> scheduledAuctionList = AuctionDAO.getAuctionsByStatus(AuctionStatus.SCHEDULED);
+            List<Auction> activeAuctionList = AuctionDAO.getAuctionsByStatus(AuctionStatus.ACTIVATED, true);
+            List<Auction> waitingAuctionList = AuctionDAO.getAuctionsByStatus(AuctionStatus.WAITING, true);
+            List<Auction> scheduledAuctionList = AuctionDAO.getAuctionsByStatus(AuctionStatus.SCHEDULED, true);
             
             List<Auction> allAuctions = new ArrayList<>();
             if (activeAuctionList != null) allAuctions.addAll(activeAuctionList);
@@ -301,7 +301,7 @@ public enum AuctionManager {
             auction.setStatus(AuctionStatus.FINISHED);
             ServerLogger.info("Auction " + auctionId + " time count end. Status changed to FINISHED.");
 
-            AuctionFinisedEvent finishedEvent = new AuctionFinisedEvent(auctionId, auction.getHighestBidderId() != null ? auction.getHighestBidderId() : 0, auction.getCurrentBid());
+            AuctionFinishedEvent finishedEvent = new AuctionFinishedEvent(auctionId, auction.getHighestBidderId() != null ? auction.getHighestBidderId() : 0, auction.getCurrentBid());
             ClientManager.INSTANCE.broadcastEventToAuction(auctionId, finishedEvent);
             ClientManager.INSTANCE.broadcastSystemEvent(finishedEvent);
 
@@ -339,32 +339,65 @@ public enum AuctionManager {
 
     public boolean placeBid(int auctionId, int bidderId, double bidAmount) {
         Auction auction = activeAuctions.get(auctionId);
-        if (auction == null || auction.getStatus() != AuctionStatus.ACTIVATED) return false;
+        if (auction == null || auction.getStatus() != AuctionStatus.ACTIVATED) {
+            ServerLogger.warning("Bid rejected: Auction " + auctionId + " is not active.");
+            return false;
+        }
 
-        double minimalRequired = Math.max(auction.getCurrentBid(), auction.getStartingPrice());
-        if (bidAmount <= minimalRequired) return false;
-
-        Integer previousBidderId = auction.getHighestBidderId();
 
         synchronized (auction) { 
-            if (bidAmount <= auction.getCurrentBid()) return false; 
+            double currentBid = auction.getCurrentBid();
+            double minimalRequired = Math.max(currentBid, auction.getStartingPrice());
+            if (bidAmount <= minimalRequired) { return false; }
 
+            Integer previousBidderId = auction.getHighestBidderId();
+            double previousBidAmount = currentBid;
+
+            // 2. TÍNH TOÁN ESCROW: Kiểm tra xem người dùng có đủ tiền không
+            double requiredDeduction = bidAmount;
+
+            // Nếu người dùng đang tự nâng giá của chính mình, chỉ trừ số tiền chênh lệch!
+            if (previousBidderId != null && previousBidderId == bidderId) {
+                requiredDeduction = bidAmount - previousBidAmount; 
+            }
+
+            // Kiểm tra số dư ví (Giả sử bạn có hàm getBalance trong UserDAO)
+            if (UserDAO.getBalance(bidderId) < requiredDeduction) {
+                ServerLogger.warning("Bid rejected: User " + bidderId + " has insufficient funds.");
+                return false; 
+            }
+            
             boolean dbSuccess = BidDAO.insertBid(auctionId, bidderId, bidAmount);
 
             if (dbSuccess) {
+
+                // =======================================================
+                // 4. CHUYỂN TIỀN ESCROW (TRỪ TIỀN VÀ HOÀN TIỀN)
+                // =======================================================
+                if (previousBidderId != null && previousBidderId == bidderId) {
+                    // Tự nâng giá: Chỉ trừ thêm phần chênh lệch
+                    UserDAO.addBalance(bidderId, -requiredDeduction);
+                } else {
+                    // Đấu giá bình thường: Trừ tiền người mới
+                    UserDAO.addBalance(bidderId, -bidAmount);
+                    
+                    // Hoàn tiền cho người cũ bị outbid
+                    if (previousBidderId != null) {
+                        UserDAO.addBalance(previousBidderId, previousBidAmount);
+                    }
+                }
+
                 auction.setCurrentBid(bidAmount);
                 auction.setHighestBidderId(bidderId);
 
                 double bidderNewBal = UserDAO.getBalance(bidderId);
                 ClientManager.INSTANCE.sendToUser(bidderId, new BalanceUpdateEvent(bidderId, bidderNewBal));
 
-                ClientManager.INSTANCE.subscribeUserToAuction(auctionId, bidderId);
-
                 NewBidEvent roomUpdate = new NewBidEvent(auctionId, bidAmount, bidderId);
                 ClientManager.INSTANCE.broadcastEventToAuction(auctionId, roomUpdate);
 
                 if (previousBidderId != null && previousBidderId != bidderId) {
-                    ClientManager.INSTANCE.unsubscribeUserFromAuction(auctionId, previousBidderId);
+                    //ClientManager.INSTANCE.unsubscribeUserFromAuction(auctionId, previousBidderId);
                     double prevBidderNewBal = UserDAO.getBalance(previousBidderId);
                     ClientManager.INSTANCE.sendToUser(previousBidderId, new BalanceUpdateEvent(previousBidderId, prevBidderNewBal));
                 }

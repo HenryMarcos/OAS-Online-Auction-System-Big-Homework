@@ -1,90 +1,78 @@
-<?import javafx.collections.FXCollections?>
-<?import javafx.collections.ObservableList?>
+<?xml version="1.0" encoding="UTF-8"?>
+
 <?import javafx.geometry.Insets?>
-<?import javafx.geometry.Pos?>
-<?import javafx.scene.Scene?>
 <?import javafx.scene.chart.CategoryAxis?>
 <?import javafx.scene.chart.LineChart?>
 <?import javafx.scene.chart.NumberAxis?>
-<?import javafx.scene.chart.XYChart?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.control.cell.PropertyValueFactory?>
-<?import javafx.scene.layout.*?>
-<?import javafx.stage.Stage?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.image.Image?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
 <BorderPane stylesheets="@../CSS/auctionscreen.css" styleClass="main-container" fx:controller="com.groupproject.client.AuctionController" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" >
     <padding>
         <Insets top="15.0"/>
     </padding>
     <top>
-        <HBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS"> 
+        <VBox spacing="8.0">
             <padding>  
-                <Insets bottom="15.0"/> 
+                <Insets bottom="15.0" left="15.0" right="15.0"/> 
             </padding>
-            <Label text="Auction Online" styleClass="header-title" fx:id="auctionsession"/>
-        </HBox>
-        <HBox alignment="CENTER_RIGHT" spacing="12.0">
-            <Label fx:id="participant" styleClass="participant-name"/>
-            <Button fx:id="exitbutton" styleClass="exit-button" text="EXIT ->" onAction="#switchtoHome" />      
-        </HBox>
-    </top>
-
-    <left>
-        <VBox prefWidth="250.0" spacing="10.0" styleClass="section-pane">
-            <children>
-                <ImageView fitWidth="220.0" fitHeight="160.0" preserveRatio="true" fx:id="productImageView">
-                    <image> 
-                        <Image url="@../Image/sample.png"/>
-                    </image>
-                </ImageView>
-                
-                <ImageView fx:id="mainImageView" fitWidth="400" fitHeight="300" preserveRatio="true"/>
-                <HBox fx:id="subImagesContainer" spacing="10" alignment="CENTER_LEFT" />
-
-                <Label styleClass="product-name" fx:id="auctionproductname"/>
-                <Label fx:id="startprice" />
-            </children>
+            <HBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS"> 
+                <Label text="Auction Room" styleClass="header-title" fx:id="auctionsession" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+            </HBox>
+            <HBox alignment="CENTER_RIGHT" spacing="12.0">
+                <Label fx:id="participantCount" text="Participants: 0" style="-fx-text-fill: #7f8c8d;"/>
+            </HBox>
         </VBox>
-    </left>
-
+    </top>
+    
     <center>
-        <VBox spacing="10.0" VBox.vgrow="ALWAYS" >
+        <VBox VBox.vgrow="ALWAYS" >
             <padding>
                 <Insets left="15.0" right="15.0" />
             </padding>
-            <LineChart fx:id="linechart" title="Lich su bien dong gia" >
-                <xAxis >
-                    <CategoryAxis label ="Time" animated="false"/>
+            <LineChart fx:id="linechart" title="Price History Graph" animated="false">
+                <xAxis>
+                    <CategoryAxis label="Time" animated="false"/>
                 </xAxis>
-                <yAxis >
-                    <NumberAxis label="Price (k VND)" autoRanging="true" animated="false"/>
+                <yAxis>
+                    <NumberAxis label="Price (VND)" autoRanging="true" animated="false"/>
                 </yAxis>
             </LineChart>
         </VBox>
     </center>
 
     <right>
-        <VBox spacing="15.0" prefHeight="250.0" styleClass="section-pane">
+        <VBox spacing="15.0" prefWidth="240.0" minWidth="220.0" styleClass="section-pane" style="-fx-padding: 15; -fx-background-color: #ffffff; -fx-border-color: #dcdde1; -fx-border-radius: 6;">
             <children>
-                <Label  fx:id="auctioncurrentprice" styleClass="current-price"/>
-                <Label fx:id="auctiontimeleft" styleClass="time-left" />
-                <Label text="Enter your price" />
-                <TextField fx:id="enterprice"  />
-                <Button fx:id="bidButton" text="Place bid" maxWidth="Infinity" styleClass="bid-button" onAction="#handlePlaceBid" /> 
+                <Label text="Current Price Assessment" style="-fx-font-size: 11px; -fx-text-fill: #7f8c8d;"/>
+                <Label fx:id="auctioncurrentprice" styleClass="current-price" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;"/>
+                <Label fx:id="auctiontimeleft" styleClass="time-left" style="-fx-font-weight: bold; -fx-text-fill: #2980b9;"/>
+                
+                <VBox spacing="5.0" style="-fx-padding: 10 0 0 0;">
+                    <Label text="Enter Bid Amount:" style="-fx-font-weight: bold;"/>
+                    <TextField fx:id="enterprice" prefHeight="35.0" style="-fx-font-size: 14px;"/>
+                </VBox>
+                
+                <Button fx:id="bidButton" text="Place Bid" maxWidth="Infinity" prefHeight="40.0" styleClass="bid-button" onAction="#handlePlaceBid" /> 
             </children>
         </VBox>
     </right>
 
     <bottom>
-        <TableView fx:id="bottomtable" prefHeight="160.0" >
-            <columns>
-                <TableColumn fx:id="usercol" text="Bidder" prefWidth="200.0"/>
-                <TableColumn fx:id="pricecol" text="Price" prefWidth="200.0" />
-                <TableColumn fx:id="timecol" text="Time" prefWidth="200.0" />
-            </columns>
-        </TableView>
-
+        <VBox style="-fx-padding: 15;">
+            <TableView fx:id="bottomtable" prefHeight="160.0" columnResizePolicy="CONSTRAINED_RESIZE_POLICY">
+                <columns>
+                    <TableColumn fx:id="usercol" text="Bidder ID / Name"/>
+                    <TableColumn fx:id="pricecol" text="Bid Offer Placement"/>
+                    <TableColumn fx:id="timecol" text="Timestamp Received"/>
+                </columns>
+            </TableView>
+        </VBox>
     </bottom>
-
 </BorderPane>

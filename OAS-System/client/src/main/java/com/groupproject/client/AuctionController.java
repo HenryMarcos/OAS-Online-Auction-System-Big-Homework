@@ -21,7 +21,7 @@ import com.groupproject.shared.model.transaction.AuctionDetail;
 import com.groupproject.shared.model.transaction.BidDTO;
 import com.groupproject.shared.model.user.User;
 import com.groupproject.shared.network.events.AuctionEndedEvent;
-import com.groupproject.shared.network.events.AuctionFinisedEvent;
+import com.groupproject.shared.network.events.AuctionFinishedEvent;
 import com.groupproject.shared.network.events.AuctionStartedEvent;
 import com.groupproject.shared.network.events.NewBidEvent;
 import com.groupproject.shared.network.requests.PlaceBidRequest;
@@ -290,7 +290,7 @@ public class AuctionController implements Initializable, LifecycleController,  A
     }
     
     @Override
-    public void onAuctionFinished(AuctionFinisedEvent event) {
+    public void onAuctionFinished(AuctionFinishedEvent event) {
         Platform.runLater(() -> {
             AlertUtils.showAlert(Alert.AlertType.INFORMATION, "THÔNG BÁO", "PHIÊN ĐẤU GIÁ ĐÃ ĐƯỢC HOÀN THÀNH");
             bidButton.setDisable(true);
