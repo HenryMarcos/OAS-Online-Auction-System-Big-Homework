@@ -1,5 +1,4 @@
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\network\ServerListener.java
-D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\TestCardController.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\NotificationController.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\LoginController.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\ActiveAuctionsController.java
@@ -12,12 +11,11 @@ D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\utils\ImageOptimizer.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\utils\NotificationStore.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\utils\AlertUtils.java
-D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\TestAuctionScreenController.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\CardController.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\BaseAuctionViewController.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\MyAuctionsController.java
+D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\MyAuctionCardController.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\utils\SessionManager.java
-D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\utils\TimeFormatter.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\App.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\SimpleChatAppController.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\network\NetworkManager.java
@@ -25,7 +23,6 @@ D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\utils\LifecycleController.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\module-info.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\SignupController.java
-D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\CreateAuctionTestController.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\network\ClientMessageRouter.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\utils\SceneNavigator.java
 D:\GithubDesktopProject\OAS-Online-Auction-System-Big-Homework\OAS-System\client\src\main\java\com\groupproject\client\network\AuctionListener.java

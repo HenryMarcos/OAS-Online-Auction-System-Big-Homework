@@ -28,7 +28,7 @@ public class AuctionEventBus {
     }
 
     // ── Hủy theo dõi (khi rời màn hình) ──
-    public void unsubscribe(int auctionId, AuctionListener  listener) {
+    public void unsubscribe(int auctionId, AuctionListener listener) {
         rooms.compute(auctionId, (id, room) -> {
             if (room == null) return null;
             room.remove(listener);

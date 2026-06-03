@@ -9,7 +9,6 @@ import java.util.function.Consumer;
 import com.groupproject.client.network.ClientMessageRouter;
 import com.groupproject.client.utils.ClientLogger;
 import com.groupproject.client.utils.LifecycleController;
-import com.groupproject.client.utils.SessionManager;
 import com.groupproject.shared.model.categories.Category;
 import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.network.responses.ChangeAuctionStatusResponse;
@@ -56,19 +55,47 @@ public abstract class BaseAuctionViewController implements Initializable, Lifecy
    private final Consumer<ChangeAuctionStatusResponse> changeStatusListener = this::handleChangeStatusResponse;
 
    // man hinh moi khi an vao nut sortby
-   @Override
-   public void initialize(URL location, ResourceBundle resources) {
-      setupGlobalEventListeners();
-      setupReactiveUI();
-      List<Category> mainCategories = SessionManager.INSTANCE.getCurrentCategories();
-      setupTreeViewConfiguration();
-      drawCategoryTreeUI(mainCategories);
-      fetchInitialData();
-      addEventHandles();
-      renderGrid();
-      makeSmoothScrolling(scrollPane);
-   }
-   public void makeSmoothScrolling(ScrollPane scrollPane) {
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        // Only the parent handles initialization now!
+        addEventHandles();
+        fetchInitialData();
+    }
+
+    // --- NEW: Safe Data Injection ---
+    public void setAuctionsData(List<Auction> newData) {
+        Platform.runLater(() -> {
+            // 1. Clean up old memory
+            for (LifecycleController child : childControllers) {
+                child.cleanup();
+            }
+            childControllers.clear();
+            uiList.clear();
+
+            // 2. Filter and add new data
+            if (newData != null) {
+                for (Auction a : newData) {
+                    if (shouldInclude(a)) uiList.add(a);
+                }
+            }
+            renderGrid();
+        });
+    }
+
+    public void renderGrid() {
+        productgrid.getChildren().clear();
+        int maxColumns = getMaxColumns();
+        for (int i = 0; i < uiList.size(); i++) {
+            Auction auction = uiList.get(i);
+            Node cardNode = createCardNode(auction);
+            if (cardNode != null) {
+                productgrid.add(cardNode, i % maxColumns, i / maxColumns);
+                GridPane.setMargin(cardNode, new Insets(10));
+            }
+        }
+    }
+
+    public void makeSmoothScrolling(ScrollPane scrollPane) {
       // Tốc độ cuộn: Số càng lớn cuộn càng nhanh. (Chuẩn web thường quanh mức 0.005)
         final double SCROLL_SPEED = 0.005; 
 
@@ -189,6 +216,7 @@ public abstract class BaseAuctionViewController implements Initializable, Lifecy
             Platform.runLater(this::renderGrid);
         });
     }
+    
     public void registerChildController(LifecycleController controller) {
         if (controller != null) {
             childControllers.add(controller);
@@ -197,21 +225,22 @@ public abstract class BaseAuctionViewController implements Initializable, Lifecy
 
     public Node createCardNode(Auction auction) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/groupproject/client/FXML/card.fxml"));
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/com/groupproject/client/FXML/card.fxml"));
             Node node = loader.load();
-            CardController cardController = loader.getController();
-            cardController.populateUI(auction);
-            registerChildController(cardController);
+            CardController ctrl = loader.getController();
+            ctrl.setAuction(auction);
+            childControllers.add(ctrl);
             return node;
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
-        }  
+        }
     }
+
     public void setupGlobalEventListeners() {
         ClientMessageRouter.INSTANCE.onResponse(CreateAuctionResponse.class, createAuctionListener);
         ClientMessageRouter.INSTANCE.onResponse(GetAuctionResponse.class, getAuctionListener);
-        ClientMessageRouter.INSTANCE.onResponse(com.groupproject.shared.network.responses.ChangeAuctionStatusResponse.class, changeStatusListener);
+        ClientMessageRouter.INSTANCE.onResponse(ChangeAuctionStatusResponse.class, changeStatusListener);
     }
 
     private void handleCreateResponse(CreateAuctionResponse response) {
@@ -257,25 +286,6 @@ public abstract class BaseAuctionViewController implements Initializable, Lifecy
         return 3;
     }
 
-    public void renderGrid() {
-        for (LifecycleController child : childControllers) {
-            child.cleanup();
-        }
-        childControllers.clear();
-
-        productgrid.getChildren().clear();
-        int maxColumns = getMaxColumns();
-        for (int i=0 ; i < uiList.size(); i++ ) {
-            Auction auction = uiList.get(i);
-            Node cardNode = createCardNode(auction);
-            if (cardNode != null) {
-                int column =  i % maxColumns;
-                int row = i / maxColumns;
-                productgrid.add(cardNode,column,row);
-                GridPane.setMargin(cardNode,new Insets(10));
-            }
-        }
-    }
     public void highlightCategoryButton(Button clickedButton) {
         if (activeCategoryButton != null ) {
             activeCategoryButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #333333;");
@@ -290,5 +300,6 @@ public abstract class BaseAuctionViewController implements Initializable, Lifecy
     abstract void fetchInitialData();
     // LẤY AUCTIONS THEO Id của Category
     abstract void fetchDataByCategory(int categoryId);
-
+    // NEW: Children must define where they pull session data from
+    public abstract void refreshFromSession();
 }

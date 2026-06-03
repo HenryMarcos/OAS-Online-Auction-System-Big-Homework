@@ -1,24 +1,18 @@
 package com.groupproject.shared.network.responses;
 
-import java.util.List;
-
-import com.groupproject.shared.model.transaction.Auction;
-import com.groupproject.shared.model.transaction.BidDTO;
+import com.groupproject.shared.model.transaction.AuctionDetail;
 
 public class JoinAuctionResponse extends Response {
-    private Auction auction;
-    private List<BidDTO> pastBids;
+    private AuctionDetail auctionDetail;
 
-    public JoinAuctionResponse(boolean success, Auction auction, List<BidDTO> pastBids, String message) {
+    public JoinAuctionResponse(boolean success, AuctionDetail auctionDetail, String message) {
         super(success, message);
-        this.auction = auction;
-        this.pastBids = pastBids;
+        this.auctionDetail = auctionDetail;
     }
 
     public JoinAuctionResponse(boolean success, String message) {
         super(success, message);
     }
 
-    public Auction getAuction() { return auction; }
-    public List<BidDTO> getPastBids() { return pastBids; }
+    public AuctionDetail getAuctionDetail() { return auctionDetail; }
 }

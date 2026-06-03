@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -20,40 +21,35 @@ import com.groupproject.server.dao.UserDAO;
 import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.shared.model.transaction.Auction;
+import com.groupproject.shared.model.transaction.AuctionDetail;
 import com.groupproject.shared.network.events.AuctionCancelledEvent;
 import com.groupproject.shared.network.events.AuctionEndedEvent;
 import com.groupproject.shared.network.events.AuctionFinisedEvent;
-import com.groupproject.shared.network.events.AuctionFinishedEvent;
 import com.groupproject.shared.network.events.AuctionListUpdateEvent;
 import com.groupproject.shared.network.events.AuctionStartedEvent;
 import com.groupproject.shared.network.events.BalanceUpdateEvent;
 import com.groupproject.shared.network.events.NewBidEvent;
 import com.groupproject.shared.network.events.SystemNotificationEvent;
-import com.groupproject.shared.network.requests.PlaceBidRequest;
+import com.groupproject.shared.network.requests.CreateAuctionRequest;
 import com.groupproject.shared.network.requests.PlaceBidRequest;
 
 public enum AuctionManager {
     INSTANCE;
     
-    // Sử dụng ConcurrentSkipListMap để danh sách luôn tự động được sắp xếp theo Auction ID
     private final ConcurrentSkipListMap<Integer, Auction> activeAuctions = new ConcurrentSkipListMap<>();
-
-    // Tracks active auction scheduler tasks to prevent the Duplicate Scheduler Bug
     private final Set<Integer> scheduledAuctionIds = ConcurrentHashMap.newKeySet();
-
-    // Xử lý tất cả phần thời gian đấu giá của các phiên đấu giá
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(3);
 
+    // A simple cache tracking the last created auction per seller to prevent rapid duplicate inserts
+    private final Map<Integer, Long> lastSubmissionTimePerSeller = new ConcurrentHashMap<>();
+    private final Map<Integer, String> lastSubmissionTitlePerSeller = new ConcurrentHashMap<>();
+
     private AuctionManager() {
-        // Khi khởi tạo, load tất cả các phiên đấu giá đang hoạt động từ database vào bộ nhớ
         loadActiveAuctionsFromDatabase();
         
-        // Đăng ký tiến trình dọn dẹp hệ thống chạy ngầm:
         scheduler.scheduleAtFixedRate(
-            this::runHousekeepingTask, // Công việc dọn dẹp tự động
-            1,                         // Đợi 1 phút sau khi bật Server mới chạy lần đầu
-            5,                         // Sau đó cứ 5 phút thì lặp lại một lần
-            TimeUnit.MINUTES           // Đơn vị thời gian
+            this::runHousekeepingTask, 
+            1, 5, TimeUnit.MINUTES 
         );
     }
     
@@ -63,38 +59,19 @@ public enum AuctionManager {
         broadcastAuctionListUpdate();
     }
 
-    // Lấy các phiên đấu giá có đang hoạt động hoặc đang đặt lịch
-    // ----------------------------------------------------------
-    /**
-     * TỔNG TỔNG VỆ SINH HỆ THỐNG (Housekeeping)
-     * Bao phủ 3 trường hợp: Quá hạn WAITING, Lỡ giờ SCHEDULED, Lỡ giờ ACTIVED
-     */
     private void runHousekeepingTask() {
         ServerLogger.info("--- [Housekeeping] Starting system-wide cleanup scan... ---");
-        
         try {
             LocalDateTime now = LocalDateTime.now();
 
-            // TRƯỜNG HỢP 1: Các phiên WAITING đã "ngâm" quá lâu
-            List<Integer> expiredWaitingIds = AuctionDAO.getExpiredWaitingAuctions(now.minusMinutes(15)); // Giờ bắt đầu dự kiến đã quá 15 phút
-            for (int id : expiredWaitingIds) {
-                ServerLogger.info("[Housekeeping] Cancelling expired WAITING auction: " + id);
-                forceCancelWaitingAuction(id); 
-            }
+            List<Integer> expiredWaitingIds = AuctionDAO.getExpiredWaitingAuctions(now.minusMinutes(15));
+            for (int id : expiredWaitingIds) forceCancelWaitingAuction(id);
 
-            // TRƯỜNG HỢP 2: Các phiên SCHEDULED bị kẹt (lẽ ra phải tự chạy nhưng chưa chạy do sập Server)
             List<Integer> missedScheduledIds = AuctionDAO.getMissedScheduledAuctions(now);
-            for (int id : missedScheduledIds) {
-                ServerLogger.info("[Housekeeping] Auto-starting missed SCHEDULED auction: " + id);
-                startAuction(id); 
-            }
+            for (int id : missedScheduledIds) startAuction(id); 
 
-            // TRƯỜNG HỢP 3: Các phiên ACTIVED đã quá giờ kết thúc nhưng vẫn đang treo do sập Server lúc đang chạy
             List<Integer> missedActiveIds = AuctionDAO.getExpiredActiveAuctions(now);
-            for (int id : missedActiveIds) {
-                ServerLogger.info("[Housekeeping] Finalizing missed ACTIVED auction: " + id);
-                finishAuction(id); 
-            }
+            for (int id : missedActiveIds) finishAuction(id); 
 
             ServerLogger.info("--- [Housekeeping] Cleanup scan completed successfully. ---");
         } catch (Exception e) {
@@ -121,41 +98,146 @@ public enum AuctionManager {
             }
 
             activeAuctions.keySet().removeIf(id -> !fetchedIds.contains(id));
-            
         } catch (Exception e) {
             ServerLogger.error("Error loading active auctions from database: " + e.getMessage());
         }
     }
 
+    // 🌟 FIX 1: Safe Registration Pipeline
     public synchronized void registerNewAuction(Auction auction) {
         if (auction == null) return;
         ServerLogger.info("Registering newly created auction ID: " + auction.getId());
+        
+        // Push it into the RAM tracker first so it is available to the system
         registerAuctionInternal(auction);
+        
+        // Tell everyone a new auction exists
         broadcastAuctionListUpdate(); 
     }
 
     public List<Auction> getUserAuctions(int userId) {
-        return AuctionDAO.getAuctionsBySellerId(userId);
+        return AuctionDAO.getAuctionsBySellerId(userId, null); // Using the proper method name from your DAO
     }
 
-    // Kết nối với hệ thống lập lịch mà không bị trùng lặp task
-    // --------------------------------------------------------
+    public AuctionDetail getAuctionDetail(int auctionId) {
+        try {
+            Auction baseAuction = activeAuctions.get(auctionId);
+
+            if (baseAuction == null) {
+                ServerLogger.warning("Auction " + auctionId + " not found in live RAM cache.");
+                return null; 
+            }
+
+            String description = AuctionDAO.getAuctionDescription(auctionId);
+            java.util.Map<Integer, java.util.Map<String, String>> specs = AuctionDAO.getSpecificationsForAuction(auctionId);
+            java.util.List<com.groupproject.shared.model.transaction.BidDTO> pastBids = BidDAO.getBidsForAuction(auctionId);
+
+            java.util.List<String> subImagePaths = AuctionDAO.getSubImagePaths(auctionId);
+            java.util.List<byte[]> subImageBytes = new java.util.ArrayList<>();
+            for (String path : subImagePaths) {
+                byte[] img = com.groupproject.server.utils.ImageStorageManager.loadImage(path);
+                if (img != null) subImageBytes.add(img);
+            }
+
+            return new AuctionDetail(baseAuction, description, subImageBytes, pastBids, specs);
+
+        } catch (Exception e) {
+            ServerLogger.error("Failed to assemble AuctionDetail: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public Auction createAuction(CreateAuctionRequest req, int sellerId) {
+        long currentTime = System.currentTimeMillis();
+
+        // Check if this seller just pushed an auction with the exact same title in the last 3 seconds
+        if (lastSubmissionTitlePerSeller.containsKey(sellerId) && 
+            lastSubmissionTitlePerSeller.get(sellerId).equals(req.getTitle())) {
+            
+            long timeDelta = currentTime - lastSubmissionTimePerSeller.getOrDefault(sellerId, 0L);
+            if (timeDelta < 3000) { // 3-second block window
+                ServerLogger.warning("Duplicate auction request rejected for Seller ID: " + sellerId);
+                return null; // Reject handling duplicate request
+            }
+        }
+
+        // Record this submission
+        lastSubmissionTimePerSeller.put(sellerId, currentTime);
+        lastSubmissionTitlePerSeller.put(sellerId, req.getTitle());
+        try {
+            String mainImagePath = null;
+            if (req.getMainImageBytes() != null && req.getMainImageBytes().length > 0) {
+                mainImagePath = com.groupproject.server.utils.ImageStorageManager.saveImage(
+                    req.getMainImageBytes(), "main_" + sellerId + "_" + System.currentTimeMillis() + ".jpg"
+                );
+            }
+
+            List<String> subImagePaths = new ArrayList<>();
+            if (req.getSubImagesBytes() != null) {
+                for (int i = 0; i < req.getSubImagesBytes().size(); i++) {
+                    byte[] subBytes = req.getSubImagesBytes().get(i);
+                    if (subBytes != null && subBytes.length > 0) {
+                        subImagePaths.add(com.groupproject.server.utils.ImageStorageManager.saveImage(
+                            subBytes, "sub_" + sellerId + "_" + i + "_" + System.currentTimeMillis() + ".jpg"
+                        ));
+                    }
+                }
+            }
+
+            // 🌟 FIX 2: Ensure the returned auction has a proper ID and Time parameters
+            Auction newAuction = AuctionDAO.createAuction(
+                sellerId, req.getTitle(), mainImagePath, subImagePaths, 
+                req.getDescription(), req.getCategory(), req.getCategoryGroupedSpecs(),
+                req.getStartingPrice(), req.getDuration(), req.getStartTime(), req.getEndTime(), req.getStatus()
+            );
+
+            if (newAuction != null) {
+                // Pre-load the bytes so clients online don't have to wait for a DB refresh
+                newAuction.setMainImageBytes(req.getMainImageBytes());
+                
+                // If it's starting immediately, activate its timer and broadcast it
+                if (newAuction.getStatus() == AuctionStatus.ACTIVATED || newAuction.getStatus() == AuctionStatus.SCHEDULED) {
+                     registerNewAuction(newAuction);
+                } else {
+                     // Even if it's WAITING, we should still track it in memory so the creator can see it in their list
+                     activeAuctions.put(newAuction.getId(), newAuction);
+                     broadcastAuctionListUpdate();
+                }
+                return newAuction;
+            }
+        } catch (Exception e) {
+            ServerLogger.error("Failed to process auction creation: " + e.getMessage());
+        }
+        return null;
+    }
+
+    // 🌟 FIX 3: Robust Null Checking on Dates inside Internal Registration
     private void registerAuctionInternal(Auction auction) {
+        ServerLogger.info("Registering auction internal: ID " + auction.getId());
+        
+        // Safely push to RAM
         activeAuctions.put(auction.getId(), auction);
 
         if (auction.getStatus() == AuctionStatus.ACTIVATED) {
             if (!scheduledAuctionIds.contains(auction.getId())) {
+                if (auction.getEndTime() == null) {
+                    ServerLogger.error("CRITICAL: ACTIVATED Auction " + auction.getId() + " has no EndTime! Cannot schedule.");
+                    return;
+                }
                 long delayInSeconds = Duration.between(LocalDateTime.now(), auction.getEndTime()).toSeconds();
                 if (delayInSeconds < 0) delayInSeconds = 0;
 
                 int auctionId = auction.getId();
                 scheduledAuctionIds.add(auctionId);
-                
                 scheduler.schedule(() -> finishAuction(auctionId), delayInSeconds, TimeUnit.SECONDS);
                 ServerLogger.info("Auction " + auctionId + " expiration countdown set for " + delayInSeconds + "s.");
             }
         } else if (auction.getStatus() == AuctionStatus.SCHEDULED) {
             if (!scheduledAuctionIds.contains(auction.getId())) {
+                if (auction.getStartTime() == null) {
+                    ServerLogger.error("CRITICAL: SCHEDULED Auction " + auction.getId() + " has no StartTime! Cannot schedule.");
+                    return;
+                }
                 long delayStart = Duration.between(LocalDateTime.now(), auction.getStartTime()).toSeconds();
                 int auctionId = auction.getId();
                 scheduledAuctionIds.add(auctionId);
@@ -169,27 +251,19 @@ public enum AuctionManager {
         Auction auction = activeAuctions.remove(auctionId);
         scheduledAuctionIds.remove(auctionId);
         if (auction != null) {
-            // ESCROW: Hoàn tiền nếu đã có người đặt giá (an toàn phòng trường hợp bất thường)
             if (auction.getHighestBidderId() != null && auction.getCurrentBid() > 0) {
                 boolean refundOk = UserDAO.addBalance(auction.getHighestBidderId(), auction.getCurrentBid());
-                ServerLogger.info("[Escrow] Refunded $" + auction.getCurrentBid()
-                        + " to bidder " + auction.getHighestBidderId() + " (force-cancel WAITING)"
-                        + (refundOk ? " OK" : " FAILED!"));
                 if (refundOk) {
                     double newBal = UserDAO.getBalance(auction.getHighestBidderId());
                     ClientManager.INSTANCE.sendToUser(auction.getHighestBidderId(), new BalanceUpdateEvent(auction.getHighestBidderId(), newBal));
                 }
             }
-
-            boolean isUpdated = AuctionDAO.updateAuctionStatusOnly(auctionId, AuctionStatus.CANCELLED);
+            boolean isUpdated = AuctionDAO.updateAuctionStatus(auctionId, AuctionStatus.CANCELLED);
             if (isUpdated) {
                 auction.setStatus(AuctionStatus.CANCELLED);
-                ServerLogger.info("Auction " + auctionId + " forced to CANCELLED because it expired in WAITING state.");
-
                 AuctionCancelledEvent event = new AuctionCancelledEvent(auctionId, "Phiên đấu giá bị hệ thống hủy do không được bắt đầu đúng hạn.");
                 ClientManager.INSTANCE.broadcastSystemEvent(event);
                 ClientManager.INSTANCE.broadcastEventToAuction(auctionId, event);
-
                 ClientManager.INSTANCE.removeAuctionRoom(auctionId);
             }
         }
@@ -199,27 +273,20 @@ public enum AuctionManager {
         Auction auction = activeAuctions.remove(auctionId);
         scheduledAuctionIds.remove(auctionId);
         if (auction != null) {
-            // ESCROW: Hoàn tiền cho người đang giữ giá cao nhất trước khi hủy
             if (auction.getHighestBidderId() != null && auction.getCurrentBid() > 0) {
                 boolean refundOk = UserDAO.addBalance(auction.getHighestBidderId(), auction.getCurrentBid());
-                ServerLogger.info("[Escrow] Refunded $" + auction.getCurrentBid()
-                        + " to bidder " + auction.getHighestBidderId() + " (manual cancel)"
-                        + (refundOk ? " OK" : " FAILED!"));
                 if (refundOk) {
                     double newBal = UserDAO.getBalance(auction.getHighestBidderId());
                     ClientManager.INSTANCE.sendToUser(auction.getHighestBidderId(), new BalanceUpdateEvent(auction.getHighestBidderId(), newBal));
                 }
             }
 
-            boolean isUpdated = AuctionDAO.updateAuctionStatusOnly(auctionId, AuctionStatus.CANCELLED);
+            boolean isUpdated = AuctionDAO.updateAuctionStatus(auctionId, AuctionStatus.CANCELLED);
             if (isUpdated) {
                 auction.setStatus(AuctionStatus.CANCELLED);
-                ServerLogger.info("Auction " + auctionId + " manually CANCELLED and removed from active RAM memory.");
-
                 AuctionCancelledEvent cancelledEvent = new AuctionCancelledEvent(auctionId, "Phiên đấu giá đã bị hủy bởi người bán hoặc quản trị viên.");
                 ClientManager.INSTANCE.broadcastSystemEvent(cancelledEvent);
                 ClientManager.INSTANCE.broadcastEventToAuction(auctionId, cancelledEvent);
-
                 ClientManager.INSTANCE.removeAuctionRoom(auctionId);
             }
         }
@@ -230,14 +297,13 @@ public enum AuctionManager {
         scheduledAuctionIds.remove(auctionId);
         if (auction == null || auction.getStatus() != AuctionStatus.ACTIVATED) return;
 
-        if (AuctionDAO.updateAuctionStatusOnly(auctionId, AuctionStatus.FINISHED)) {
+        if (AuctionDAO.updateAuctionStatus(auctionId, AuctionStatus.FINISHED)) {
             auction.setStatus(AuctionStatus.FINISHED);
             ServerLogger.info("Auction " + auctionId + " time count end. Status changed to FINISHED.");
 
             AuctionFinisedEvent finishedEvent = new AuctionFinisedEvent(auctionId, auction.getHighestBidderId() != null ? auction.getHighestBidderId() : 0, auction.getCurrentBid());
             ClientManager.INSTANCE.broadcastEventToAuction(auctionId, finishedEvent);
             ClientManager.INSTANCE.broadcastSystemEvent(finishedEvent);
-
 
             double finalPrice = auction.getCurrentBid();
             Integer winnerId = auction.getHighestBidderId();
@@ -249,16 +315,12 @@ public enum AuctionManager {
                 return;
             }
 
-            // ESCROW: Tiền winner đã bị trừ lúc đặt giá, chỉ cần cộng cho seller
             boolean payOk = UserDAO.addBalance(sellerId, finalPrice);
             if (payOk) {
-                ServerLogger.info("[Escrow] Paid $" + finalPrice + " to seller " + sellerId + " for auction " + auctionId);
-                // Cập nhật số dư realtime cho seller
                 double sellerNewBal = UserDAO.getBalance(sellerId);
                 ClientManager.INSTANCE.sendToUser(sellerId, new BalanceUpdateEvent(sellerId, sellerNewBal));
                 endAuction(auctionId);
             } else {
-                // Không thể trả tiền cho seller (lỗi DB nghiêm trọng): hoàn tiền winner và hủy
                 ServerLogger.error("Critical: Failed to pay seller for auction " + auctionId + ". Refunding winner " + winnerId);
                 boolean refundWinnerOk = UserDAO.addBalance(winnerId, finalPrice);
                 if (refundWinnerOk) {
@@ -270,70 +332,49 @@ public enum AuctionManager {
         }
     }
 
-
-
     public List<Auction> getActiveAuctionList() {
-        ServerLogger.info("Getting activated auction list");
-        if (activeAuctions.isEmpty()) {
-            ServerLogger.warning("Found no activated auction");
-            return new ArrayList<>(); 
-        } 
-        List<Auction> activeAuctionList = new ArrayList<>(activeAuctions.values());
-        ServerLogger.info("Finish getting activated auction list with " + activeAuctionList.size() + " auctions");
-        return activeAuctionList;
+        if (activeAuctions.isEmpty()) return new ArrayList<>(); 
+        return new ArrayList<>(activeAuctions.values());
     }
 
-    public synchronized boolean placeBid(int auctionId, int bidderId, double bidAmount) {
+    public boolean placeBid(int auctionId, int bidderId, double bidAmount) {
         Auction auction = activeAuctions.get(auctionId);
-        if (auction == null || auction.getStatus() != AuctionStatus.ACTIVATED) {
-            ServerLogger.warning("Bid rejected: Auction " + auctionId + " is not active.");
-            return false;
-        }
+        if (auction == null || auction.getStatus() != AuctionStatus.ACTIVATED) return false;
 
         double minimalRequired = Math.max(auction.getCurrentBid(), auction.getStartingPrice());
-        if (bidAmount <= minimalRequired) {
-            ServerLogger.warning("Bid rejected: Amount $" + bidAmount + " is too low.");
-            return false;
-        }
+        if (bidAmount <= minimalRequired) return false;
 
-        // Lưu lại thông tin người đang giữ giá cũ trước khi ghi đè (dùng cho ESCROW refund)
-        Integer previousBidderId  = auction.getHighestBidderId();
-        double  previousBidAmount = auction.getCurrentBid();
+        Integer previousBidderId = auction.getHighestBidderId();
 
-        // insertBid xử lý toàn bộ escrow (double-check, trừ tiền mới, hoàn tiền cũ) trong 1 transaction
-        boolean dbSuccess = BidDAO.insertBid2(auctionId, bidderId, bidAmount, previousBidderId, previousBidAmount);
-        if (dbSuccess) {
-            auction.setCurrentBid(bidAmount);
-            auction.setHighestBidderId(bidderId);
-            ServerLogger.info("User " + bidderId + " successfully bid $" + bidAmount + " on Auction " + auctionId);
+        synchronized (auction) { 
+            if (bidAmount <= auction.getCurrentBid()) return false; 
 
-            // Cập nhật số dư realtime cho người vừa đặt giá (tiền bị trừ)
-            double bidderNewBal = UserDAO.getBalance(bidderId);
-            ClientManager.INSTANCE.sendToUser(bidderId, new BalanceUpdateEvent(bidderId, bidderNewBal));
+            boolean dbSuccess = BidDAO.insertBid(auctionId, bidderId, bidAmount);
 
-            // Auto-subscribe người vừa trở thành highest bidder vào phòng
-            ClientManager.INSTANCE.subscribeUserToAuction(auctionId, bidderId);
+            if (dbSuccess) {
+                auction.setCurrentBid(bidAmount);
+                auction.setHighestBidderId(bidderId);
 
-            // BƯỚC 1: Broadcast NewBidEvent cho toàn phòng TRƯỚC (kể cả người bị outbid vẫn còn trong phòng)
-            NewBidEvent roomUpdate = new NewBidEvent(auctionId, bidAmount, bidderId);
-            ClientManager.INSTANCE.broadcastEventToAuction(auctionId, roomUpdate);
+                double bidderNewBal = UserDAO.getBalance(bidderId);
+                ClientManager.INSTANCE.sendToUser(bidderId, new BalanceUpdateEvent(bidderId, bidderNewBal));
 
-            // BƯỚC 2: Sau khi người bị outbid đã nhận được thông báo, mới unsubscribe họ ra khỏi phòng
-            if (previousBidderId != null && previousBidderId != bidderId) {
-                ClientManager.INSTANCE.unsubscribeUserFromAuction(auctionId, previousBidderId);
-                // Cập nhật số dư cho người bị outbid (tiền được hoàn)
-                double prevBidderNewBal = UserDAO.getBalance(previousBidderId);
-                ClientManager.INSTANCE.sendToUser(previousBidderId, new BalanceUpdateEvent(previousBidderId, prevBidderNewBal));
+                ClientManager.INSTANCE.subscribeUserToAuction(auctionId, bidderId);
+
+                NewBidEvent roomUpdate = new NewBidEvent(auctionId, bidAmount, bidderId);
+                ClientManager.INSTANCE.broadcastEventToAuction(auctionId, roomUpdate);
+
+                if (previousBidderId != null && previousBidderId != bidderId) {
+                    ClientManager.INSTANCE.unsubscribeUserFromAuction(auctionId, previousBidderId);
+                    double prevBidderNewBal = UserDAO.getBalance(previousBidderId);
+                    ClientManager.INSTANCE.sendToUser(previousBidderId, new BalanceUpdateEvent(previousBidderId, prevBidderNewBal));
+                }
+
+                broadcastAuctionListUpdate();
+                return true;
             }
-
-            broadcastAuctionListUpdate();
-            return true;
-        } else {
-            ServerLogger.error("Failed to save bid to DB for Auction " + auctionId);
-            return false;
         }
+        return false; 
     }
-
 
     public synchronized boolean placeBid(PlaceBidRequest request, ClientHandler clientContext) {
         if (request == null || clientContext.getAuthenticatedUserId() == null) return false;
@@ -349,206 +390,108 @@ public enum AuctionManager {
         scheduledAuctionIds.remove(auctionId);
         
         if (auction != null) {
-            ServerLogger.info("Auction " + auctionId + " reached deadline. Concluding automatically.");
             auction.setStatus(AuctionStatus.ENDED);
             AuctionDAO.updateAuctionStatus(auctionId, AuctionStatus.ENDED);
             
-            // 1. DETERMINE THE WINNER
             Integer winnerId = auction.getHighestBidderId();
             double winningBid = auction.getCurrentBid();
 
-            // 2. BROADCAST TO THE ROOM SO THEIR UI LOCKS UP INSTANTLY
             AuctionEndedEvent endedEvent = new AuctionEndedEvent(auctionId, winnerId, winningBid);
             ClientManager.INSTANCE.broadcastEventToAuction(auctionId, endedEvent);
 
-            // 🌟 2. PERSISTENT INBOX: Save a notification for everyone who participated
             List<Integer> participantIds = BidDAO.getUniqueBidders(auctionId);
             for (Integer userId : participantIds) {
-                String message;
-                if (userId == auction.getHighestBidderId()) {
-                    message = "🏆 You WON the auction for '" + auction.getTitle() + "' with a bid of $" + auction.getCurrentBid() + "!";
-                } else {
-                    message = "❌ You lost the auction for '" + auction.getTitle() + "'. It sold for $" + auction.getCurrentBid() + ".";
-                }
-                // Save to database permanently!
+                String message = (userId.equals(winnerId)) ? 
+                    "🏆 You WON the auction for '" + auction.getTitle() + "' with a bid of $" + winningBid + "!" :
+                    "❌ You lost the auction for '" + auction.getTitle() + "'. It sold for $" + winningBid + ".";
                 NotificationDAO.createNotification(userId, message);
             }
 
-            // LUỒNG 3: Ghi nhận Log hoàn tất giao dịch cho Admin
             SystemNotificationEvent adminLog = new SystemNotificationEvent(
                 "Phiên ID " + auctionId + " thành công mỹ mãn. Winner ID: " + winnerId + " chốt giá " + winningBid, "Hệ Thống"
             );
             ClientManager.INSTANCE.broadcastToAdmins(adminLog);
 
-            // Giải tán phòng đấu giá hoàn toàn
             ClientManager.INSTANCE.removeAuctionRoom(auctionId);
-            // =====================================================================
-
-            // 3. Broadcast global update so the card vanishes on the Home Screen
             broadcastAuctionListUpdate();
         }
     }
 
-
     public void broadcastAuctionListUpdate() {
         List<Auction> currentAuctions = getActiveAuctionList();
         AuctionListUpdateEvent updateEvent = new AuctionListUpdateEvent(currentAuctions, LocalDateTime.now());
-        
-        // Dispatches through your thread-safe systemic broadcast mechanism
         ClientManager.INSTANCE.broadcastSystemEvent(updateEvent);
-        ServerLogger.info("Dispatched live AuctionListUpdateEvent to all connected users.");
     }
 
-
-    
-
-
-    // Thêm một phiên đấu giá mới vào hệ thống (dùng khi tạo mới hoặc load từ DB)
-    public void registerAuction(Auction auction) {
-        activeAuctions.put(auction.getId(), auction);
-
-        if (auction.getStatus() == AuctionStatus.ACTIVATED) {
-            // Đếm ngược đến endTime chuyển từ ACTIVED -> FINISHED
-            long delayEnd = Duration.between(LocalDateTime.now(), auction.getEndTime()).toSeconds();
-            scheduler.schedule(() -> finishAuction(auction.getId()), Math.max(0, delayEnd), TimeUnit.SECONDS);
-            
-        } else if (auction.getStatus() == AuctionStatus.SCHEDULED) {
-            // Đếm ngược đến startTime chuyển từ SCHEDULED -> ACTIVED
-            long delayStart = Duration.between(LocalDateTime.now(), auction.getStartTime()).toSeconds();
-            scheduler.schedule(() -> startAuction(auction.getId()), Math.max(0, delayStart), TimeUnit.SECONDS);
-            
-            ServerLogger.info("Auction " + auction.getId() + " is SCHEDULED. Start timer set in " + delayStart + "s.");
-        }
-    }
-
-    // =========================================================================
-    // 2. NHÓM TÁC VỤ THỦ CÔNG (MANUAL ACTIONS - Do người dùng/Admin tác động)
-    // =========================================================================
-
-    /**
-     * Dùng khi người bán tự bấm nút "Start Now" (Chuyển WAITING -> ACTIVED)
-     */
     public void activateWaitingAuction(Auction updatedAuction) {
         activeAuctions.put(updatedAuction.getId(), updatedAuction);
 
         long delayEnd = Duration.between(LocalDateTime.now(), updatedAuction.getEndTime()).toSeconds();
-        if (delayEnd < 0) { delayEnd = 0; }
+        if (delayEnd < 0) delayEnd = 0;
 
         scheduledAuctionIds.add(updatedAuction.getId());
         scheduler.schedule(() -> finishAuction(updatedAuction.getId()), delayEnd, TimeUnit.SECONDS);
 
-        ServerLogger.info("Auction " + updatedAuction.getId() + " manually ACTIVATED. End timer set in " + delayEnd + "s.");
-        
-        // =====================================================================
-        // [RÁP EVENT] KÍCH HOẠT THỦ CÔNG PHIÊN ĐẤU GIÁ
-        // =====================================================================
-        // LUỒNG 1: Bắn cho toàn hệ thống (Lobby) biết để hiển thị thẻ đấu giá đang hoạt động
         AuctionStartedEvent event = new AuctionStartedEvent(updatedAuction.getId());
         ClientManager.INSTANCE.broadcastSystemEvent(event);
 
-        // LUỒNG 3: Báo cho Admin lưu log hiển thị hệ thống
         SystemNotificationEvent adminLog = new SystemNotificationEvent(
             "Người bán đã kích hoạt thủ công phiên đấu giá ID: " + updatedAuction.getId(), "Hệ Thống"
         );
         ClientManager.INSTANCE.broadcastToAdmins(adminLog);
-        // =====================================================================
     }
 
-
-    // =========================================================================
-    // 3. NHÓM VÒNG ĐỜI TỰ ĐỘNG (AUTO LIFECYCLE - Do Scheduler tự kích hoạt)
-    // =========================================================================
-
-    /**
-     * TỰ ĐỘNG mở phiên đấu giá đã lên lịch (Chuyển SCHEDULED -> ACTIVED)
-     */
     private void startAuction(int auctionId) {
         Auction auction = activeAuctions.get(auctionId);
         
         if (auction != null && auction.getStatus() == AuctionStatus.SCHEDULED) {
             LocalDateTime now = LocalDateTime.now();
-            
-            boolean isUpdatedInDb = AuctionDAO.updateAuctionStatus(auctionId, AuctionStatus.ACTIVATED, now);
+            boolean isUpdatedInDb = AuctionDAO.updateAuctionStatusWithTime(auctionId, AuctionStatus.ACTIVATED, now, null);
             
             if (isUpdatedInDb) {
                 auction.setStatus(AuctionStatus.ACTIVATED);
                 auction.setStartTime(now); 
                 
                 long delayEnd = Duration.between(now, auction.getEndTime()).toSeconds();
-                if (delayEnd < 0) { delayEnd = 0; }
+                if (delayEnd < 0) delayEnd = 0;
                 
                 scheduler.schedule(() -> finishAuction(auctionId), delayEnd, TimeUnit.SECONDS);
                 
-                ServerLogger.info("Auction " + auctionId + " auto-started from SCHEDULED. End timer set in " + delayEnd + "s.");
-                
-                // =====================================================================
-                // [RÁP EVENT] TỰ ĐỘNG MỞ PHIÊN ĐẤU GIÁ ĐÃ LÊN LỊCH
-                // =====================================================================
                 AuctionStartedEvent event = new AuctionStartedEvent(auctionId);
-                
-                // LUỒNG 1: Phát toàn hệ thống để trang chủ Client kích hoạt đổi màu trạng thái
                 ClientManager.INSTANCE.broadcastSystemEvent(event);
-
-                // LUỒNG 2: Báo cho những người đã trực trong phòng từ trước
                 ClientManager.INSTANCE.broadcastEventToAuction(auctionId, event);
 
-                // LUỒNG 3: Báo cho Admin lưu log sự kiện
                 SystemNotificationEvent adminLog = new SystemNotificationEvent(
-                    "Hệ thống tự động kích hoạt phiên đấu giá lên lịch thành công (ID: " + auctionId + ")", "Hệ Thống"
+                    "Hệ thống tự động kích hoạt phiên đấu giá (ID: " + auctionId + ")", "Hệ Thống"
                 );
                 ClientManager.INSTANCE.broadcastToAdmins(adminLog);
-                // =====================================================================
-            } else {
-                ServerLogger.error("Failed to auto-start SCHEDULED auction " + auctionId + " in Database.");
             }
         }
     }
 
-    /**
-     * TỰ ĐỘNG hủy phiên đấu giá do không có người mua hoặc lỗi giao dịch (Chuyển FINISHED -> CANCELLED)
-     */
     private void cancelFinishedAuction(int auctionId) {
         Auction auction = activeAuctions.get(auctionId);
         
         if (auction != null && auction.getStatus() == AuctionStatus.FINISHED) {
-            boolean isCancelledInDb = AuctionDAO.updateAuctionStatusOnly(auctionId, AuctionStatus.CANCELLED);
+            boolean isCancelledInDb = AuctionDAO.updateAuctionStatus(auctionId, AuctionStatus.CANCELLED);
             
             if (isCancelledInDb) {
                 auction.setStatus(AuctionStatus.CANCELLED);
-                activeAuctions.remove(auctionId); // Xóa khỏi RAM quản lý
-                ServerLogger.info("Auction " + auctionId + " fully CANCELLED and cleared from RAM.");
+                activeAuctions.remove(auctionId); 
 
-                // =====================================================================
-                // [RÁP EVENT] GIAO DỊCH THẤT BẠI - HỦY PHIÊN ĐÃ KẾT THÚC
-                // =====================================================================
-                AuctionCancelledEvent cancelledEvent = new AuctionCancelledEvent(auctionId, "Không có người đặt giá hoặc người mua không đủ số dư thanh toán.");
-
-                // LUỒNG 2: Báo lỗi thanh toán/không ai Bid cho những người trong phòng biết
+                AuctionCancelledEvent cancelledEvent = new AuctionCancelledEvent(auctionId, "Không có người đặt giá hoặc giao dịch lỗi.");
                 ClientManager.INSTANCE.broadcastEventToAuction(auctionId, cancelledEvent);
-
-                // LUỒNG 1: Báo toàn hệ thống gỡ hoàn toàn thẻ đấu giá này
                 ClientManager.INSTANCE.broadcastSystemEvent(cancelledEvent);
 
-                // LUỒNG 3: Báo cho Admin log hệ thống
                 SystemNotificationEvent adminLog = new SystemNotificationEvent(
-                    "Phiên ID " + auctionId + " bị hệ thống hủy. Lý do: Không ai Bid hoặc ví của người thắng không đủ tiền.", "Hệ Thống"
+                    "Phiên ID " + auctionId + " bị hủy. Không ai Bid hoặc ví không đủ.", "Hệ Thống"
                 );
                 ClientManager.INSTANCE.broadcastToAdmins(adminLog);
-
-                // Giải tán phòng đấu giá
                 ClientManager.INSTANCE.removeAuctionRoom(auctionId);
-                // =====================================================================
             }
         }
     }
 
-    // =========================================================================
-    // 4. NHÓM XỬ LÝ ĐẤU GIÁ (BID HANDLING)
-    // =========================================================================
-
-    /**
-     * Cập nhật thông tin giá trị phiên đấu giá trên RAM sau khi Database đã ghi nhận Bid thành công
-     */
     public synchronized void updateRamAfterBid(int auctionId, int bidderId, double bidAmount) {
         Auction auction = activeAuctions.get(auctionId);
         if (auction != null) {
@@ -556,5 +499,4 @@ public enum AuctionManager {
             auction.setHighestBidderId(bidderId);
         }
     }
-
 }

@@ -1,4 +1,5 @@
 package com.groupproject.client;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -16,7 +17,9 @@ import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
 import com.groupproject.client.utils.TimeUtil;
 import com.groupproject.shared.model.transaction.Auction;
+import com.groupproject.shared.model.transaction.AuctionDetail;
 import com.groupproject.shared.model.transaction.BidDTO;
+import com.groupproject.shared.model.user.User;
 import com.groupproject.shared.network.events.AuctionEndedEvent;
 import com.groupproject.shared.network.events.AuctionFinisedEvent;
 import com.groupproject.shared.network.events.AuctionStartedEvent;
@@ -41,14 +44,18 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 // MAX_BIDS_TO_DISPLAY: có thể thêm nếu cần thiết bởi không cần thiết phải lấy hết tất cả mà chỉ cần lấy 10 người đứng đầu thôi chẳng hạn.
 public class AuctionController implements Initializable, LifecycleController,  AuctionListener  {
     private Auction currentAuction;
+    private List<BidDTO> bidHistory;
     private Timeline timeline;
     private final int MAX_BIDS_TO_DISPLAY=20;
 
     @FXML private Label auctionsession;       // The title header
+    @FXML private Label auctiondescription;
     @FXML private Label auctioncurrentprice;  // The right panel price
     @FXML private Label auctiontimeleft;      // The right panel time
 
@@ -69,28 +76,24 @@ public class AuctionController implements Initializable, LifecycleController,  A
     @FXML private Label participant;
     @FXML private Label auctionproductname;
 
+    @FXML private ImageView mainImageView;
+    @FXML private HBox subImagesContainer;
+
     @FXML 
     private void switchtoHome(ActionEvent event) throws IOException {
         SceneNavigator.INSTANCE.goTo("/com/groupproject/client/FXML/mainscreen.fxml");
     }
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // cài đặt một cái được tích hợp để phát thông báo 
-        currentAuction = SessionManager.INSTANCE.getCurrentViewingAuction();
-        int id = currentAuction.getId();
-        
-        // Cài đặt bảng 
+        // Cài đặt bảng lịch sử đấu giá và linchart giá tiền 
         setUpTableView();
-        // Linechart
         setupLineChart();
 
-        // 3. Load basic auction data
-        // Retrieve the auction we just joined from the SessionManager
-        this.currentAuction = SessionManager.INSTANCE.getCurrentViewingAuction();
+        // Lấy data từ SessionManager
+        setupAuctionFromSession();
         
-        if (this.currentAuction != null) {
-            setupUI();
-        }
+        // Start live countdown timer updates if timeline layout exists
+        setupCountdownTimeline();
 
         // 2. REGISTER NETWORK LISTENERS
         ClientMessageRouter.INSTANCE.onEvent(NewBidEvent.class, this::handleNewBidEvent);
@@ -98,13 +101,98 @@ public class AuctionController implements Initializable, LifecycleController,  A
         ClientMessageRouter.INSTANCE.onResponse(PlaceBidResponse.class, this::handlePlaceBidResponse);
     }
 
-    public void setAuction(Auction auction) {
-        this.currentAuction = auction;
-        // Subscribe directly! No middleman needed.
-        AuctionEventBus.getInstance().subscribe(auction.getId(), this);
+    private void setupAuctionFromSession() {
+        AuctionDetail detail = SessionManager.INSTANCE.getCurrentAuctionDetail();
         
-        // Register the bid response listener directly here
-        ClientMessageRouter.INSTANCE.onResponse(PlaceBidResponse.class, this::handleBidResponse);
+        if (detail == null) {
+            ClientLogger.warning("Failed to populate UI: No target AuctionDetail payload bound inside SessionManager context.");
+            AlertUtils.showError("Error", "Could not load auction view details.");
+            return;
+        }
+
+        this.currentAuction = detail.getAuction();
+
+        // 1. Map Texts
+        if (auctionsession != null) { auctionsession.setText(currentAuction.getTitle()); }
+        if (auctiondescription != null) { auctiondescription.setText(detail.getDescription()); }
+
+        // 2. Map Images (Main & Sub Images)
+        loadImages(detail);
+
+        // 3. Normalize starting vs current bidding price layout configuration
+        double displayPrice = (currentAuction.getCurrentBid() > 0) 
+                ? currentAuction.getCurrentBid() 
+                : currentAuction.getStartingPrice();
+        updatePriceDisplay(displayPrice);
+
+        // 4. Setup Bid History (Table & Graph)
+        populateBidHistoryUI(detail.getBidHistory());
+
+        // 5. Setup Countdown Timer
+        setupCountdownTimeline();
+
+        // 6. Security Check: Disable bidding if the user is the seller
+        User currentUser = SessionManager.INSTANCE.getCurrentUser();
+        if (currentUser != null && currentUser.getId() == currentAuction.getSellerId()) {
+            bidButton.setDisable(true);
+            enterprice.setDisable(true);
+            enterprice.setPromptText("Cannot bid on your own item");
+        }
+
+        // 7. Subscribe to real-time events via EventBus
+        AuctionEventBus.getInstance().subscribe(currentAuction.getId(), this);
+    }
+
+    // Tải và hiển thị các hình ảnh chính và phụ
+    // -----------------------------------------
+    private void loadImages(AuctionDetail detail) {
+        // Load Main Image
+        if (mainImageView != null && currentAuction.getMainImageBytes() != null) {
+            try {
+                ByteArrayInputStream bis = new ByteArrayInputStream(currentAuction.getMainImageBytes());
+                mainImageView.setImage(new Image(bis));
+            } catch (Exception e) {
+                ClientLogger.error("Failed to load main image: " + e.getMessage());
+            }
+        }
+
+        // Load Sub Images if container exists
+        if (subImagesContainer != null && detail.getSubImageBytesList() != null) {
+            subImagesContainer.getChildren().clear();
+            for (byte[] imgBytes : detail.getSubImageBytesList()) {
+                try {
+                    ImageView subView = new ImageView(new Image(new ByteArrayInputStream(imgBytes)));
+                    subView.setFitHeight(80);
+                    subView.setFitWidth(80);
+                    subView.setPreserveRatio(true);
+                    subImagesContainer.getChildren().add(subView);
+                } catch (Exception e) {
+                    ClientLogger.error("Failed to load a sub image.");
+                }
+            }
+        }
+    }
+
+    // Lấy lịch sử bid và thêm vào bảng 
+    // --------------------------------
+    private void populateBidHistoryUI(List<BidDTO> pastBids) {
+        // Plot the starting price at the beginning of the graph
+        bidGraphSeries.getData().add(new XYChart.Data<>("Start", currentAuction.getStartingPrice()));
+
+        if (pastBids != null && !pastBids.isEmpty()) {
+            // pastBids comes from DB as [Newest, Older, Oldest]
+            // We loop backwards to add them as [Oldest, Older, Newest]
+            for (int i = pastBids.size() - 1; i >= 0; i--) {
+                BidDTO bid = pastBids.get(i);
+                // Add to the bottom of the table
+                bidHistoryList.add(bid);
+            }
+            for (int i = 0; i < pastBids.size(); i++) {
+                BidDTO bid = pastBids.get(i);
+                // Add to the graph (Left to Right)
+                bidGraphSeries.getData().add(new XYChart.Data<>(bid.getTimeString(), bid.getAmount()));
+            }
+        }
     }
 
     // Cài đặt bảng hiển thị các lượt bid từ trước
@@ -127,64 +215,42 @@ public class AuctionController implements Initializable, LifecycleController,  A
         linechart.setAnimated(false); // Prevents graphical glitches when spamming bid
     }
 
-    // Cài đặt UI
-    // ----------
-    private void setupUI() {
-        auctionsession.setText(currentAuction.getTitle());
-        
-        double displayPrice = (currentAuction.getCurrentBid() > 0) ? currentAuction.getCurrentBid() : currentAuction.getStartingPrice();
-        auctioncurrentprice.setText("Price: $" + displayPrice);        
-
-        // Cài đặt đồng hồ bấm giờ
+    // Hàm tính và hiển thị thời gian còn lại
+    // --------------------------------------
+    private void setupCountdownTimeline() {
         if (currentAuction.getEndTime() != null) {
-            timeline = new Timeline(new KeyFrame(javafx.util.Duration.seconds(1), event -> {
-                updateCountDown();
-            }));
+            timeline = new Timeline(new KeyFrame(javafx.util.Duration.seconds(1), event -> updateCountDown()));
             timeline.setCycleCount(Timeline.INDEFINITE);
             timeline.play();
             updateCountDown(); // Run once immediately
-
-            // Plot the starting price on the graph at time 0
-            bidGraphSeries.getData().add(new XYChart.Data<>("Start", currentAuction.getStartingPrice()));
-            
-            // 4. LOAD HISTORICAL BIDS
-            List<BidDTO> pastBids = SessionManager.INSTANCE.getCurrentAuctionBids();
-            if (pastBids != null) {
-                for (BidDTO pastBid : pastBids) {
-                    // index 0 means it dynamically pushes the newest rows to the TOP of the table!
-                    bidHistoryList.add(0, pastBid); 
-                    
-                    // Add sequentially to graph so it draws left-to-right
-                    bidGraphSeries.getData().add(new XYChart.Data<>(pastBid.getTimeString(), pastBid.getAmount()));
-                }
-            }
-            
-            // Set final displayed price
-            displayPrice = currentAuction.getCurrentBid() > 0 ? currentAuction.getCurrentBid() : currentAuction.getStartingPrice();
-            updatePriceDisplay(displayPrice);
-
         } else {
             auctiontimeleft.setText("No End Time");
         }
-
     }
-    /* 
-    @Override 
-    public void onBidUpdated(BidUpdatedEvent event) {
-        Platform.runLater(() -> {
-            String priceText = String.format("Current price : %.2f VND", event.getBidAmount());
-            auctioncurrentprice.setText(priceText);
-            updateAuctionUI(event.getAuctionId(),event.getHighestBidderId(),event.getBidAmount());
-            // Vẽ điểm trên đồ thị khi có BidUpdated 
-            priceSeries.getData().add(new XYChart.Data<>(event.getTimeStamp(),event.getBidAmount()));
-            AlertUtils.showSuccess("Success", "Someone places bid successfully");
-            bidButton.setDisable(true);
-            bidButton.setText("PLACE BID");
-        });
-    }
-    */
 
+    // Hàm hiển thị thời gian còn lại
+    // ------------------------------
+    public void updateCountDown() {
+        if (currentAuction == null) return;
+        if (currentAuction.getEndTime() == null) return;
+
+        String timeString = TimeUtil.formatTimeRemaining(currentAuction.getEndTime());
+        auctiontimeleft.setText(timeString);
     
+        if ("ENDED".equals(timeString)) {
+            if (timeline != null) timeline.stop();
+
+            bidButton.setDisable(true); 
+            enterprice.setDisable(true);
+        }
+    }
+
+    // Hàm hiển thị giá tiền cao nhất hiện tại
+    // ---------------------------------------
+    private void updatePriceDisplay(double price) {
+        ClientLogger.info("Updating price display");
+        auctioncurrentprice.setText(String.format("$%.2f", price));
+    }
 
     @FXML
     private void handlePlaceBid() {
@@ -211,6 +277,7 @@ public class AuctionController implements Initializable, LifecycleController,  A
 
             PlaceBidRequest request = new PlaceBidRequest(currentAuction.getId(), bidAmount);
             RequestSender.send(request);
+
             enterprice.clear();
             bidButton.setDisable(true);
             bidButton.setText("Loading...");
@@ -239,10 +306,7 @@ public class AuctionController implements Initializable, LifecycleController,  A
     }
     @Override 
     public void onAuctionEnded(AuctionEndedEvent event) {
-        Platform.runLater(() -> {
-            AlertUtils.showAlert(Alert.AlertType.INFORMATION,"THÔNG BÁO"," PHIÊN ĐẤU GIÁ KẾT THÚC ! CHỜ THANH TOÁN ");
-            bidButton.setDisable(true);
-        });
+        
     }
 
     // --- REAL-TIME EVENT UPDATER ---\
@@ -250,16 +314,15 @@ public class AuctionController implements Initializable, LifecycleController,  A
     // Xử lý việc nhận bid mới
     // -----------------------
     private void handleNewBidEvent(NewBidEvent event) {
-        // Double check if the incoming bid is for the auction we are currently looking at
+        // Kiểm tra xem bid mới này có phải bid mà ta đang tham gia không
         if (currentAuction != null && currentAuction.getId() == event.getAuctionId()) {
             Platform.runLater(() -> {
-                // Update underlying data object
+                // Update dữ liệu mới cho phiên đấu giá hiện tại
                 currentAuction.setCurrentBid(event.getNewBidAmount());
                 currentAuction.setHighestBidderId(event.getHighestBidderId());
                 
                 // Instantly update the visual UI label 
                 updatePriceDisplay(event.getNewBidAmount());
-                
                 // Make the text pop visually so the user knows it changed!
                 auctioncurrentprice.setStyle("-fx-text-fill: #2ecc71; -fx-font-weight: bold;");
                 
@@ -313,10 +376,13 @@ public class AuctionController implements Initializable, LifecycleController,  A
     }
 
     // --- RESPONSE HANDLER ---
+    // Xử lý kết quả của việc đặt bid
+    // ------------------------------
     private void handlePlaceBidResponse(PlaceBidResponse response) {
         Platform.runLater(() -> {
             bidButton.setDisable(false); // Re-enable button
-            
+            bidButton.setText("PLACE BID");
+
             if (response.isSuccess()) {
                 enterprice.clear();
             } else {
@@ -325,38 +391,10 @@ public class AuctionController implements Initializable, LifecycleController,  A
         });
     }
 
-    private void handleBidResponse(PlaceBidResponse response) {
-        Platform.runLater(() -> {
-            if (!response.isSuccess()) {
-                AlertUtils.showError("Error!", response.getMessage());
-            }
-            bidButton.setDisable(false);
-            enterprice.clear();
-        });
-    }
-
-    private void updatePriceDisplay(double price) {
-        ClientLogger.info("Updating price display");
-        auctioncurrentprice.setText(String.format("$%.2f", price));
-    }
-
-    public void updateCountDown() {
-        if (currentAuction == null) return;
-        if (currentAuction.getEndTime() == null) return;
-
-        String timeString = TimeUtil.formatTimeRemaining(currentAuction.getEndTime());
-        auctiontimeleft.setText(timeString);
-    
-        if ("ENDED".equals(timeString)) {
-            if (timeline != null) timeline.stop();
-
-            bidButton.setDisable(true); 
-            enterprice.setDisable(true);
-        }
-    }
-
     @Override
     public void cleanup() {
+        ClientLogger.info("Cleaning up layout contextual event bindings for active Auction pipeline loop.");
+        if (timeline != null) { timeline.stop(); }
         // MUST clean up to prevent memory leaks!
         if (currentAuction != null) {
             AuctionEventBus.getInstance().unsubscribe(currentAuction.getId(), this);

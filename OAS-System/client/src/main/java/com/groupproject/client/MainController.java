@@ -16,6 +16,7 @@ import com.groupproject.shared.model.user.User;
 import com.groupproject.shared.network.events.AuctionListUpdateEvent;
 import com.groupproject.shared.network.events.BalanceUpdateEvent;
 import com.groupproject.shared.network.requests.LogOutRequest;
+import com.groupproject.shared.network.responses.GetAuctionResponse;
 import com.groupproject.shared.network.responses.JoinAuctionResponse;
 import com.groupproject.shared.network.responses.LogOutResponse;
 
@@ -71,6 +72,7 @@ public class MainController extends Application implements Initializable {
         // 1. Listen for Join Responses
         ClientMessageRouter.INSTANCE.onResponse(JoinAuctionResponse.class, this::handleJoinAuctionResponse);
         ClientMessageRouter.INSTANCE.onResponse(LogOutResponse.class, this::handleLogOutResponse);
+        ClientMessageRouter.INSTANCE.onResponse(GetAuctionResponse.class, this::handleGetAuctionResponse);
         // 2. NEW: Listen for Global Auction List Updates
         ClientMessageRouter.INSTANCE.onEvent(AuctionListUpdateEvent.class, this::handleAuctionListUpdate);
         // 3. NEW: Listen for personal Balance Updates (real-time wallet sync)
@@ -205,7 +207,7 @@ public class MainController extends Application implements Initializable {
 
     @FXML
     private void switchToCreateAuction() {
-        loadView("createAuctionTest.fxml");
+        loadView("createauction.fxml");
     }
 
     @FXML
@@ -241,10 +243,9 @@ public class MainController extends Application implements Initializable {
         Platform.runLater(() -> {
             if (response.isSuccess()) {
                 // Save auction AND past bids to memory
-                SessionManager.INSTANCE.setCurrentViewingAuction(response.getAuction());
-                SessionManager.INSTANCE.setCurrentAuctionBids(response.getPastBids()); 
+                SessionManager.INSTANCE.setCurrentAuctionDetail(response.getAuctionDetail());
                 
-                loadView("testAuctionScreen.fxml");
+                loadView("auctionscreen.fxml");
             } else {
                 System.out.println("Failed to join: " + response.getMessage());
             }
@@ -258,18 +259,34 @@ public class MainController extends Application implements Initializable {
         }
     }
 
+    private void handleGetAuctionResponse(GetAuctionResponse response) {
+        if (response.isSuccess()) {
+            // 1. Save the newly fetched data into our global memory
+            SessionManager.INSTANCE.setCurrentAuctionList(response.getAuctions()); // (Ensure getAuctions() matches your actual getter in GetAuctionResponse)
+
+            // 2. Tell the UI to immediately repaint using this new data
+            Platform.runLater(() -> {
+                if (currentSubController instanceof BaseAuctionViewController) {
+                    BaseAuctionViewController listScreen = (BaseAuctionViewController) currentSubController;
+                    listScreen.refreshFromSession(); 
+                }
+            });
+        } else {
+            System.err.println("Failed to fetch auctions: " + response.getMessage());
+        }
+    }
+
     private void handleAuctionListUpdate(AuctionListUpdateEvent event) {
         TimeUtil.syncWithServer(event.getServerTime());
 
-        // 1. ALWAYS update the session data, regardless of what screen the user is on!
+        // 1. Update the session data memory
         SessionManager.INSTANCE.setCurrentAuctionList(event.getActiveAuctions());
 
-        // 2. Check if the user is currently looking at a list Screen
+        // 2. Safely tell the UI to repaint from memory (NO NETWORK CALLS!)
         Platform.runLater(() -> {
             if (currentSubController instanceof BaseAuctionViewController) {
-                // If they are on any auction list screen, force it to fetch new data!
                 BaseAuctionViewController listScreen = (BaseAuctionViewController) currentSubController;
-                listScreen.fetchInitialData();
+                listScreen.refreshFromSession(); 
             }
         });
     }

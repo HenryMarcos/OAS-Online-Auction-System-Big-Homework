@@ -55,7 +55,7 @@ public class BidDAO {
                                      Integer previousBidderId, double previousBidAmount) {
         String checkSql = "SELECT a.status, a.current_bid, a.starting_price, u.balance " +
                           "FROM auctions a, users u WHERE a.id = ? AND u.id = ?";
-        String insertBidSql     = "INSERT INTO bids (auction_id, bidder_id, amount, bid_time) VALUES (?, ?, ?, CURRENT_TIMESTAMP)";
+        String insertBidSql     = "INSERT INTO bids (auction_id, bidder_id, amount, bid_time) VALUES (?, ?, ?, ?)";
         String updateAuctionSql = "UPDATE auctions SET current_bid = ?, current_bidder_id = ? WHERE id = ?";
         String deductSql        = "UPDATE users SET balance = balance - ? WHERE id = ?";
         String refundSql        = "UPDATE users SET balance = balance + ? WHERE id = ?";
@@ -76,7 +76,7 @@ public class BidDAO {
                             double startingPrice = rs.getDouble("starting_price");
                             double balance       = rs.getDouble("balance");
 
-                            if (!"ACTIVED".equalsIgnoreCase(status)) {
+                            if (!"ACTIVATED".equalsIgnoreCase(status)) {
                                 ServerLogger.warning("Bid rejected (double-check): Auction not active.");
                                 conn.rollback(); return false;
                             }
@@ -111,6 +111,7 @@ public class BidDAO {
                     insertStmt.setInt(1, auctionId);
                     insertStmt.setInt(2, bidderId);
                     insertStmt.setDouble(3, amount);
+                    insertStmt.setString(4, LocalDateTime.now().toString());
                     insertStmt.executeUpdate();
                 }
 

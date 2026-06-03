@@ -1,12 +1,10 @@
 package com.groupproject.server.handlers;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 
 import com.groupproject.server.core.ClientHandler;
 import com.groupproject.server.dao.AuctionDAO;
 import com.groupproject.server.service.AuctionManager;
-import com.groupproject.server.utils.ServerLogger;
 import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.network.requests.ChangeAuctionStatusRequest;
@@ -58,7 +56,7 @@ public class ChangeAuctionStatusHandler implements RequestHandler {
                 return new ChangeAuctionStatusResponse(false, "Phiên đấu giá này đã kết thúc hoặc đã bị hủy.");
             }
 
-            boolean isCancelled = AuctionDAO.updateAuctionStatusOnly(auctionId, AuctionStatus.CANCELLED);
+            boolean isCancelled = AuctionDAO.updateAuctionStatus(auctionId, AuctionStatus.CANCELLED);
             if (isCancelled) {
                 AuctionManager.INSTANCE.cancelAuction(auctionId); 
                 currentAuction.setStatus(AuctionStatus.CANCELLED);

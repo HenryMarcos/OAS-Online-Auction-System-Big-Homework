@@ -3,12 +3,12 @@ package com.groupproject.client.utils;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.groupproject.client.MainController;
 import com.groupproject.shared.model.categories.Category;
 import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.model.transaction.AuctionDetail;
-import com.groupproject.shared.model.transaction.BidDTO;
 import com.groupproject.shared.model.transaction.NotificationDTO;
 import com.groupproject.shared.model.user.User;
 
@@ -20,19 +20,14 @@ public enum SessionManager {
     private static List<Auction> currentAuctionList; // Danh sách các phiên đấu giá đang hoạt động hiện tại
     private static AuctionDetail currentAuctionDetail;
 
-    private static List<Auction> myProductList; // Danh sách các sản phẩm mà người dùng đã/đang bán
-    private static List<Auction> joinedAuctions; // Danh sách các phiên đấu giá mà người dùng đã tham gia
-
-    private Auction currentViewingAuction; // Phiên đấu giá mà người dùng đang tham gia
-    private List<BidDTO> currentAuctionBids; // Danh sách các bid của phiên đấu giá mà người dùng đang tham gia
+    // Tập hợp các auctionId mà client đang subscribe (để đồng bộ trạng thái nút khi Home reload)
+    private final Set<Integer> watchedAuctionIds = ConcurrentHashMap.newKeySet();
+    private List<Auction> myProductList = new CopyOnWriteArrayList<>(); // Danh sách các sản phẩm mà người dùng đã/đang bán
+    private List<Auction> joinedAuctions = new CopyOnWriteArrayList<>(); // Danh sách các phiên đấu giá mà người dùng đã tham gia
 
     private List<NotificationDTO> notificationList; // Danh sách các thông báo từ server gửi cho user
 
     private static MainController currentMainController;
-
-    // Tập hợp các auctionId mà client đang subscribe (để đồng bộ trạng thái nút khi Home reload)
-    private final Set<Integer> watchedAuctionIds = ConcurrentHashMap.newKeySet();
-
 
     public void setCurrentUser(User user) {
         currentUser = user;
@@ -63,13 +58,7 @@ public enum SessionManager {
         }
     }
     public List<Auction> getCurrentAuctionList() { return currentAuctionList; }
-
-    public void setCurrentViewingAuction(Auction auction) { this.currentViewingAuction = auction; }
-    public Auction getCurrentViewingAuction() { return currentViewingAuction; }
-
-    public void setCurrentAuctionBids(List<BidDTO> bids) { this.currentAuctionBids = bids; }
-    public List<BidDTO> getCurrentAuctionBids() { return currentAuctionBids; }
-
+    
     public void setMyProductList(List<Auction> myProductList) { 
         this.myProductList = myProductList;
         if (myProductList != null) {

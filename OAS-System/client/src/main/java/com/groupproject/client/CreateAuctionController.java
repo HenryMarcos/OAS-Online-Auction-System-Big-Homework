@@ -21,8 +21,10 @@ import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.shared.network.requests.CreateAuctionRequest;
 import com.groupproject.shared.network.responses.CreateAuctionResponse;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
@@ -33,6 +35,7 @@ import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -52,6 +55,7 @@ public class CreateAuctionController implements Initializable {
 
     // Nút start now để cho phiên đấu giá tạo ra bắt đầu luôn
     @FXML private CheckBox startNowCheckBox;
+    @FXML private Button submitButton;
 
     // Lựa chọn đổi giữa chọn thời gian và chọn ngày
     @FXML private ToggleGroup timingToggleGroup;
@@ -77,6 +81,10 @@ public class CreateAuctionController implements Initializable {
     @FXML private DatePicker endDatePicker;
     @FXML private ComboBox<Integer> endHourCombo;
     @FXML private ComboBox<Integer> endMinCombo;
+
+    @FXML private FlowPane secondaryPreviewContainer;
+    private List<byte[]> subImageBytesList = new ArrayList<>();
+    private byte[] mainImageBytes;
 
     private File mainImageFile = null;
     private List<File> subImageFiles = new ArrayList<>();
@@ -346,11 +354,54 @@ public class CreateAuctionController implements Initializable {
             subImagesCountLabel.setText(subImageFiles.size() + " images selected");
         }
     }
+
+    @FXML
+    private void handleChooseSecondaryImages(ActionEvent event) {
+        javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
+        fileChooser.setTitle("Choose Secondary Images");
+        fileChooser.getExtensionFilters().add(
+            new javafx.stage.FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg")
+        );
+        
+        // Show dialog allowing multiple file selection
+        java.util.List<java.io.File> selectedFiles = fileChooser.showOpenMultipleDialog(null);
+        
+        if (selectedFiles != null && !selectedFiles.isEmpty()) {
+            secondaryPreviewContainer.getChildren().clear();
+            subImageBytesList = new java.util.ArrayList<>();
+            
+            // Limit to 10 images
+            int limit = Math.min(selectedFiles.size(), 10);
+            
+            for (int i = 0; i < limit; i++) {
+                try {
+                    java.io.File file = selectedFiles.get(i);
+                    // Compress and add to your byte array list
+                    byte[] optimizedBytes = ImageOptimizer.optimizeImage(file);
+                    if (optimizedBytes != null) {
+                        subImageBytesList.add(optimizedBytes);
+                    }
+                    
+                    // Display preview on UI
+                    javafx.scene.image.ImageView preview = new javafx.scene.image.ImageView(new javafx.scene.image.Image(file.toURI().toString()));
+                    preview.setFitWidth(80);
+                    preview.setFitHeight(80);
+                    preview.setPreserveRatio(true);
+                    secondaryPreviewContainer.getChildren().add(preview);
+                    
+                } catch (Exception e) {
+                    ClientLogger.error("Failed to load secondary image: " + e.getMessage());
+                }
+            }
+        }
+    }
     
     @FXML
     private void handleSubmitAuction() {
         ClientLogger.info("Handling submit auction");
         statusLabel.setText("");
+
+        if (submitButton != null) { submitButton.setDisable(true); }
 
         // Lấy các input
         String title = titleField.getText().trim();
@@ -525,5 +576,23 @@ public class CreateAuctionController implements Initializable {
 
     private void handleFailedCreateAuction(CreateAuctionResponse response) {
         ClientLogger.error("failed to create new auction");
+
+        // 🌟 STEP 2: Re-enable the button so the user can correct their input and try again
+        if (submitButton != null) {
+            submitButton.setDisable(false);
+        }
+        if (statusLabel != null) {
+            statusLabel.setText(response.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleCancel(ActionEvent event) {
+        // TODO: Add your cancel or navigation logic here
+        // Example using a SceneNavigator or logging out/returning:
+        com.groupproject.client.utils.ClientLogger.info("Cancel button clicked. Returning to previous view...");
+        
+        // If you have a navigator tool or want to clear fields:
+        // SceneNavigator.loadScene("/com/groupproject/client/FXML/main.fxml");
     }
 }

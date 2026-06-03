@@ -1,5 +1,6 @@
 com\groupproject\shared\network\requests\WatchAuctionRequest.class
 com\groupproject\shared\network\Wallet.class
+com\groupproject\shared\AuctionUpdate.class
 com\groupproject\shared\model\item\Item.class
 com\groupproject\shared\model\transaction\AuctionDetail.class
 com\groupproject\shared\network\events\AuctionCancelledEvent.class
@@ -13,15 +14,12 @@ com\groupproject\shared\network\requests\JoinAuctionRequest.class
 com\groupproject\shared\network\responses\ChangeAuctionStatusResponse.class
 com\groupproject\shared\network\responses\JoinAuctionResponse.class
 com\groupproject\shared\network\requests\PlaceBidRequest.class
-<<<<<<< HEAD
-=======
-com\groupproject\shared\network\AuctionEvent\AuctionFinisedEvent.class
->>>>>>> origin/0.2.1.3
 com\groupproject\shared\network\events\NewBidEvent.class
 com\groupproject\shared\network\requests\SignupRequest.class
 com\groupproject\shared\network\responses\GetCategoriesResponse.class
 com\groupproject\shared\network\requests\ChangeAuctionStatusRequest.class
 com\groupproject\shared\network\events\AuctionListUpdateEvent.class
+com\groupproject\shared\network\responses\GetAuctionResponse.class
 com\groupproject\shared\model\enums\AuctionStatus.class
 com\groupproject\shared\network\requests\GetCategoriesRequest.class
 com\groupproject\shared\network\events\AuctionEndedEvent.class
@@ -29,29 +27,20 @@ com\groupproject\shared\network\Notification.class
 com\groupproject\shared\network\requests\CreateAuctionRequest.class
 com\groupproject\shared\network\requests\LoginRequest.class
 com\groupproject\shared\network\responses\PlaceBidResponse.class
-<<<<<<< HEAD
+com\groupproject\shared\network\responses\WatchAuctionResponse.class
 com\groupproject\shared\network\events\AuctionFinisedEvent.class
 com\groupproject\shared\network\events\SystemNotificationEvent.class
-=======
-com\groupproject\shared\network\responses\WatchAuctionResponse.class
->>>>>>> origin/0.2.1.3
 com\groupproject\shared\network\responses\LoginResponse.class
 com\groupproject\shared\network\responses\BidResponse.class
 com\groupproject\shared\network\requests\LogOutRequest.class
+com\groupproject\shared\network\responses\GetAuctionDetailResponse.class
 com\groupproject\shared\network\requests\BidRequest.class
 module-info.class
 com\groupproject\shared\network\responses\UnwatchAuctionResponse.class
 com\groupproject\shared\network\responses\LogOutResponse.class
-com\groupproject\shared\model\transaction\BidTransaction.class
-<<<<<<< HEAD
+com\groupproject\shared\network\requests\UnwatchAuctionRequest.class
 com\groupproject\shared\network\responses\LeaveAuctionRoomResponse.class
 com\groupproject\shared\network\requests\LeaveAuctionRoomRequest.class
-=======
-com\groupproject\shared\network\requests\UnwatchAuctionRequest.class
-com\groupproject\shared\network\AuctionEvent\BidUpdatedEvent.class
-com\groupproject\shared\network\AuctionEvent\AuctionEvent.class
-com\groupproject\shared\network\AuctionEvent\AuctionListener.class
->>>>>>> origin/0.2.1.3
 com\groupproject\shared\model\transaction\NotificationDTO.class
 com\groupproject\shared\network\OutBidNotification.class
 com\groupproject\shared\network\events\AuctionStartedEvent.class
@@ -64,10 +53,7 @@ com\groupproject\shared\model\base\Entity.class
 com\groupproject\shared\network\events\BalanceUpdateEvent.class
 com\groupproject\shared\network\requests\GetAuctionRequest.class
 com\groupproject\shared\model\categories\Category.class
-<<<<<<< HEAD
 com\groupproject\shared\network\events\AuctionFinishedEvent.class
-=======
->>>>>>> origin/0.2.1.3
 com\groupproject\shared\network\requests\Request.class
 com\groupproject\shared\model\transaction\Auction.class
 com\groupproject\shared\network\AuctionWonNotification.class

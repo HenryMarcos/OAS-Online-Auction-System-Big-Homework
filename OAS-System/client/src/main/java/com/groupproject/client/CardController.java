@@ -1,6 +1,4 @@
 package com.groupproject.client;
-import java.io.IOException;
-import java.util.function.Consumer;
 
 import com.groupproject.client.network.AuctionEventBus;
 import com.groupproject.client.network.AuctionListener;
@@ -11,192 +9,213 @@ import com.groupproject.client.utils.CountDownHelper;
 import com.groupproject.client.utils.LifecycleController;
 import com.groupproject.client.utils.SceneNavigator;
 import com.groupproject.client.utils.SessionManager;
-import com.groupproject.client.utils.TimeUtil;
 import com.groupproject.shared.model.enums.AuctionStatus;
 import com.groupproject.shared.model.transaction.Auction;
 import com.groupproject.shared.model.user.User;
-import com.groupproject.shared.network.events.AuctionCancelledEvent;
-import com.groupproject.shared.network.events.AuctionEndedEvent;
-import com.groupproject.shared.network.events.AuctionFinisedEvent;
-import com.groupproject.shared.network.events.AuctionStartedEvent;
+import com.groupproject.shared.network.events.NewBidEvent;
+import com.groupproject.shared.network.requests.ChangeAuctionStatusRequest;
 import com.groupproject.shared.network.requests.GetAuctionDetailRequest;
 import com.groupproject.shared.network.requests.JoinAuctionRequest;
+import com.groupproject.shared.network.responses.ChangeAuctionStatusResponse;
 import com.groupproject.shared.network.responses.GetAuctionDetailResponse;
 import com.groupproject.shared.network.responses.JoinAuctionResponse;
 
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.image.ImageView;
 
-public class CardController implements LifecycleController, AuctionListener { 
+public class CardController implements LifecycleController, AuctionListener {
+
     private Auction auction;
-    private Timeline timeline;
+    private CountDownHelper countDownHelper = new CountDownHelper();
 
-    private final Consumer<GetAuctionDetailResponse> getDetailListener = this::handleGetDetailAuction;
-    private final Consumer<JoinAuctionResponse> joinAuctionListener = this::handleJoinAuctionResponse;
+    // Event Listeners
+    private final java.util.function.Consumer<JoinAuctionResponse> joinAuctionListener = this::handleJoinAuctionResponse;
+    private final java.util.function.Consumer<GetAuctionDetailResponse> getDetailListener = this::handleGetDetailAuction;
+    private final java.util.function.Consumer<ChangeAuctionStatusResponse> statusChangeListener = this::handleStatusChangeResponse;
 
+    @FXML private ImageView image;
     @FXML private Label productname;
+    @FXML private Label auctionStatus;
     @FXML private Label currentprice;
     @FXML private Label timeleft;
+    
+    @FXML private ToggleButton subcribeToggle;
+    @FXML private Button startNowButton;
+    @FXML private Button cancelAuctionButton;
+    @FXML private Button viewAuctionButton;
 
-    @FXML private Label auctionStatus;
-    @FXML private ToggleButton subscribeToggle;
-    @FXML private Button cancelButton;
-
-    @FXML
-    public  void initialize() {
-
-        // ĐĂNG KÝ VIỆC LẮNG NGHE TRẢ VỀ KẾT QUẢ
-        ClientMessageRouter.INSTANCE.onResponse(JoinAuctionResponse.class,this::handleJoinAuctionResponse);
-        ClientMessageRouter.INSTANCE.onResponse(GetAuctionDetailResponse.class, getDetailListener);
-        ClientMessageRouter.INSTANCE.onResponse(JoinAuctionResponse.class, joinAuctionListener);
-    }
-
-    // Gọi hàm này từ HomeController để thêm dữ liệu vào card
-    // ------------------------------------------------------
     public void setAuction(Auction auction) {
         this.auction = auction;
 
-        // Thêm dữ liệu vào các ô
-        productname.setText(auction.getTitle());
+        // Register Global Handlers
+        ClientMessageRouter.INSTANCE.onResponse(JoinAuctionResponse.class, joinAuctionListener);
+        ClientMessageRouter.INSTANCE.onResponse(GetAuctionDetailResponse.class, getDetailListener);
+        ClientMessageRouter.INSTANCE.onResponse(ChangeAuctionStatusResponse.class, statusChangeListener);
+        
+        // Listen to Live Updates
+        AuctionEventBus.getInstance().subscribe(auction.getId(), this);
 
-        // Hiện bid hiện tại nếu có người bid, không thì hiện giá khởi điểm
-        double displayPrice = (auction.getCurrentBid() > 0) ? auction.getCurrentBid() : auction.getStartingPrice();
-        currentprice.setText("$" + displayPrice);
-
-        // Setup timer
-        if (auction.getEndTime() != null) {
-            timeline = new Timeline(new KeyFrame(javafx.util.Duration.seconds(1), event -> {
-                updateCountDown();
-            }));
-            timeline.setCycleCount(Timeline.INDEFINITE);
-            timeline.play();
-            updateCountDown(); // Run once immediately
-        } else {
-            timeleft.setText("No End Time");
-        }
+        updateUI();
     }
 
-    public void updateCountDown() {
-        if (auction == null) return;
-        if (auction.getEndTime() == null) return;
+    private void updateUI() {
 
-        String timeString = TimeUtil.formatTimeRemaining(auction.getEndTime());
-        timeleft.setText(timeString);
-    
-        if ("ENDED".equals(timeString)) {
-            if (timeline != null) timeline.stop();
-        }
-    }
-
-    @FXML 
-    private void handleBid(ActionEvent event) throws IOException {
-        JoinAuctionRequest request = new JoinAuctionRequest(auction.getId());
-        RequestSender.send(request);
-    }
-
-    public void populateUI(Auction auction) {
-        Platform.runLater(() -> {
-            this.auction = auction;
-            productname.setText(auction.getTitle());
-            currentprice.setText(String.valueOf(auction.getCurrentBid()));
-            CountDownHelper countDownHelper = new CountDownHelper();
-            countDownHelper.start(auction, () -> timeleft.setText("ENDED"), timeleft);
-            applyAuctionStatus(auction.getStatus());
-
-            // NGHIỆP VỤ ĐỂ HIỂN THỊ NÚT HỦY PHIÊN 
-            if (auction.getStatus()==AuctionStatus.WAITING) {
-                cancelButton.setVisible(true);
-                cancelButton.setManaged(true);
+        // --- ADD THIS IMAGE LOADING LOGIC ---
+        if (auction.getMainImageBytes() != null && auction.getMainImageBytes().length > 0) {
+            try {
+                java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(auction.getMainImageBytes());
+                javafx.scene.image.Image img = new javafx.scene.image.Image(bis);
+                image.setImage(img);
+            } catch (Exception e) {
+                System.err.println("Could not load image for card: " + auction.getId());
             }
-        });
-    }
-   
-    public void applyAuctionStatus(AuctionStatus status) {
-        auctionStatus.setText("State : " + status );
-    }
-    
-    @Override
-    public void onAuctionStarted(AuctionStartedEvent event) {
-        Platform.runLater(() -> {
-            applyAuctionStatus(AuctionStatus.ACTIVATED);
-        });
+        } else {
+            // Keep the default sample image if no image was provided
+        }
+
+        productname.setText(auction.getTitle());
+        
+        double displayPrice = (auction.getCurrentBid() > 0) ? auction.getCurrentBid() : auction.getStartingPrice();
+        currentprice.setText(String.format("$%.2f", displayPrice));
+        auctionStatus.setText(statusLabel(auction.getStatus()));
+
+        countDownHelper.start(auction, () -> Platform.runLater(this::updateUI), timeleft);
+
+        // --- THE MAGIC: UI ADAPTATION LOGIC ---
+        User currentUser = SessionManager.INSTANCE.getCurrentUser();
+        boolean isSeller = (currentUser != null && currentUser.getId().intValue() == auction.getSellerId());
+
+        if (isSeller) {
+            // It's MY auction
+            subcribeToggle.setVisible(false);
+            subcribeToggle.setManaged(false);
+
+            boolean canStart = (auction.getStatus() == AuctionStatus.WAITING || auction.getStatus() == AuctionStatus.SCHEDULED);
+            boolean canCancel = (auction.getStatus() == AuctionStatus.WAITING || auction.getStatus() == AuctionStatus.SCHEDULED || auction.getStatus() == AuctionStatus.ACTIVATED);
+            
+            startNowButton.setVisible(canStart);
+            startNowButton.setManaged(canStart);
+            cancelAuctionButton.setVisible(canCancel);
+            cancelAuctionButton.setManaged(canCancel);
+            
+            // Allow seller to view room (but they can't bid)
+            viewAuctionButton.setVisible(true);
+            viewAuctionButton.setManaged(true);
+        } else {
+            // I'm a Buyer
+            subcribeToggle.setVisible(true);
+            subcribeToggle.setManaged(true);
+            
+            startNowButton.setVisible(false);
+            startNowButton.setManaged(false);
+            cancelAuctionButton.setVisible(false);
+            cancelAuctionButton.setManaged(false);
+
+            // Allow buyer to view room if it's active or finished
+            boolean canView = (auction.getStatus() == AuctionStatus.ACTIVATED || auction.getStatus() == AuctionStatus.ENDED || auction.getStatus() == AuctionStatus.FINISHED);
+            viewAuctionButton.setVisible(canView);
+            viewAuctionButton.setManaged(canView);
+        }
     }
 
-    @Override
-    public void onAuctionCancelled(AuctionCancelledEvent event) {
-        Platform.runLater(() -> {
-            applyAuctionStatus(AuctionStatus.CANCELLED);
-        });
-    }
-
-    @Override
-    public void onAuctionEnded(AuctionEndedEvent event) {
-        Platform.runLater(() -> {
-            applyAuctionStatus(AuctionStatus.ENDED);
-        });
-    }
-
-    @Override
-    public void onAuctionFinished(AuctionFinisedEvent event) {
-        // Tương tự như Ended, có thể thêm logic hiển thị người chiến thắng
-        Platform.runLater(() -> {
-            applyAuctionStatus(AuctionStatus.FINISHED);
-        });
+    @FXML
+    private void handleViewAuction(ActionEvent event) {
+        RequestSender.send(new GetAuctionDetailRequest(auction.getId()));
     }
 
     @FXML
     private void handleSubscribeToggle(ActionEvent event) {
-        if (subscribeToggle.isSelected()) {
-            subscribeToggle.setText("UNFOLLOW");
-            User user= SessionManager.INSTANCE.getCurrentUser();
-            // GỬI THÔNG BÁO MUỐN NHẬN TIN CỦA PHIÊN ĐẤU GIÁ NÀY LÊN SERVER
+        if (subcribeToggle.isSelected()) {
+            subcribeToggle.setText("UNFOLLOW");
             RequestSender.send(new JoinAuctionRequest(auction.getId()));
-            // CLIENTLOGGER GHI LAI SU KIEN
-        }
-        else {
-            subscribeToggle.setText("FOLLOW NOW !");
+        } else {
+            subcribeToggle.setText("FOLLOW NOW !");
             AuctionEventBus.getInstance().unsubscribe(auction.getId(), this);
-            // XU LY KHI HO HUY THONG BAO
         }
     }
-    @FXML
-    private void handleCancelAuction(ActionEvent event) {
 
+    @FXML
+    private void handleStartNow(ActionEvent event) {
+        startNowButton.setDisable(true);
+        cancelAuctionButton.setDisable(true);
+        RequestSender.send(new ChangeAuctionStatusRequest(auction.getId(), AuctionStatus.ACTIVATED));
     }
+
+    @FXML
+    private void handleCancelAction(ActionEvent event) {
+        startNowButton.setDisable(true);
+        cancelAuctionButton.setDisable(true);
+        RequestSender.send(new ChangeAuctionStatusRequest(auction.getId(), AuctionStatus.CANCELLED));
+    }
+
+    private void handleStatusChangeResponse(ChangeAuctionStatusResponse response) {
+        if (auction == null || response.getUpdatedAuction() == null) return;
+        if (response.getUpdatedAuction().getId() != auction.getId()) return; // Ignore other auctions
+
+        Platform.runLater(() -> {
+            if (response.isSuccess()) {
+                this.auction = response.getUpdatedAuction();
+                updateUI();
+            } else {
+                AlertUtils.showError("Action Failed", response.getMessage());
+            }
+            startNowButton.setDisable(false);
+            cancelAuctionButton.setDisable(false);
+        });
+    }
+
     private void handleJoinAuctionResponse(JoinAuctionResponse response) {
-        if (response.isSuccess()) {
-            AuctionEventBus.getInstance().subscribe(auction.getId(), this);
-        }
-        else {
-            // Thong bao cho khac hang la ho da dang ky that bai 
+        if (!response.isSuccess()) {
+            Platform.runLater(() -> {
+                subcribeToggle.setSelected(false);
+                subcribeToggle.setText("FOLLOW NOW !");
+                AlertUtils.showError("Follow Failed", "Could not follow auction.");
+            });
         }
     }
 
     private void handleGetDetailAuction(GetAuctionDetailResponse response) {
-        if (response.isSuccess()) {
-            Platform.runLater(() ->{
+        // Only navigate if it matches THIS card's ID
+        if (response.isSuccess() && response.getAuctionDetail().getAuction().getId() == auction.getId()) {
+            Platform.runLater(() -> {
                 SessionManager.INSTANCE.setCurrentAuctionDetail(response.getAuctionDetail());
                 SceneNavigator.INSTANCE.goTo("/com/groupproject/client/FXML/auctionscreen.fxml");
             });
         }
-        else {
-            Platform.runLater(() -> {
-                AlertUtils.showError("Error !" , "Can't enter the auction now ");
-            });
-        }
+    }
+
+    @Override
+    public void onBidUpdated(NewBidEvent event) {
+        Platform.runLater(() -> {
+            auction.setCurrentBid(event.getNewBidAmount());
+            currentprice.setText(String.format("$%.2f", event.getNewBidAmount()));
+            currentprice.setStyle("-fx-text-fill: #2ecc71; -fx-font-size: 16px; -fx-font-weight: bold;");
+        });
+    }
+
+    private String statusLabel(AuctionStatus status) {
+        return switch (status) {
+            case WAITING -> "⏳ Chờ bắt đầu";
+            case SCHEDULED -> "📅 Đã lên lịch";
+            case ACTIVATED -> "🟢 Đang diễn ra";
+            case ENDED -> "🔴 Đã kết thúc";
+            case CANCELLED -> "❌ Đã hủy";
+            case FINISHED -> "✅ Hoàn thành";
+        };
     }
 
     @Override
     public void cleanup() {
         ClientMessageRouter.INSTANCE.offResponse(GetAuctionDetailResponse.class, getDetailListener);
         ClientMessageRouter.INSTANCE.offResponse(JoinAuctionResponse.class, joinAuctionListener);
-        if (timeline != null) timeline.stop();
+        ClientMessageRouter.INSTANCE.offResponse(ChangeAuctionStatusResponse.class, statusChangeListener);
+        
+        countDownHelper.stop();
         if (auction != null) {
             AuctionEventBus.getInstance().unsubscribe(auction.getId(), this);
         }
