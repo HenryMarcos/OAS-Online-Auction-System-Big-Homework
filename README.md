@@ -1,6 +1,9 @@
 Hệ Thống Đấu Giá Trực Tuyến (Online Auction System - OAS)
+
 Một nền tảng đấu giá trực tuyến theo thời gian thực (real-time) toàn diện theo mô hình Client-Server, được xây dựng bằng Java, JavaFX và Maven. Hệ thống này cho phép người dùng lên lịch đấu giá, tham gia đấu giá trực tiếp, quản lý danh mục sản phẩm và theo dõi lịch sử biến động giá một cách trực quan.
+
 Tính Năng Nổi Bật:
+
 -Bidding Engine thời gian thực: Đồng bộ hóa dữ liệu phòng đấu giá đồng thời (concurrent rooms) với độ trễ cực thấp nhờ hệ thống phát sự kiện EventBus tập trung ở phía Server.
 -Giao diện trực quan (UI/UX): Ứng dụng desktop JavaFX được thiết kế hiện đại với hệ thống CSS tùy biến, hỗ trợ co giãn linh hoạt (TableView) và đồng hồ đếm ngược thời gian thực.
 -Biểu đồ biến động giá trực tiếp: Tích hợp LineChart ngay trong phòng đấu giá để cập nhật và hiển thị trực quan các lượt trả giá của người dùng theo thời gian thực.
@@ -13,22 +16,6 @@ Công Nghệ Sử Dụng & Yêu Cầu Hệ Thống
 -Build System: Maven
 -Cơ sở dữ liệu: SQL thông qua tầng JDBC Persistence layer
 *Trước khi biên dịch, hãy đảm bảo bạn đã cài đặt Java Development Kit (JDK), Maven và cấu hình biến môi trường (Environment Variables) đầy đủ trên máy tính.
-
-OAS-Online-Auction-System-Big-Homework/
-│
-├── OAS-System/               # Thư mục gốc (Root Project) chứa Parent pom.xml
-│   │
-│   ├── shared/               # 📦 Module dùng chung (Core)
-│   │   ├── src/              # Chứa Models (User, Auction), DTOs, Network Events, Requests/Responses.
-│   │   └── pom.xml           # Cả Client và Server đều phụ thuộc (depend on) module này.
-│   │
-│   ├── server/               # 🖥️ Logic Backend Server
-│   │   ├── src/              # Chứa DAOs, Database Cache, Client Handlers, EventBus.
-│   │   └── pom.xml
-│   │
-│   └── client/               # 💻 Giao diện Desktop GUI Client
-│       ├── src/              # Chứa Controllers, Views (FXML), Styles (CSS), SessionManager.
-│       └── pom.xml
 
 🏗️ Hướng Dẫn Cài Đặt & Khởi ChạyĐầu tiên, clone repository này về máy cục bộ của bạn:
 git clone https://github.com/YOUR_USERNAME/OAS-Online-Auction-System-Big-Homework.git
